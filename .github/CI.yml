@@ -43,4 +43,19 @@ jobs:
 
       - name: Stop Containers
         run: docker compose -f docker-compose.dev.yml down
+
+
+      - name: Discord Notification
+        uses: sarisia/actions-status-discord@v1
+        if: always()
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          title: "CI/CD Pipeline report"
+          description: |
+            **Status:** ${{ job.status }}
+            **Project:** Movie search services
+            **Commit:** `${{ github.sha }}`
+          status: ${{ job.status }}
+          username: Github actions
+          avatar_url: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
     
