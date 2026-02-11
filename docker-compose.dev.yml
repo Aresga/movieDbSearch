@@ -45,7 +45,6 @@ services:
       - ./.env
     volumes:
       - ./backend-nest:/app
-      - /app/mode_modules
     depends_on:
       - postgres
       - backend-python
