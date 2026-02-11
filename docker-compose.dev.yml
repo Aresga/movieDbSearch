@@ -20,11 +20,9 @@ services:
     build:
       context: ./backend-python
       dockerfile: Dockerfile
-    container_name: Movie_backend
+    container_name: Movie_fast_api
     env_file:
-      - ./backend-python/.env
-    environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      - ./.env
     volumes:
       - ./backend-python:/app
       - ./backend-python/dbCSV:/dbCSV
@@ -43,8 +41,8 @@ services:
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
-    environment:
-      - AI_SERVICE_URL=http://backend-python:8000
+    env_file:
+      - ./.env
     volumes:
       - ./backend-nest:/app
       - /app/mode_modules
@@ -53,7 +51,24 @@ services:
       - backend-python
     networks:
       - moviedb-network
-    
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: Movie_frontend
+    env_file:
+      - ./.env
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend-nest
+    networks:
+      - moviedb-network
+    restart: unless-stopped
 
 volumes:
   postgres_data:

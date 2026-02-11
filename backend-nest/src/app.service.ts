@@ -21,12 +21,15 @@ export class AppService {
     private readonly configService: ConfigService
   ) {}
   
-  getHello(): string {
-    return 'Hello World!';
+  getHello(): object {
+    return {message: 'Hello World!'};
   }
 
-  health(): string {
-    return 'Hello World!, I am healthy';
+  health(): object {
+    return {
+      message: 'I\'m healthy',
+      version: '1.0.0'
+    };
   }
 
 

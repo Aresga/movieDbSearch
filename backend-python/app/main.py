@@ -11,6 +11,7 @@ DB_PASS = os.getenv("DATABASE_PASSWORD", "changeme123")
 DB_HOST = "postgres"
 DB_NAME = os.getenv("DATABASE_DB", "moviesearch_db")
 DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASS}@{DB_HOST}:5432/{DB_NAME}"
+MODEL_NAME = os.getenv("MODEL_NAME")
 
 # Global variables for resources we load once
 resources = {}
@@ -71,14 +72,14 @@ def ingest_data(engine, model):
 async def lifespan(app: FastAPI):
     # 1. Startup: Load model and DB connection
     print("Starting up... Loading AI Model...")
-    resources['model'] = SentenceTransformer('all-MiniLM-L6-v2')
+    resources['model'] = SentenceTransformer(MODEL_NAME)
     resources['engine'] = create_engine(DATABASE_URL)
     
     # Init and Ingest -> create the db with emb vects 
     init_db(resources['engine'])
     ingest_data(resources['engine'], resources['model'])
     
-    yield # App Runs
+    yield ## app runs and stop here. 
     
     # 2. Shutdown: Cleanup
     resources['engine'].dispose()
@@ -95,7 +96,7 @@ def health_check():
 @app.get("/search")
 def search_movies(q: str, limit: int = 5):
     """
-    Search for similar movies 
+    Search for similar movies using vectors 
     """
     if not q:
         raise HTTPException(status_code=400, detail="Query string 'q'")
@@ -104,7 +105,7 @@ def search_movies(q: str, limit: int = 5):
     query_vec = resources['model'].encode(q).tolist()
 
     with resources['engine'].connect() as conn:
-        # Fetch top matches using Cosine Distance (<=>)
+        # Fetch top matches using Cosine Distance (<=>) closer to 0 is better. 
         results = conn.execute(
             text("""
                 SELECT title, plot, url, (embedding <=> :emb) as distance
@@ -122,7 +123,7 @@ def search_movies(q: str, limit: int = 5):
                 "title": row[0],
                 "plot": row[1],
                 "url": row[2],
-                "match_score": round(1 - row[3], 4)
+                "match_score": round(1 - row[3], 4) # closer to zero is the best match but it make no sence, thats why it has to be flipped
             } 
             for row in results
         ]
