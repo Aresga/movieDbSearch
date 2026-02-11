@@ -4,7 +4,7 @@ on:
   push:
     branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   test-stack:
@@ -25,18 +25,19 @@ jobs:
         run: |
           echo "Waiting for nest js and others to be ready .. "
           timeout 240s bash -c 'until curl --silent --fail http://127.0.0.1:3000/health; do sleep 5; done'
+          echo "Nestjs api end point is healthy"
           timeout 240s bash -c 'until curl --silent --fail http://127.0.0.1:8000/; do sleep 5; done'
-          echo "System is Up!!"
+          echo "FastApi is healthy"
+          echo "System is up !!" 
+
+
+      - name: Install HTTPie
+        run: pip install httpie
 
       - name: Run Smoke test
         run: |
-          response=$(curl --write-out "%{http_code}" --silent --output /dev/null "http://127.0.0.1:3000/search?q=titanic")
-          if [ "$response" -eq 200 ]; then
-            echo "Search Endpoint is working!"
-          else
-            echo "Search failed with status $response"
-            exit 1
-          fi
+          http --check-status --ignore-stdin GET http://localhost:3000/health
+          http --check-status --ignore-stdin GET http://localhost:3000/search?=titanic
 
       - name: Dump Docker logs
         if: failure()
