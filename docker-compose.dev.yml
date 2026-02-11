@@ -1,0 +1,65 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: Movie_db
+    env_file:
+      - .env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - moviedb-network
+    
+  backend-python:
+    build:
+      context: ./backend-python
+      dockerfile: Dockerfile
+    container_name: Movie_backend
+    env_file:
+      - ./backend-python/.env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+    volumes:
+      - ./backend-python:/app
+      - ./backend-python/dbCSV:/dbCSV
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - moviedb-network
+
+  backend-nest:
+    container_name: Movie_nest_api
+    build: 
+      context: ./backend-nest
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - AI_SERVICE_URL=http://backend-python:8000
+    volumes:
+      - ./backend-nest:/app
+      - /app/mode_modules
+    depends_on:
+      - postgres
+      - backend-python
+    networks:
+      - moviedb-network
+    
+
+volumes:
+  postgres_data:
+
+networks:
+  moviedb-network:
+    driver: bridge
+
+  
