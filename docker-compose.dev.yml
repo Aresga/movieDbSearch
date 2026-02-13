@@ -5,6 +5,7 @@ services:
     env_file:
       - .env
     volumes:
+      - ./backend-python/init_db:/docker-entrypoint-initdb.d
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"

@@ -27,7 +27,7 @@ export class AppService {
 
   health(): object {
     return {
-      message: 'I\'m healthy',
+      message: 'I\'m NestJs and I\'m healthy',
       version: '1.0.0'
     };
   }
@@ -39,7 +39,7 @@ export class AppService {
     const baseUrl = this.configService.get<string>('AI_SERVICE_URL');
     
     if (!baseUrl) {
-      throw new Error('Ai_service_url is not defined');
+      throw new Error('AI_SERVICE_URL is not defined');
     }
     
     const cleanBase = baseUrl.replace(/\/$/, '');
@@ -48,7 +48,7 @@ export class AppService {
     try {
       const response = await lastValueFrom(
         this.httpService.get<PyResponse>(fullUrl, {
-          params: { q: query, limit:5 }
+          params: { q: query, limit:2 }
         }).pipe(
           map((res) => res.data) // data part of resp
         )
