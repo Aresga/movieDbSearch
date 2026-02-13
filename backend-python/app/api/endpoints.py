@@ -4,7 +4,7 @@ from .dependencies import get_search_service
 
 router = APIRouter()
 
-@router.get("/")
+@router.get("/health")
 def health_check():
     return {"status": "running", "message": "Movie Search API is ready"}
 
