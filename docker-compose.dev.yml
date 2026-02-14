@@ -5,6 +5,7 @@ services:
     env_file:
       - .env
     volumes:
+      - ./backend-python/init_db:/docker-entrypoint-initdb.d
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
@@ -28,6 +29,11 @@ services:
       - ./backend-python/dbCSV:/dbCSV
     ports:
       - "8000:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     depends_on:
       postgres:
         condition: service_healthy
@@ -47,8 +53,10 @@ services:
       - ./backend-nest:/app
       - /app/node_modules
     depends_on:
-      - postgres
-      - backend-python
+      postgres:
+        condition: service_healthy
+      backend-python:
+        condition: service_healthy
     networks:
       - moviedb-network
 

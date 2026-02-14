@@ -1,0 +1,106 @@
+name: Postgres integration & dump-compare
+
+on:
+  push:
+    branches: ["main", "backend-python"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  postgres-compare:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create .env file
+        run: cp .env.example .env
+
+      - name: Start one postgres with the small dataset  
+        run: |
+          source .env
+          docker run -d --name postgres-small \
+            --env-file .env \
+            -p 5432:5432 \
+            -v $GITHUB_WORKSPACE/backend-python/init_db_test:/docker-entrypoint-initdb.d \
+            pgvector/pgvector:pg16
+        
+      - name: Start second postgres initialized with the full dataset
+        run: |
+          source .env
+          docker run -d --name postgres-big \
+            --env-file .env \
+            -p 5433:5432 \
+            -v $GITHUB_WORKSPACE/backend-python/init_db:/docker-entrypoint-initdb.d \
+            pgvector/pgvector:pg16
+
+      - name: Install psql client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      - name: Wait for databases to be ready
+        env:
+          POSTGRES_USER: ${{ env.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ env.POSTGRES_DB }}
+        run: |
+          source .env
+          for port in 5432 5433; do
+            echo "waiting for postgres on port $port..."
+            until PGPASSWORD=${POSTGRES_PASSWORD} pg_isready -h localhost -p ${port} -U ${POSTGRES_USER} >/dev/null 2>&1; do
+              sleep 1
+            done
+          done
+
+      - name: Run basic verification queries
+        env:
+          POSTGRES_USER: ${{ env.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ env.POSTGRES_DB }}
+        run: |
+          source .env
+          echo "Count on test DB (top100 via docker-compose):"
+          PGPASSWORD=${POSTGRES_PASSWORD} psql -h localhost -p 5432 -U ${POSTGRES_USER} -d ${POSTGRES_DB} -c "SELECT count(*) FROM public.movies;"
+          echo "Count on init DB (init_db mounted):"
+          PGPASSWORD=${POSTGRES_PASSWORD} psql -h localhost -p 5433 -U ${POSTGRES_USER} -d ${POSTGRES_DB} -c "SELECT count(*) FROM public.movies;"
+
+      - name: Verify Row Counts
+        run: |
+          source .env
+        
+          echo "Checking Small Dataset (Port 5433)..."
+          SMALL_COUNT=$(PGPASSWORD=${POSTGRES_PASSWORD} psql -h localhost -p 5432 -U ${POSTGRES_USER} -d ${POSTGRES_DB} -t -A -c "SELECT count(*) FROM public.movies;")
+          echo "Small count: $SMALL_COUNT"
+        
+          echo "Checking Full Dataset (Port 5434)..."
+          FULL_COUNT=$(PGPASSWORD=${POSTGRES_PASSWORD} psql -h localhost -p 5433 -U ${POSTGRES_USER} -d ${POSTGRES_DB} -t -A -c "SELECT count(*) FROM public.movies;")
+          echo "Full count: $FULL_COUNT"
+
+          # Verification Logic
+          if [ "$SMALL_COUNT" -ne 100 ]; then
+              echo "Error: Small dataset expected 100 rows, found $SMALL_COUNT"
+              exit 1
+          fi
+
+          if [ "$FULL_COUNT" -ne 20000 ]; then
+             echo "Error: Full dataset expected 20000 rows, found $FULL_COUNT"
+             exit 1
+          fi
+
+          echo "All row counts verified successfully!"
+
+      - name: Discord Notification
+        uses: sarisia/actions-status-discord@v1
+        if: always()
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          title: "Postgres integration test"
+          description: |
+            **Status:** ${{ job.status }}
+            **Project:** Movie search services
+            **Commit:** `${{ github.sha }}`
+          status: ${{ job.status }}
+          username: Github actions
+          avatar_url: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
