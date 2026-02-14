@@ -19,7 +19,7 @@ jobs:
           cp .env.example .env
           
       - name: Start Containers
-        run: docker compose -f docker-compose.test.yml up -d --build
+        run: docker compose -f docker-compose.dev.yml -f docker-compose.test.yml up -d --build
 
       - name: Install HTTPie
         run: |
