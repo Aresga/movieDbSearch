@@ -15,7 +15,6 @@ async def search_movies(
     service: SearchService = Depends(get_search_service)
 ):
     """
-    Search for movies and refresh posters in the background.
+    Search for movies endpoint.
     """
     return service.search_movies(q, limit)
-

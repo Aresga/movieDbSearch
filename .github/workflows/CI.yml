@@ -2,7 +2,7 @@ name: System integration test
 
 on: 
   push:
-    branches: ["main"]
+    branches: ["main", "backend-python"]
   pull_request:
     branches: ["main"]
 
@@ -21,21 +21,15 @@ jobs:
       - name: Start Containers
         run: docker compose -f docker-compose.dev.yml up -d --build
 
-      - name: Wait for Services
-        run: |
-          echo "Waiting for nest js and others to be ready .. "
-          timeout 240s bash -c 'until curl --silent --fail http://localhost:3000/health; do sleep 5; done'
-          echo "Nestjs api end point is healthy"
-          timeout 240s bash -c 'until curl --silent --fail http://localhost:8000/; do sleep 5; done'
-          echo "FastApi is healthy"
-          echo "System is up !!" 
-
-
       - name: Install HTTPie
-        run: pip install httpie
-
-      - name: Run Smoke test
         run: |
+          pip install httpie
+          sleep 60
+
+      - name: Smoke test
+        run: |
+          http --check-status --ignore-stdin GET http://localhost:8000/health
+          http --check-status --ignore-stdin GET http://localhost:8000/search?q=John+wick
           http --check-status --ignore-stdin GET http://localhost:3000/health
           http --check-status --ignore-stdin GET http://localhost:3000/search?q=titanic
 
@@ -44,7 +38,7 @@ jobs:
         run: docker compose -f docker-compose.dev.yml logs
 
       - name: Stop Containers
-        run: docker compose -f docker-compose.dev.yml down
+        run: docker compose -f docker-compose.dev.yml down -v 
 
 
       - name: Discord Notification

@@ -24,7 +24,7 @@ class SearchService:
                 raw_distance = Movie.embedding.cosine_distance(query_vec)
                 
                 # Logic: IF (Movie.title ILIKE q) THEN subtract 0.2 ELSE subtract 0.0
-                # ilike makes it case-insensitive (exmaple "matrix" matches "The Matrix")
+                # ilike makes it case-insensitive (exmaple "matrix" matches "The Matrix"
                 title_boost = case(
                     (Movie.title.ilike(q), 0.2), # Exact match boost
                     (Movie.title.ilike(f"%{q}%"), 0.1), # Partial match boost

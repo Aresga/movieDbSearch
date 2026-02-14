@@ -1,7 +1,7 @@
 from typing import Optional
 from sqlalchemy.engine import Engine
 from sentence_transformers import SentenceTransformer
-from app.services.ingestion_service import DataIngestionService
+# from app.services.ingestion_service import DataIngestionService
 from app.services.search_service import SearchService
 
 class AppContainer:
@@ -25,9 +25,9 @@ class AppContainer:
     def model(self, value):
         self._model = value
 
-    @property
-    def ingestion_service(self):
-        return DataIngestionService(self._engine, self._model)
+    # @property
+    # def ingestion_service(self):
+    #     return DataIngestionService(self._engine, self._model)
 
     @property
     def search_service(self):
