@@ -1,0 +1,7 @@
+services:
+  postgres:
+    volumes:
+      - ./backend-python/init_db_test/top100.sql:/docker-entrypoint-initdb.d/init.sql
+
+volumes:
+  postgres_data: {}

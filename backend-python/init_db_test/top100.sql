@@ -2,7 +2,6 @@
 -- PostgreSQL database dump
 --
 
-\restrict TKX6uUtaAdueI1wJLP7FvkRWqHyTol4UTzpfgbnmSagvf414b2JwAsNcqzfGoaZ
 
 -- Dumped from database version 16.11 (Debian 16.11-1.pgdg12+1)
 -- Dumped by pg_dump version 16.11 (Debian 16.11-1.pgdg12+1)
@@ -196,5 +195,4 @@ COPY public.movies (id, tmdb_id, title, overview, genres, tagline, release_year,
 -- PostgreSQL database dump complete
 --
 
-\unrestrict TKX6uUtaAdueI1wJLP7FvkRWqHyTol4UTzpfgbnmSagvf414b2JwAsNcqzfGoaZ
 
