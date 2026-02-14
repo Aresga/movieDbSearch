@@ -71,11 +71,11 @@ jobs:
           source .env
         
           echo "Checking Small Dataset (Port 5433)..."
-          SMALL_COUNT=$(PGPASSWORD=${POSTGRES_PASSWORD} psql -h localhost -p 5433 -U ${POSTGRES_USER} -d ${POSTGRES_DB} -t -A -c "SELECT count(*) FROM public.movies;")
+          SMALL_COUNT=$(PGPASSWORD=${POSTGRES_PASSWORD} psql -h localhost -p 5432 -U ${POSTGRES_USER} -d ${POSTGRES_DB} -t -A -c "SELECT count(*) FROM public.movies;")
           echo "Small count: $SMALL_COUNT"
         
           echo "Checking Full Dataset (Port 5434)..."
-          FULL_COUNT=$(PGPASSWORD=${POSTGRES_PASSWORD} psql -h localhost -p 5434 -U ${POSTGRES_USER} -d ${POSTGRES_DB} -t -A -c "SELECT count(*) FROM public.movies;")
+          FULL_COUNT=$(PGPASSWORD=${POSTGRES_PASSWORD} psql -h localhost -p 5433 -U ${POSTGRES_USER} -d ${POSTGRES_DB} -t -A -c "SELECT count(*) FROM public.movies;")
           echo "Full count: $FULL_COUNT"
 
           # Verification Logic
