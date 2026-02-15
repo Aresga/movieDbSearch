@@ -2,6 +2,7 @@ import { Injectable, HttpException } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { map, lastValueFrom } from 'rxjs';
 import { ConfigService } from '@nestjs/config';
+import { PrismaService } from './prisma/prisma.service';
 
 interface PyResponse {
   query: string;
@@ -18,7 +19,8 @@ interface PyResponse {
 export class AppService {
   constructor(
     private readonly httpService: HttpService,
-    private readonly configService: ConfigService
+    private readonly configService: ConfigService,
+    private prisma: PrismaService
   ) {}
   
   getHello(): object {

@@ -23,4 +23,5 @@ export class AppController {
     const results = await this.appService.searchMovies(query);
     return results;
   }
+
 }
