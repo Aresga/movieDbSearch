@@ -2,7 +2,7 @@ name: System integration test
 
 on: 
   push:
-    branches: ["main", "backend-python"]
+    branches: ["main", "backend-python", "BasicAuth"]
   pull_request:
     branches: ["main"]
 
