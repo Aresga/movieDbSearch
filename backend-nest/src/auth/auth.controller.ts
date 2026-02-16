@@ -18,7 +18,7 @@ export class AuthController {
         };
     }
 
-    @UseGuards(LocalAuthGuard) // calidate credntials using localstrategy 
+    @UseGuards(LocalAuthGuard) 
     @HttpCode(HttpStatus.OK)
     @Post('login')
     async login(@Request() req) {
