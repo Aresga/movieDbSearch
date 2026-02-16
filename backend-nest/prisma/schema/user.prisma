@@ -1,0 +1,28 @@
+model User {
+  id        String  @id @default(uuid())
+  email     String  @unique
+  password  String? // nullable for Oauth Users
+  username  String  @unique
+  avatarUrl String?
+
+  // for 2fa Sec
+  isTwoFactorEnabled Boolean @default(false)
+  twoFactorSecret    String?
+
+  // Oauth
+  provider   String?
+  providerId String? @unique
+
+  // Social Relations
+  reviews  Review[]
+  wishlist Wishlist[]
+
+  // self-ref MAny to many for friends
+  sentFriendRequests     FriendRequest[] @relation("FriendRequestSender")
+  receivedFriendRequests FriendRequest[] @relation("FriendRequestReceiver")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([provider, providerId])
+}

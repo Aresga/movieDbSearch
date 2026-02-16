@@ -1,0 +1,19 @@
+model movies {
+  id            Int                         @id @default(autoincrement())
+  tmdb_id       Int?                        @unique
+  title         String
+  overview      String
+  genres        String[]
+  tagline       String?
+  release_year  Int?
+  vote_average  Float?
+  vote_count    Int?
+  runtime       Int?
+  popularity    Float?
+  poster_path   String?
+  backdrop_path String?
+  embedding     Unsupported("vector(384)")?
+
+  reviews  Review[]
+  wishlist Wishlist[]
+}
