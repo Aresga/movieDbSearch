@@ -83,4 +83,67 @@ export class AuthService {
         const { password: _, ...userWithoutPassword } = user;
         return userWithoutPassword;
     }
+
+    async findOrCreateAuthUser(oauthData: {
+        provider: string;
+        providerId: string;
+        email: string;
+        username: string;
+        avatarUrl?: string;
+    }) {
+        let user = await this.prisma.user.findUnique({
+            where: {
+                provider_providerId: {
+                    provider: oauthData.provider,
+                    providerId: oauthData.providerId,
+                },
+            },
+        });
+
+        if (!user) {
+            const existingUser = await this.prisma.user.findUnique({
+                where: { email: oauthData.email },
+            });
+
+            if (existingUser) {
+                user = await this.prisma.user.update({
+                    where: { id: existingUser.id },
+                    data: {
+                        provider: oauthData.provider,
+                        providerId: oauthData.providerId,
+                        avatarUrl: oauthData.avatarUrl || existingUser.avatarUrl,
+                    },
+                });
+            }
+        }
+
+        if(!user) {
+            let username = oauthData.username;
+            let counter = 1;
+
+            while (await this.prisma.user.findUnique({
+                where: { username }
+            })) {
+                username = `${oauthData.username}${counter}`;
+                counter++;
+            }
+
+            user = await this.prisma.user.create({
+                data: {
+                    email: oauthData.email,
+                    username: oauthData.username,
+                    provider: oauthData.provider,
+                    providerId: oauthData.providerId,
+                    avatarUrl: oauthData.avatarUrl,
+                    password: null,
+                },
+            });
+        }
+        const {
+            password: _, ...userWithoutPassword 
+        } = user;
+        return userWithoutPassword;
+    }
 }
+
+

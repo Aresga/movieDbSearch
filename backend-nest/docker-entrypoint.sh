@@ -1,6 +1,7 @@
 #!/bin/sh
 set -e
 
+echo "Resolving database state ... "
 npx prisma migrate resolve --applied 0_init
 
 echo "Running database migrations..."

@@ -1,11 +1,15 @@
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-    constructor(private configService: ConfigService) {
+    constructor(
+      private configService: ConfigService, 
+      private prisma: PrismaService,
+    ) {
         const jwtSecret = configService.get<string>('JWT_SECRET');
         if (!jwtSecret) {
             throw new Error('JWT_SECRET is not defined in the configuration');
@@ -20,6 +24,15 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   // Payload is what you put in the JWT when signing
   async validate(payload: any) {
+    
+    const user = await this.prisma.user.findUnique({
+      where: { id: payload.sub },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('Unauthorized Access you madafaka');
+    }
+    
     // This becomes req.user in protected routes
     return { 
       userId: payload.sub,
