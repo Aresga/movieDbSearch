@@ -51,18 +51,12 @@ export class AuthController {
     // user click google oauth 
     @Get('google')
     @UseGuards(GoogleAuthGuard)
-    async googleAuth(@Request() req) {
-    console.log('🚀 Starting Google OAuth flow...');
-    console.log('Request query:', req.query);
-    console.log('Request headers:', req.headers.host);
+    async googleAuth() {
     }
 
     @Get('github')
     @UseGuards(GithubAuthGuard)
-    async githubAuth(@Request() req) {
-    console.log('🚀 Starting Google OAuth flow...');
-    console.log('Request query:', req.query);
-    console.log('Request headers:', req.headers.host);
+    async githubAuth() {
     }
 
 
@@ -72,7 +66,16 @@ export class AuthController {
     async googleAuthCallback(@Request() req, @Res() res: Response) {
         const user = await this.authService.findOrCreateAuthUser(req.user);
         const { access_token } = await this.authService.login(user);
-        res.redirect(`http://localhost:5173/auth/callback?token=${access_token}`);
+        
+        res.cookie('access_token', access_token, {
+            httpOnly: true, // js cant aceess it
+            secure:false,  // true if https 
+            sameSite: 'lax', // CSRF protection 
+            maxAge: 3600000. // 1 hour
+        });
+        
+        
+        res.redirect(`http://localhost:5173/auth/callback?success=true`);
     }
 
 
@@ -81,7 +84,15 @@ export class AuthController {
     async githubAuthCallback(@Request() req, @Res() res: Response) {
         const user = await this.authService.findOrCreateAuthUser(req.user);
         const { access_token } = await this.authService.login(user);
-        res.redirect(`http://localhost:5173/auth/callback?token=${access_token}`);
+
+        res.cookie('access_token', access_token, {
+            httpOnly: true, // js cant aceess it
+            secure:false,  // true if https 
+            sameSite: 'lax', // CSRF protection 
+            maxAge: 3600000. // 1 hour
+        });
+
+        res.redirect(`http://localhost:5173/auth/callback?success=true`);
     }
 
 }
