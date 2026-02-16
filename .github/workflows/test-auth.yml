@@ -1,0 +1,91 @@
+name: Auth Integration Test
+
+on: 
+  push:
+    branches: ["BasicAuth"]
+  pull_request:
+    branches: ["BasicAuth"]
+
+jobs:
+  test-auth-endpoints:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create .env file
+        run: |
+          cp .env.example .env
+          
+      - name: Start Containers
+        run: docker compose -f docker-compose.dev.yml up -d --build --wait
+
+      - name: Install HTTPie
+        run: |
+          pip install httpie
+          sleep 30
+
+      - name: Health Check
+        run: |
+          http --check-status --ignore-stdin GET http://localhost:3000/health
+          http --check-status --ignore-stdin GET http://localhost:8000/health
+
+      - name: Test User Registration
+        run: |
+          http --check-status --ignore-stdin POST http://localhost:3000/auth/register \
+            email="citest@example.com" \
+            password="TestPass123!" \
+            username="citestuser"
+
+      - name: Test User Login
+        run: |
+          http --check-status --ignore-stdin --print=b POST http://localhost:3000/auth/login \
+            email="citest@example.com" \
+            password="TestPass123!" > response.json
+          
+          # Extract token for next test
+          TOKEN=$(cat response.json | grep -o '"access_token":"[^"]*"' | cut -d'"' -f4)
+          echo "TOKEN=$TOKEN" >> $GITHUB_ENV
+
+      - name: Test Protected Profile Endpoint
+        run: |
+          http --check-status --ignore-stdin GET http://localhost:3000/auth/profile \
+            "Authorization:Bearer ${{ env.TOKEN }}"
+
+      - name: Test Invalid Credentials
+        run: |
+          http --ignore-stdin POST http://localhost:3000/auth/login \
+            email="citest@example.com" \
+            password="WrongPassword" || echo "✅ Invalid credentials correctly rejected"
+
+      - name: Test Duplicate Registration
+        run: |
+          http --ignore-stdin POST http://localhost:3000/auth/register \
+            email="citest@example.com" \
+            password="TestPass123!" \
+            username="citestuser" || echo "✅ Duplicate registration correctly rejected"
+
+      - name: Dump Docker logs
+        if: failure()
+        run: docker compose -f docker-compose.dev.yml logs
+
+      - name: Stop Containers
+        if: always()
+        run: docker compose -f docker-compose.dev.yml down -v 
+
+      - name: Discord Notification
+        uses: sarisia/actions-status-discord@v1
+        if: always()
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          title: "Auth Endpoints Test Report"
+          description: |
+            **Status:** ${{ job.status }}
+            **Branch:** BasicAuth
+            **Project:** Movie Database - Auth System
+            **Commit:** `${{ github.sha }}`
+            **Tests:** Registration, Login, Protected Routes
+          status: ${{ job.status }}
+          username: Github Actions
+          avatar_url: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
