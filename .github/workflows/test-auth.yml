@@ -24,7 +24,7 @@ jobs:
       - name: Install HTTPie
         run: |
           pip install httpie
-          sleep 30
+          sleep 60
 
       - name: Health Check
         run: |
