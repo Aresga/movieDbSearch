@@ -28,18 +28,18 @@ export class AuthController {
         const access_token = await this.authService.login(req.user);
         return {
             message: 'Login Succesful',
-            access_token,
-            user: {
-                id: req.user.id,
-                email: req.user.email,
-                username: req.user.username,
-            }
+            access_token
+            // user: {
+            //     id: req.user.id,
+            //     email: req.user.email,
+            //     username: req.user.username,
+            // }
         };
     }
 
     @UseGuards(JwtAuthGuard)
     @Get('profile')
-    getProfile(@Request( ) req) {
+    getProfile(@Request() req) {
         return {
             message: 'This is a protected route', 
             user: req.user,
@@ -94,5 +94,4 @@ export class AuthController {
 
         res.redirect(`http://localhost:5173/auth/callback?success=true`);
     }
-
 }

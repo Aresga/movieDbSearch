@@ -41,9 +41,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     
     // This becomes req.user in protected routes
     return { 
-      userId: payload.sub,
+      Id: payload.sub,
       email: payload.email,
       username: payload.username,
+      avatarUrl: user.avatarUrl,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+      isTwoFactorEnabled: user.isTwoFactorEnabled,
     };
   }
 }

@@ -5,10 +5,10 @@ import { AppService } from './app.service';
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
-  @Get()
-  getHello(): object {
-    return this.appService.getHello();
-  }
+  // @Get()
+  // getHello(): object {
+  //   return this.appService.getHello();
+  // }
 
   @Get('health')
   health(): object {
@@ -16,12 +16,16 @@ export class AppController {
   }
 
   @Get('search')
-  async search(@Query('q') query: string) {
+  async search(
+    @Query('q') query: string,
+    @Query('limit') limit: number = 5,
+  ) {
     if (!query) {
       throw new BadRequestException('Query param "q" is required');
     }
-    const results = await this.appService.searchMovies(query);
+    const results = await this.appService.searchMovies(query, limit);  // 👈 pass it
     return results;
   }
+
 
 }
