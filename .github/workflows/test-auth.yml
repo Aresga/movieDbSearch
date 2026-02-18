@@ -28,19 +28,19 @@ jobs:
 
       - name: Health Check
         run: |
-          http --check-status --ignore-stdin GET http://localhost:3000/health
-          http --check-status --ignore-stdin GET http://localhost:8000/health
+          http --check-status --ignore-stdin --verify=no GET http://localhost:8000/health
+          http --check-status --ignore-stdin --verify=no GET https://localhost:3000/health
 
       - name: Test User Registration
         run: |
-          http --check-status --ignore-stdin POST http://localhost:3000/auth/register \
+          http --check-status --ignore-stdin --verify=no POST https://localhost:3000/auth/register \
             email="citest@example.com" \
             password="TestPass123!" \
             username="citestuser"
 
       - name: Test User Login
         run: |
-          http --check-status --ignore-stdin --print=b POST http://localhost:3000/auth/login \
+          http --check-status --ignore-stdin --print=b --verify=no POST https://localhost:3000/auth/login \
             email="citest@example.com" \
             password="TestPass123!" > response.json
           
@@ -50,18 +50,18 @@ jobs:
 
       - name: Test Protected Profile Endpoint
         run: |
-          http --check-status --ignore-stdin GET http://localhost:3000/auth/profile \
+          http --check-status --ignore-stdin --verify=no GET https://localhost:3000/auth/profile \
             "Authorization:Bearer ${{ env.TOKEN }}"
 
       - name: Test Invalid Credentials
         run: |
-          http --ignore-stdin POST http://localhost:3000/auth/login \
+          http --ignore-stdin --verify=no POST https://localhost:3000/auth/login \
             email="citest@example.com" \
             password="WrongPassword" || echo "✅ Invalid credentials correctly rejected"
 
       - name: Test Duplicate Registration
         run: |
-          http --ignore-stdin POST http://localhost:3000/auth/register \
+          http --ignore-stdin --verify=no POST https://localhost:3000/auth/register \
             email="citest@example.com" \
             password="TestPass123!" \
             username="citestuser" || echo "✅ Duplicate registration correctly rejected"

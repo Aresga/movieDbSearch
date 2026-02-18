@@ -2,7 +2,7 @@
 set -e
 
 echo "Resolving database state ... "
-npx prisma migrate resolve --applied 0_init
+npx prisma migrate resolve --applied 0_init 2>/dev/null || true
 
 echo "Running database migrations..."
 npx prisma migrate deploy

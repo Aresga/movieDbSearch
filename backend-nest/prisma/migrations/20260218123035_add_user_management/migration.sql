@@ -1,18 +1,3 @@
--- CreateEnum
-CREATE TYPE "FriendRequestStatus" AS ENUM ('PENDING', 'ACCEPTED', 'REJECTED', 'BLOCKED');
-
--- CreateTable
-CREATE TABLE "FriendRequest" (
-    "id" TEXT NOT NULL,
-    "status" "FriendRequestStatus" NOT NULL DEFAULT 'PENDING',
-    "senderId" TEXT NOT NULL,
-    "receiverId" TEXT NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "FriendRequest_pkey" PRIMARY KEY ("id")
-);
-
 -- CreateTable
 CREATE TABLE "Review" (
     "id" SERIAL NOT NULL,
@@ -52,17 +37,13 @@ CREATE TABLE "User" (
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
 
--- CreateIndex
-CREATE INDEX "FriendRequest_senderId_idx" ON "FriendRequest"("senderId");
+-- CreateTable
+CREATE TABLE "_UserFriends" (
+    "A" TEXT NOT NULL,
+    "B" TEXT NOT NULL,
 
--- CreateIndex
-CREATE INDEX "FriendRequest_receiverId_idx" ON "FriendRequest"("receiverId");
-
--- CreateIndex
-CREATE INDEX "FriendRequest_status_idx" ON "FriendRequest"("status");
-
--- CreateIndex
-CREATE UNIQUE INDEX "FriendRequest_senderId_receiverId_key" ON "FriendRequest"("senderId", "receiverId");
+    CONSTRAINT "_UserFriends_AB_pkey" PRIMARY KEY ("A","B")
+);
 
 -- CreateIndex
 CREATE INDEX "Review_userId_idx" ON "Review"("userId");
@@ -94,11 +75,8 @@ CREATE UNIQUE INDEX "User_providerId_key" ON "User"("providerId");
 -- CreateIndex
 CREATE UNIQUE INDEX "User_provider_providerId_key" ON "User"("provider", "providerId");
 
--- AddForeignKey
-ALTER TABLE "FriendRequest" ADD CONSTRAINT "FriendRequest_senderId_fkey" FOREIGN KEY ("senderId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "FriendRequest" ADD CONSTRAINT "FriendRequest_receiverId_fkey" FOREIGN KEY ("receiverId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+-- CreateIndex
+CREATE INDEX "_UserFriends_B_index" ON "_UserFriends"("B");
 
 -- AddForeignKey
 ALTER TABLE "Review" ADD CONSTRAINT "Review_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -111,3 +89,9 @@ ALTER TABLE "Wishlist" ADD CONSTRAINT "Wishlist_userId_fkey" FOREIGN KEY ("userI
 
 -- AddForeignKey
 ALTER TABLE "Wishlist" ADD CONSTRAINT "Wishlist_movieId_fkey" FOREIGN KEY ("movieId") REFERENCES "movies"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_UserFriends" ADD CONSTRAINT "_UserFriends_A_fkey" FOREIGN KEY ("A") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_UserFriends" ADD CONSTRAINT "_UserFriends_B_fkey" FOREIGN KEY ("B") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;

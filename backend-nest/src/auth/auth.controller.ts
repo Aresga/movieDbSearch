@@ -29,14 +29,10 @@ export class AuthController {
         return {
             message: 'Login Succesful',
             access_token
-            // user: {
-            //     id: req.user.id,
-            //     email: req.user.email,
-            //     username: req.user.username,
-            // }
         };
     }
 
+    // Will be moved after pr to a seperatet module
     @UseGuards(JwtAuthGuard)
     @Get('profile')
     getProfile(@Request() req) {
@@ -46,8 +42,8 @@ export class AuthController {
         };
     }
 
+    // --- google/Github OAuth --- // 
 
-    // --- google auoth --- // 
     // user click google oauth 
     @Get('google')
     @UseGuards(GoogleAuthGuard)
@@ -58,8 +54,6 @@ export class AuthController {
     @UseGuards(GithubAuthGuard)
     async githubAuth() {
     }
-
-
 
     @Get('google/callback')
     @UseGuards(GoogleAuthGuard)
@@ -73,8 +67,6 @@ export class AuthController {
             sameSite: 'lax', // CSRF protection 
             maxAge: 3600000. // 1 hour
         });
-        
-        
         res.redirect(`http://localhost:5173/auth/callback?success=true`);
     }
 
@@ -93,5 +85,19 @@ export class AuthController {
         });
 
         res.redirect(`http://localhost:5173/auth/callback?success=true`);
+    }
+
+
+    @Post('logout')
+    @UseGuards(JwtAuthGuard)
+    async logout(@Res() res: Response) {
+        res.clearCookie('access_token', {
+            httpOnly: true,
+            secure: false,
+            sameSite: 'lax',
+        });
+        return { 
+            message: 'Logged out succesfully'
+        };
     }
 }

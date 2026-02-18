@@ -18,8 +18,8 @@ model User {
   wishlist Wishlist[]
 
   // self-ref MAny to many for friends
-  sentFriendRequests     FriendRequest[] @relation("FriendRequestSender")
-  receivedFriendRequests FriendRequest[] @relation("FriendRequestReceiver")
+  friends  User[] @relation("UserFriends")
+  friendOf User[] @relation("UserFriends")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
