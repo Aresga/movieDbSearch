@@ -4,7 +4,7 @@ on:
   push:
     branches: ["BasicAuth"]
   pull_request:
-    branches: ["BasicAuth"]
+    branches: ["BasicAuth", "main"]
 
 jobs:
   test-auth-endpoints:

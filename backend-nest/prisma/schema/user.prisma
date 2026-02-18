@@ -21,6 +21,8 @@ model User {
   friends  User[] @relation("UserFriends")
   friendOf User[] @relation("UserFriends")
 
+  isOnline Boolean @default(false)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
