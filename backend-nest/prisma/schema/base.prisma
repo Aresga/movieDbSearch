@@ -1,0 +1,10 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions", "prismaSchemaFolder"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  extensions = [pgvector(map: "vector")]
+  url        = env("DATABASE_URL")
+}

@@ -5,7 +5,7 @@ function App() {
   const [healthStatus, setHealthstatus] = useState('checking...')
 
   useEffect(() => {
-    const apiUrl = import.meta.env.VITE_API_URL;
+    const apiUrl = '/api';
     fetch(`${apiUrl}/health`)
     .then(response => response.ok ? setHealthstatus('Healthy') : setHealthstatus('Unhealthy'))
     .catch(() => setHealthstatus('Error'))

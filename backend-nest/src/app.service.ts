@@ -2,6 +2,7 @@ import { Injectable, HttpException } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { map, lastValueFrom } from 'rxjs';
 import { ConfigService } from '@nestjs/config';
+import { PrismaService } from './prisma/prisma.service';
 
 interface PyResponse {
   query: string;
@@ -18,7 +19,8 @@ interface PyResponse {
 export class AppService {
   constructor(
     private readonly httpService: HttpService,
-    private readonly configService: ConfigService
+    private readonly configService: ConfigService,
+    private prisma: PrismaService
   ) {}
   
   getHello(): object {
@@ -34,7 +36,7 @@ export class AppService {
 
 
 
-  async searchMovies(query: string) {
+  async searchMovies(query: string, limit: number = 5) {
     // where python lives
     const baseUrl = this.configService.get<string>('AI_SERVICE_URL');
     
@@ -48,14 +50,13 @@ export class AppService {
     try {
       const response = await lastValueFrom(
         this.httpService.get<PyResponse>(fullUrl, {
-          params: { q: query, limit:2 }
+          params: { q: query, limit }
         }).pipe(
           map((res) => res.data) // data part of resp
         )
       );
       return {
-        source: 'Ai_Engine',
-        count: response.results.length,
+        // count: response.results.length,
         movies: response.results
       };
 

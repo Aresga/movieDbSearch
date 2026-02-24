@@ -2,7 +2,7 @@ name: System integration test
 
 on: 
   push:
-    branches: ["main", "backend-python"]
+    branches: ["main", "backend-python", "BasicAuth"]
   pull_request:
     branches: ["main"]
 
@@ -19,7 +19,7 @@ jobs:
           cp .env.example .env
           
       - name: Start Containers
-        run: docker compose -f docker-compose.dev.yml -f docker-compose.test.yml up -d --build
+        run: docker compose -f docker-compose.dev.yml up -d --build --wait
 
       - name: Install HTTPie
         run: |
@@ -30,8 +30,8 @@ jobs:
         run: |
           http --check-status --ignore-stdin GET http://localhost:8000/health
           http --check-status --ignore-stdin GET http://localhost:8000/search?q=John+wick
-          http --check-status --ignore-stdin GET http://localhost:3000/health
-          http --check-status --ignore-stdin GET http://localhost:3000/search?q=titanic
+          http --check-status --ignore-stdin --verify=no GET https://localhost:3000/health
+          http --check-status --ignore-stdin --verify=no GET https://localhost:3000/search?q=titanic
 
       - name: Dump Docker logs
         if: failure()
