@@ -73,7 +73,6 @@ export class FriendsService {
         };
     }
 
-
     async getFriends(userId: string) {
         const user = await this.prisma.user.findUnique({
             where: { id: userId },
