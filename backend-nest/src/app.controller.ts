@@ -5,11 +5,6 @@ import { AppService } from './app.service';
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
-  // @Get()
-  // getHello(): object {
-  //   return this.appService.getHello();
-  // }
-
   @Get('health')
   health(): object {
     return this.appService.health();
@@ -26,6 +21,4 @@ export class AppController {
     const results = await this.appService.searchMovies(query, limit);  // 👈 pass it
     return results;
   }
-
-
 }

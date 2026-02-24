@@ -1,10 +1,10 @@
 name: Auth Integration Test
 
-on: 
+on:
   push:
-    branches: ["BasicAuth"]
+    branches: ["UserManagement", "frontend"]
   pull_request:
-    branches: ["BasicAuth"]
+    branches: ["UserManagement", "main", "frontend"]
 
 jobs:
   test-auth-endpoints:
@@ -17,7 +17,7 @@ jobs:
       - name: Create .env file
         run: |
           cp .env.example .env
-          
+
       - name: Start Containers
         run: docker compose -f docker-compose.dev.yml up -d --build --wait
 
@@ -31,6 +31,8 @@ jobs:
           http --check-status --ignore-stdin --verify=no GET http://localhost:8000/health
           http --check-status --ignore-stdin --verify=no GET https://localhost:3000/health
 
+      # ─── Auth Tests ───────────────────────────────────────────────────────────
+
       - name: Test User Registration
         run: |
           http --check-status --ignore-stdin --verify=no POST https://localhost:3000/auth/register \
@@ -43,15 +45,9 @@ jobs:
           http --check-status --ignore-stdin --print=b --verify=no POST https://localhost:3000/auth/login \
             email="citest@example.com" \
             password="TestPass123!" > response.json
-          
-          # Extract token for next test
-          TOKEN=$(cat response.json | grep -o '"access_token":"[^"]*"' | cut -d'"' -f4)
-          echo "TOKEN=$TOKEN" >> $GITHUB_ENV
 
-      - name: Test Protected Profile Endpoint
-        run: |
-          http --check-status --ignore-stdin --verify=no GET https://localhost:3000/auth/profile \
-            "Authorization:Bearer ${{ env.TOKEN }}"
+          TOKEN=$(cat response.json | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['access_token']['access_token'])")
+          echo "TOKEN=$TOKEN" >> $GITHUB_ENV
 
       - name: Test Invalid Credentials
         run: |
@@ -66,26 +62,108 @@ jobs:
             password="TestPass123!" \
             username="citestuser" || echo "✅ Duplicate registration correctly rejected"
 
+      # ─── User Endpoint Tests ──────────────────────────────────────────────────
+
+      - name: Test GET /user/me (authenticated)
+        run: |
+          http --check-status --ignore-stdin --verify=no GET https://localhost:3000/user/me \
+            "Authorization:Bearer ${{ env.TOKEN }}"
+
+      - name: Test GET /user/me (unauthenticated, expect 401)
+        run: |
+          http --ignore-stdin --verify=no GET https://localhost:3000/user/me \
+            || echo "✅ Unauthenticated /user/me correctly rejected"
+
+      - name: Test PATCH /user/me (update profile)
+        run: |
+          http --check-status --ignore-stdin --verify=no PATCH https://localhost:3000/user/me \
+            "Authorization:Bearer ${{ env.TOKEN }}" \
+            username="citestuser_updated"
+
+      - name: Test GET /user/:id (public profile, no auth needed)
+        run: |
+          USER_ID=$(cat response.json | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['access_token']['user']['id'])")
+          http --check-status --ignore-stdin --verify=no GET https://localhost:3000/user/$USER_ID
+
+      - name: Test DELETE /user/me (unauthenticated, expect 401)
+        run: |
+          http --ignore-stdin --verify=no DELETE https://localhost:3000/user/me \
+            || echo "✅ Unauthenticated delete correctly rejected"
+
+      # ─── Friends Tests ────────────────────────────────────────────────────────
+
+      - name: Register Second User (friend target)
+        run: |
+          http --check-status --ignore-stdin --verify=no POST https://localhost:3000/auth/register \
+            email="cifriend@example.com" \
+            password="TestPass123!" \
+            username="cifrienduser"
+
+      - name: Get Friend User ID
+        run: |
+          http --check-status --ignore-stdin --print=b --verify=no POST https://localhost:3000/auth/login \
+            email="cifriend@example.com" \
+            password="TestPass123!" > friend_response.json
+
+          FRIEND_ID=$(cat friend_response.json | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['access_token']['user']['id'])")
+          echo "FRIEND_ID=$FRIEND_ID" >> $GITHUB_ENV
+
+      - name: Test Add Friend
+        run: |
+          http --check-status --ignore-stdin --verify=no POST https://localhost:3000/friends/${{ env.FRIEND_ID }} \
+            "Authorization:Bearer ${{ env.TOKEN }}"
+
+      - name: Test Get Friends List (expect 1 friend)
+        run: |
+          RESPONSE=$(http --check-status --ignore-stdin --print=b --verify=no GET https://localhost:3000/friends \
+            "Authorization:Bearer ${{ env.TOKEN }}")
+          echo "$RESPONSE"
+          echo "$RESPONSE" | grep -q "cifrienduser" && echo "✅ Friend found in list" || (echo "❌ Friend not in list" && exit 1)
+
+      - name: Test Remove Friend
+        run: |
+          http --check-status --ignore-stdin --verify=no DELETE https://localhost:3000/friends/${{ env.FRIEND_ID }} \
+            "Authorization:Bearer ${{ env.TOKEN }}"
+
+      - name: Test Get Friends List (expect empty)
+        run: |
+          RESPONSE=$(http --check-status --ignore-stdin --print=b --verify=no GET https://localhost:3000/friends \
+            "Authorization:Bearer ${{ env.TOKEN }}")
+          echo "$RESPONSE"
+          echo "$RESPONSE" | grep -qv "cifrienduser" && echo "✅ Friend list is empty after removal" || (echo "❌ Friend still in list" && exit 1)
+
+      - name: Test Add Friend Without Auth (expect 401)
+        run: |
+          http --ignore-stdin --verify=no POST https://localhost:3000/friends/${{ env.FRIEND_ID }} \
+            || echo "✅ Unauthenticated add friend correctly rejected"
+
+      - name: Test Get Friends Without Auth (expect 401)
+        run: |
+          http --ignore-stdin --verify=no GET https://localhost:3000/friends \
+            || echo "✅ Unauthenticated get friends correctly rejected"
+
+      # ─────────────────────────────────────────────────────────────────────────
+
       - name: Dump Docker logs
         if: failure()
         run: docker compose -f docker-compose.dev.yml logs
 
       - name: Stop Containers
         if: always()
-        run: docker compose -f docker-compose.dev.yml down -v 
+        run: docker compose -f docker-compose.dev.yml down -v
 
       - name: Discord Notification
         uses: sarisia/actions-status-discord@v1
         if: always()
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
-          title: "Auth Endpoints Test Report"
+          title: "Auth, User & Friends Endpoints Test Report"
           description: |
             **Status:** ${{ job.status }}
-            **Branch:** BasicAuth
-            **Project:** Movie Database - Auth System
+            **Branch:** ${{ github.ref_name }}
+            **Project:** Movie Database - Auth, User & Friends System
             **Commit:** `${{ github.sha }}`
-            **Tests:** Registration, Login, Protected Routes
+            **Tests:** Registration, Login, User Profile CRUD, Add/Remove/List Friends, Auth Guards
           status: ${{ job.status }}
           username: Github Actions
           avatar_url: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png

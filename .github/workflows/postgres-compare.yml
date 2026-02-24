@@ -2,9 +2,9 @@ name: Postgres integration & dump-compare
 
 on:
   push:
-    branches: ["main", "backend-python", "BasicAuth"]
+    branches: ["main", "frontend", "UserManagement"]
   pull_request:
-    branches: ["main"]
+    branches: ["main", "frontend", "UserManagement"]
 
 jobs:
   postgres-compare:

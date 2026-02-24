@@ -32,19 +32,8 @@ export class AuthController {
         };
     }
 
-    // Will be moved after pr to a seperatet module
-    @UseGuards(JwtAuthGuard)
-    @Get('profile')
-    getProfile(@Request() req) {
-        return {
-            message: 'This is a protected route', 
-            user: req.user,
-        };
-    }
-
     // --- google/Github OAuth --- // 
 
-    // user click google oauth 
     @Get('google')
     @UseGuards(GoogleAuthGuard)
     async googleAuth() {
