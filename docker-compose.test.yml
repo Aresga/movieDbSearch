@@ -1,5 +1,0 @@
-services:
-  postgres:
-    volumes:
-      - ./backend-python/init_db_test:/docker-entrypoint-initdb.d
-
