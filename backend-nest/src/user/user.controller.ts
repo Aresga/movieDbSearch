@@ -30,8 +30,5 @@ export class UserController {
   deleteMe(@Request() req) {
     return this.userService.deleteUser(req.user.id);
   }
-
-  // Friends relations -- 
   
-
 }
