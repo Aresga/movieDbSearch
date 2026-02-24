@@ -13,7 +13,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     ) {
         const jwtSecret = configService.get<string>('JWT_SECRET');
         if (!jwtSecret) {
-            throw new Error('JWT_SECRET is not defined in the configuration');
+            throw new Error('Missing Jwt secret');
         }
 
         super({
@@ -36,10 +36,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
 
     if (!user) {
-      throw new UnauthorizedException('Unauthorized Access you madafaka');
+      throw new UnauthorizedException('Unauthorized Access');
     }
     
-    // This becomes req.user in protected routes
     return { 
       id: payload.sub,
       email: payload.email,

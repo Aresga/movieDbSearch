@@ -3,7 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt'
 import { RegisterDto } from './dto/register.dto';
-import { hash, randomBytes } from 'crypto';
+import { randomBytes } from 'crypto';
 
 
 @Injectable()
@@ -120,14 +120,12 @@ export class AuthService {
 
         if(!user) {
             let username = oauthData.username;
-            // let counter = 1;
 
             while (await this.prisma.user.findUnique({
                 where: { username }
             })) {
                 const suffix = randomBytes(3).toString('hex');
                 username = `${oauthData.username}_${suffix}`;
-                // counter++;
             }
 
             user = await this.prisma.user.create({
