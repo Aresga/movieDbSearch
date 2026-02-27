@@ -1,7 +1,8 @@
 import { JwtService } from '@nestjs/jwt';
-import { OnGatewayConnection, OnGatewayDisconnect, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+import { OnGatewayConnection, OnGatewayDisconnect, WebSocketGateway, WebSocketServer, MessageBody, SubscribeMessage } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { OnEvent } from '@nestjs/event-emitter';
 
 @WebSocketGateway({
   cors: { origin: '*'},
@@ -11,7 +12,11 @@ export class GatewayGateway implements OnGatewayConnection, OnGatewayDisconnect 
   @WebSocketServer()
   server: Server;
 
-  // map to track userId 
+  @OnEvent('message.create')
+  handleMessageCreateEvent(payload: any) {
+	this.server.emit('onMessage', payload);
+  }
+  // map to track userId
   private connectedUsers = new Map<string, string>();
 
   constructor(
@@ -22,7 +27,7 @@ export class GatewayGateway implements OnGatewayConnection, OnGatewayDisconnect 
 
   async handleConnection(client: Socket) {
     try {
-      const token = client.handshake.auth?.token 
+      const token = client.handshake.auth?.token
         || client.handshake.headers?.authorization?.split(' ')[1]
         || client.handshake.headers?.token;
       if (!token) {
@@ -47,9 +52,8 @@ export class GatewayGateway implements OnGatewayConnection, OnGatewayDisconnect 
     } catch {
       client.disconnect();
     }
-    
-  }
 
+  }
 
 
   async handleDisconnect(client: Socket) {
