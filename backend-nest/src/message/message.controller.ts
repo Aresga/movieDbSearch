@@ -1,19 +1,30 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Body, Param, UseGuards, Request, Query, Req } from '@nestjs/common';
 import { MessageService } from './message.service'
+import { CreateMessageDto } from './dto'
 
 @Controller('message')
 export class MessageController {
 	constructor(private readonly messageService: MessageService) {}
 
-	@Post()
-	create(@Body() body: { text: string})
+	@Post('rooms/:userId')
+	async getCreateRoom(@Request() req, @Param('userId') userId2: string)
 	{
-		return this.messageService.create(body.text);
+		const room = await this.messageService.getCreateRoom(
+			req.user.id,
+			userId2,
+		);
+		return room;
+	}
+
+	@Post('rooms/:roomId/messages')
+	async sendMessage( @Request() Req, @Param('roomId') roomId: string, @Body() dto: CreateMessageDto,) 
+	{
+		const message = await this.messageService.storeMessage(roomId, Req.user.id, dto.content);
+		return (message);
 	}
 
 	@Get()
-	findAll()
-	{
-		return this.messageService.findAll();
+	async getUserRooms(@Request() req) {
+		return await this.messageService.getChatRooms(req)
 	}
 }

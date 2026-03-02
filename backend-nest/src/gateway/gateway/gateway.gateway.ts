@@ -3,6 +3,7 @@ import { OnGatewayConnection, OnGatewayDisconnect, WebSocketGateway, WebSocketSe
 import { Server, Socket } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { OnEvent } from '@nestjs/event-emitter';
+import { MessageService } from 'src/message/message.service';
 
 @WebSocketGateway({
   cors: { origin: '*'},
@@ -12,6 +13,7 @@ export class GatewayGateway implements OnGatewayConnection, OnGatewayDisconnect 
   @WebSocketServer()
   server: Server;
 
+  private userRooms = new Map();
   @OnEvent('message.create')
   handleMessageCreateEvent(payload: any) {
 	this.server.emit('onMessage', payload);
@@ -22,6 +24,7 @@ export class GatewayGateway implements OnGatewayConnection, OnGatewayDisconnect 
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
+    private readonly messageService: MessageService
   ) {}
 
 
@@ -32,7 +35,9 @@ export class GatewayGateway implements OnGatewayConnection, OnGatewayDisconnect 
         || client.handshake.headers?.token;
       if (!token) {
         client.disconnect();
-        return ;
+      const userId = client.handshake.auth.userId;
+      this.userRooms.set(userId, new Set());
+      return ;
       }
 
       const payload = this.jwtService.verify(token);
@@ -60,6 +65,7 @@ export class GatewayGateway implements OnGatewayConnection, OnGatewayDisconnect 
     const userId = client.data?.userId;
     if (!userId) return ;
 
+    this.userRooms.delete(userId);
     this.connectedUsers.delete(userId);
 
     await this.prisma.user.update({
@@ -89,6 +95,34 @@ export class GatewayGateway implements OnGatewayConnection, OnGatewayDisconnect 
           isOnline,
         });
       }
+    }
+  }
+
+  @SubscribeMessage('sendMessage')
+  async handleMessage(
+    client: Socket,
+    data: { roomId: string; content: string },
+  )
+  {
+    try {
+      const senderId = client.data.userId;
+      const { roomId, content } = data;
+
+      const message = await this.messageService.storeMessage(
+        roomId, senderId, content,
+      );
+    
+      this.server.to(roomId).emit('receiveMessage', {
+        id: message._id,
+        roomId,
+        senderId,
+        content: message.content,
+        timestamp: message.createdAt,
+      });
+
+      return { success: true, messageId: message._id };
+    } catch (error) {
+      return { success: false, error: error.message };
     }
   }
 }
