@@ -2,9 +2,9 @@ name: Auth Integration Test
 
 on:
   push:
-    branches: ["UserManagement", "frontend"]
+    branches: ["UserManagement", "frontend", "2FA"]
   pull_request:
-    branches: ["UserManagement", "main", "frontend"]
+    branches: ["main", "frontend", "2FA"]
 
 jobs:
   test-auth-endpoints:
@@ -46,8 +46,8 @@ jobs:
             email="citest@example.com" \
             password="TestPass123!" > response.json
 
-          TOKEN=$(cat response.json | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['access_token']['access_token'])")
-          echo "TOKEN=$TOKEN" >> $GITHUB_ENV
+            TOKEN=$(python3 -c "import json; print(json.load(open('response.json'))['access_token'])")
+            echo "TOKEN=$TOKEN" >> $GITHUB_ENV
 
       - name: Test Invalid Credentials
         run: |
@@ -82,8 +82,9 @@ jobs:
 
       - name: Test GET /user/:id (public profile, no auth needed)
         run: |
-          USER_ID=$(cat response.json | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['access_token']['user']['id'])")
-          http --check-status --ignore-stdin --verify=no GET https://localhost:3000/user/$USER_ID
+          USER_ID=$(cat response.json | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['access_token']['id'])")
+          http --check-status --ignore-stdin --verify=no GET https://localhost:3000/user/$USER_ID \
+            "Authorization:Bearer ${{ env.TOKEN }}"
 
       - name: Test DELETE /user/me (unauthenticated, expect 401)
         run: |
@@ -105,7 +106,7 @@ jobs:
             email="cifriend@example.com" \
             password="TestPass123!" > friend_response.json
 
-          FRIEND_ID=$(cat friend_response.json | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['access_token']['user']['id'])")
+          FRIEND_ID=$(cat friend_response.json | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['access_token']['id'])")
           echo "FRIEND_ID=$FRIEND_ID" >> $GITHUB_ENV
 
       - name: Test Add Friend

@@ -43,24 +43,66 @@ export class UserService {
     return user;
   }
 
-  async findByEmail(email: string) {
-    return this.prisma.user.findUnique({
-      where: { email }
-    });
-  }
+  // async findByEmail(email: string) {
+    
+  //   const user = await this.prisma.user.findUnique({
+  //     where: { email },
+  //     select: { safeUserSelect },
+  //   });
+  //   if (!user) throw new NotFoundException('User not found');
+  //   return user;
+
+  // }
 
   async updateProfile(id: string, dto: UpdateUserDto) {
-    return this.prisma.user.update({
+    const updatedUser = this.prisma.user.update({
       where: { id },
       data: dto,
       select: safeUserSelect,
     });
+    if (!updatedUser) throw new NotFoundException('User not found');
+    return updatedUser;
   }
 
   async deleteUser(id: string) {
-    return this.prisma.user.delete({
+    const user = await this.prisma.user.delete({
       where: { id }
     });
+    if (!user) throw new NotFoundException('User not found');
+  }
+
+
+  async setTwoFactorSecret(id: string, secret: string) {
+    await this.prisma.user.update({
+      where: { id },
+      data: { twoFactorSecret: secret },
+    });
+  }
+
+  async enableTwoFactor(id: string) {
+    await this.prisma.user.update({
+      where: { id },
+      data: { isTwoFactorEnabled: true },
+    });
+  }
+
+  async disableTwoFactor(id: string) {
+    await this.prisma.user.update({
+      where: { id },
+      data: {
+        isTwoFactorEnabled: false,
+        twoFactorSecret: null,
+      }
+    });
+  }
+
+  async findTwoFactorSecret(id: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+      select: { twoFactorSecret: true },
+    });
+    if (!user) throw new NotFoundException('User not found');
+    return user.twoFactorSecret;
   }
 
 }

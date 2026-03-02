@@ -21,3 +21,7 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
     return user; // This becomes req.user
   }
 }
+
+
+
+// not used anymore 

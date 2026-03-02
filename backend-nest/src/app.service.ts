@@ -1,6 +1,6 @@
-import { Injectable, HttpException } from '@nestjs/common';
+import { Injectable, HttpException, NotFoundException } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
-import { map, lastValueFrom } from 'rxjs';
+import { map, lastValueFrom, NotFoundError } from 'rxjs';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from './prisma/prisma.service';
 
@@ -14,7 +14,6 @@ interface PyResponse {
   }[];
 }
 
-
 @Injectable()
 export class AppService {
   constructor(
@@ -22,22 +21,15 @@ export class AppService {
     private readonly configService: ConfigService,
     private prisma: PrismaService
   ) {}
-  
-  getHello(): object {
-    return {message: 'Hello World!'};
-  }
 
   health(): object {
     return {
-      message: 'I\'m NestJs and I\'m healthy',
+      message: 'Healthy',
       version: '1.0.0'
     };
   }
 
-
-
   async searchMovies(query: string, limit: number = 5) {
-    // where python lives
     const baseUrl = this.configService.get<string>('AI_SERVICE_URL');
     
     if (!baseUrl) {
@@ -52,13 +44,10 @@ export class AppService {
         this.httpService.get<PyResponse>(fullUrl, {
           params: { q: query, limit }
         }).pipe(
-          map((res) => res.data) // data part of resp
+          map((res) => res.data)
         )
       );
-      return {
-        // count: response.results.length,
-        movies: response.results
-      };
+      return { movies: response.results };
 
     } catch (error) {
       console.error("Error connecting to ai backend micro", error.message);
@@ -66,6 +55,30 @@ export class AppService {
     }
   }
 
+  async findMovie(tmdb: number) {
+    const movie = await this.prisma.movies.findUnique({
+      where: { tmdb_id: tmdb },
+      select: {
+              id: true,
+              tmdb_id: true,
+              title: true,
+              overview: true,
+              genres: true,
+              tagline: true,
+              release_year: true,
+              vote_average: true,
+              vote_count: true,
+              runtime: true,
+              popularity: true,
+              poster_path: true,
+              backdrop_path: true,
+            }
+    });
 
+  if (!movie)
+    throw new NotFoundException('Movie not found');
 
+  return movie
+  }
+  
 }

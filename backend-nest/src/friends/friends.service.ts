@@ -5,7 +5,7 @@ const safeFriendsSelect = {
     id: true,
     username: true,
     avatarUrl: true,
-    email: true,
+    // email: true,
 };
 
 

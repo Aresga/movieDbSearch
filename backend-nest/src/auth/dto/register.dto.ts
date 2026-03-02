@@ -14,32 +14,9 @@ export class RegisterDto {
         })
     password: string;
 
-    
-
     @IsString()
     @MinLength(3, { message: 'Username must be at least 3 characters' })
     @MaxLength(20, { message: 'Username must not exceed 20 characters'})
     @Matches(/^[a-zA-Z0-9_-]+$/, { message: 'Username can only contain letters, numbers, underscore and dash' })
     username: string;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// export class RegisterDto {
-//     email: string;
-//     password: string;
-//     username: string;
-// }

@@ -8,6 +8,8 @@ import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { FriendsModule } from './friends/friends.module';
 import { GatewayModule } from './gateway/gateway.module';
+import { TwofactorauthService } from './twofactorauth/twofactorauth.service';
+import { TwofactorauthModule } from './twofactorauth/twofactorauth.module';
 
 @Module({
   imports: [
@@ -18,8 +20,9 @@ import { GatewayModule } from './gateway/gateway.module';
     UserModule,
     FriendsModule,
     GatewayModule,
+    TwofactorauthModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, TwofactorauthService, TwofactorauthService],
 })
 export class AppModule {}
