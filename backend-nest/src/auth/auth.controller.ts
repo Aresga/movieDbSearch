@@ -29,6 +29,7 @@ export class AuthController {
         return {
             message: 'Login Succesful',
             access_token,
+            id: user?.id,
             welcome: req.user.username,
             requiresTwoFactor,
         };
