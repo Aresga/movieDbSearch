@@ -2,8 +2,9 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request }
 import { UserService } from './user.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { OwnershipGuard } from 'src/auth/guards/ownership.guard';
 
-
+// @UseGuards(JwtAuthGuard, OwnershipGuard)
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
@@ -14,6 +15,7 @@ export class UserController {
     return this.userService.findById(req.user.id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
   getProfile(@Param('id') id: string) {
     return this.userService.findByIdPublicProfile(id);
@@ -30,5 +32,4 @@ export class UserController {
   deleteMe(@Request() req) {
     return this.userService.deleteUser(req.user.id);
   }
-  
 }

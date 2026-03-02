@@ -1,4 +1,4 @@
-import { BadRequestException, Controller, Get, Query } from '@nestjs/common';
+import { BadRequestException, Controller, Get, Param, ParseIntPipe, Query, Req } from '@nestjs/common';
 import { AppService } from './app.service';
 
 @Controller()
@@ -18,7 +18,13 @@ export class AppController {
     if (!query) {
       throw new BadRequestException('Query param "q" is required');
     }
-    const results = await this.appService.searchMovies(query, limit);  // 👈 pass it
+    const results = await this.appService.searchMovies(query, limit);
     return results;
   }
+
+  @Get('movie/:id')
+  async fetchmovie(@Param('id', ParseIntPipe) tmdbId: number) {
+    return this.appService.findMovie(tmdbId);
+  }
+
 }

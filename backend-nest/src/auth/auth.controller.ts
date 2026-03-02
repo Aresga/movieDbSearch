@@ -25,10 +25,12 @@ export class AuthController {
     @HttpCode(HttpStatus.OK)
     @Post('login')
     async login(@Body() loginDto: LoginDto, @Request() req) {
-        const access_token = await this.authService.login(req.user);
+        const { access_token , user, requiresTwoFactor } = await this.authService.login(req.user);
         return {
             message: 'Login Succesful',
-            access_token
+            access_token,
+            welcome: req.user.username,
+            requiresTwoFactor,
         };
     }
 
