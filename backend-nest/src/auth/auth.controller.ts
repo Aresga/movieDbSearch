@@ -14,10 +14,11 @@ export class AuthController {
 
     @Post('register')
     async register(@Body() RegisterDto: RegisterDto) {
-        const user = await this.authService.register(RegisterDto);
+        const { id, username } = await this.authService.register(RegisterDto);
         return {
             message: 'user registered successfully',
-            user,
+            id,
+            username,
         };
     }
 
