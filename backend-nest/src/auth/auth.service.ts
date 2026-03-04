@@ -4,6 +4,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt'
 import { RegisterDto } from './dto/register.dto';
 import { randomBytes } from 'crypto';
+import { access } from 'fs';
 
 
 @Injectable()
@@ -37,12 +38,31 @@ export class AuthService {
 
 
     async login(user: any) {
+        if (user.isTwoFactorEnabled) {
+            const partialPayload = {
+                    sub: user.id,
+                    email: user.email,
+                    username: user.username,
+                    isTwoFactorAuthenticated: false,
+                };
+                return {
+                    access_token: this.jwtService.sign(partialPayload, { 
+                        expiresIn: '5m'
+                    }), requiresTwoFactor: true,
+                };
+            }
+        
+
+
+
         const payload = {
-            sub: user.id,   // is jwt standard for user ids
+            sub: user.id,
             email: user.email,
             username: user.username,
 
         };
+
+        // const signed_token = await this.jwtService.sign(payload) 
 
         return {
             access_token: this.jwtService.sign(payload),
@@ -144,6 +164,26 @@ export class AuthService {
         } = user;
         return userWithoutPassword;
     }
+
+    loginWith2FA(user: any) {
+        const payload = {
+            sub: user.id,
+            email: user.email,
+            username: user.username,
+            isTwoFactorAuthenticated: true,
+        };
+
+        return {
+            access_token: this.jwtService.sign(payload),
+            user: {
+                id: user.id,
+                email: user.email,
+                username: user.username,
+                avatarUrl: user.avatarUrl,
+            },
+        };
+    }
+
 }
 
 

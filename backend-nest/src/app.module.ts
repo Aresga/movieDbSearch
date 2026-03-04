@@ -10,6 +10,8 @@ import { GatewayModule } from './gateway/gateway.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { MessageModule } from './message/message.module';
+import { TwofactorauthService } from './twofactorauth/twofactorauth.service';
+import { TwofactorauthModule } from './twofactorauth/twofactorauth.module';
 
 @Module({
   imports: [
@@ -27,8 +29,9 @@ import { MessageModule } from './message/message.module';
     UserModule,
     FriendsModule,
     GatewayModule,
+    TwofactorauthModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, TwofactorauthService, TwofactorauthService],
 })
 export class AppModule {}
