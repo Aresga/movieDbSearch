@@ -8,7 +8,7 @@ import { ChatRoom, ChatRoomSchema } from './chat-room.schema';
 @Module({
 	imports: [
 		MongooseModule.forFeature([
-			{ name: Message.name, schema: MessageSchema}
+			{ name: Message.name, schema: MessageSchema },
 			{ name: ChatRoom.name, schema: ChatRoomSchema }
 		]),],
 		controllers: [MessageController],
