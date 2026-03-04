@@ -43,6 +43,7 @@ services:
   mongodb:
     image: mongo:7
     container_name: Movie_mongodb
+    command: mongod --quiet
     env_file:
       - .env
     environment:
