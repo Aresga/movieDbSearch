@@ -4,7 +4,26 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt'
 import { RegisterDto } from './dto/register.dto';
 import { randomBytes } from 'crypto';
+import { ConfigService } from '@nestjs/config';
+import type { StringValue } from 'ms';
 import { access } from 'fs';
+import ms from 'ms';
+
+// Add these interfaces at the top of the file (or in a types file)
+export type LoginResult =
+  | { requiresTwoFactor: true; access_token: string }
+  | { 
+        requiresTwoFactor?: false; 
+        access_token: string; 
+        refresh_token: string; 
+        user: { 
+            id: string; 
+            email: string; 
+            username: string; 
+            avatarUrl: string | null 
+        } 
+    };
+
 
 
 @Injectable()
@@ -12,7 +31,92 @@ export class AuthService {
     constructor(
         private prisma: PrismaService,
         private jwtService: JwtService,
+        private configService: ConfigService,
     ) {}
+
+
+    private getRefreshSecret(): string {
+        return this.configService.get<string>('JWT_REFRESH_SECRET')!;
+    }
+
+    private getRefreshExpiresIn(): StringValue {
+        return this.configService.get<string>('JWT_REFRESH_EXPIRES_IN', '7d') as StringValue;
+    }
+
+    private async generateTokenPair(user: any) {
+        const payload = {
+            sub: user.id,
+            email: user.email,
+            username: user.username,
+        };
+        
+        const access_token = this.jwtService.sign(payload);
+        const refresh_token = this.jwtService.sign(payload, {
+            secret: this.getRefreshSecret(),
+            expiresIn: this.getRefreshExpiresIn(),
+        });
+
+        return { access_token, refresh_token };
+    }
+
+    private async saveRefreshToken(userId: string, refreshToken: string) {
+        const refreshTokenh = await bcrypt.hash(refreshToken, 10);
+        const refreshExpiresMs = ms(this.getRefreshExpiresIn());
+
+        await this.prisma.user.update({
+            where: { id: userId },
+            data: {
+                refreshTokenHash: refreshTokenh,
+                refreshTokenExpiresAt: new Date(Date.now() + refreshExpiresMs),
+            }
+        })
+    }
+
+    private async clearRefreshToken(userId: string) {
+        await this.prisma.user.update({
+            where: { id : userId },
+            data: {
+                refreshTokenHash: null,
+                refreshTokenExpiresAt: null, 
+            },
+        });
+    }
+
+
+    //
+    async refreshTokens(userId: string, refreshToken: string) {
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+        });
+
+        if (!user || !user.refreshTokenHash || !user.refreshTokenExpiresAt) {
+            throw new UnauthorizedException('Invalid refresh token');
+        }
+
+        if (user.refreshTokenExpiresAt.getTime() < Date.now()) {
+            await this.clearRefreshToken(userId); // @TODO 
+            throw new UnauthorizedException('Refresh token expired');
+        }
+
+        const isRefreshTokenValid = await bcrypt.compare(refreshToken, user.refreshTokenHash); 
+        if (!isRefreshTokenValid) {
+            throw new UnauthorizedException('Invalid refresh token');
+        }
+
+        const tokens = await this.generateTokenPair(user);
+        await this.saveRefreshToken(user.id, tokens.refresh_token);
+
+        return {
+            ...tokens,
+            user: {
+                id: user.id,
+                email: user.email,
+                username: user.username,
+                avatarUrl: user.avatarUrl,
+            },
+        };
+    }
+
 
     // validate user creds (used by localstrategy )
     async validateUser(email: string, password: string) {
@@ -37,7 +141,7 @@ export class AuthService {
     }
 
 
-    async login(user: any) {
+    async login(user: any): Promise<LoginResult> {
         if (user.isTwoFactorEnabled) {
             const partialPayload = {
                     sub: user.id,
@@ -52,20 +156,19 @@ export class AuthService {
                 };
             }
         
+        // const payload = {
+        //     sub: user.id,
+        //     email: user.email,
+        //     username: user.username,
 
+        // };
 
-
-        const payload = {
-            sub: user.id,
-            email: user.email,
-            username: user.username,
-
-        };
-
-        // const signed_token = await this.jwtService.sign(payload) 
+        const tokens = await this.generateTokenPair(user);
+        await this.saveRefreshToken(user.id, tokens.refresh_token);
 
         return {
-            access_token: this.jwtService.sign(payload),
+            ...tokens,
+            // access_token: this.jwtService.sign(payload),
             user: {
                 id: user.id,
                 email: user.email,
@@ -165,7 +268,7 @@ export class AuthService {
         return userWithoutPassword;
     }
 
-    loginWith2FA(user: any) {
+    async loginWith2FA(user: any) {
         const payload = {
             sub: user.id,
             email: user.email,
@@ -173,17 +276,45 @@ export class AuthService {
             isTwoFactorAuthenticated: true,
         };
 
+
+        const tokens = await this.generateTokenPair({ ...user, ...payload });
+        await this.saveRefreshToken(user.id, tokens.refresh_token);
+
+
         return {
-            access_token: this.jwtService.sign(payload),
-            user: {
+            ...tokens,
+            user: { 
                 id: user.id,
                 email: user.email,
                 username: user.username,
-                avatarUrl: user.avatarUrl,
-            },
+                avatarUrl: user.avatarUrl, 
+            }
         };
+
+        // const access_token = this.jwtService.sign(payload);
+        // const refresh_token = this.jwtService.sign(payload, {
+        //     secret: this.getRefreshSecret(),
+        //     expiresIn: this.getRefreshExpiresIn(),
+        // });
+
+        // await this.saveRefreshToken(user.id, refresh_token);
+
+        // return {
+        //     access_token,
+        //     refresh_token,
+        //     // access_token: this.jwtService.sign(payload),
+        //     user: {
+        //         id: user.id,
+        //         email: user.email,
+        //         username: user.username,
+        //         avatarUrl: user.avatarUrl,
+        //     },
+        // };
     }
 
+
+    async logout(userId: string) {
+        await this.clearRefreshToken(userId);
+        return { message: 'Logged out successfully' };
+    }
 }
-
-

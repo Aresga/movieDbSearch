@@ -9,6 +9,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { PrismaModule } from '../prisma/prisma.module';
 import { GoogleStrategy } from './strategies/google.strategy';
 import { GithubStrategy } from './strategies/github.strategy';
+import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
 
 @Module({
   imports: [
@@ -28,7 +29,8 @@ import { GithubStrategy } from './strategies/github.strategy';
   providers: [
     AuthService, 
     LocalStrategy, 
-    JwtStrategy, 
+    JwtStrategy,
+    JwtRefreshStrategy, 
     GoogleStrategy, 
     GithubStrategy],
   controllers: [AuthController],
