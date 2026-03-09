@@ -27,6 +27,6 @@ export class MessageController {
 
 	@Get()
 	async getUserRooms(@Request() req) {
-		return await this.messageService.getChatRooms(req)
+		return await this.messageService.getChatRooms(req.user.id)
 	}
 }

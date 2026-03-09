@@ -13,13 +13,13 @@ export class MessageService {
 	
 	async getCreateRoom(userId1: string, userId2: string)
 	{
-		const [user1, user2] = [userId1, userId2].sort();
+		const participants = [userId1, userId2].sort();
 
 		let room = await this.chatRoomModel.findOne({
-			user1, user2
+			$all: participants
 		});
 		if (!room) {
-			room = new this.chatRoomModel({ user1, user2 });
+			room = new this.chatRoomModel({ participants, });
 			await room.save();
 		}
 		return room;
