@@ -16,24 +16,29 @@ export class ReviewsService {
 		});
 	}
 
-	async getReviewsbyMovie(movieId: string)
+	async getReviewsbyMovie(mId: string)
 	{
 		return this.prisma.review.findMany({
-			where: { id: movieId }
+			where: { movieId: movieId }
 		});
 	}
 
-	async getReviewsByUser(userId: string)
+	async getReviewsByUser(uId: string)
 	{
 		return this.prisma.review.findMany({
-			where: { id: userId }
+			where: { userId: uId }
 		});
 	}
 
-	async deleteReview(userId: string, movieId: string)
+	async deleteReview(uId: string, mId: string)
 	{
 		return this.prisma.review.delete({
-			where: { id: userId }
+			where: { userId_movieId: 
+				{
+					userId: uId,
+					movieId: mId
+				}
+			}
 		});
 	}
 
