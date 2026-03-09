@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
@@ -6,14 +6,15 @@ export class ReviewsService {
 	constructor(private readonly prisma: PrismaService) {}
 	async saveReview(rating: number, comment:string, userId: string, movieId: number)
 	{
-		const date = new Date();
-		return this.prisma.review.create({
-			rating,
-			comment,
-			userId,
-			movieId,
-			date,
-		});
+		const previousReview = await this.getSingleReview(movieId, userId);
+		if (previousReview == null)
+			return this.prisma.review.create({
+			data: {
+				rating,
+				comment,
+				userId,
+				movieId,
+			}});
 	}
 
 	async getReviewsbyMovie(mId: number)
@@ -40,6 +41,18 @@ export class ReviewsService {
 				}
 			}
 		});
+	}
+
+	async getSingleReview(mId: number, uId: string)
+	{
+		return this.prisma.review.findUnique({
+			where: { userId_movieId: 
+				{
+					userId: uId,
+					movieId: mId
+				}
+			}
+		});	
 	}
 
 

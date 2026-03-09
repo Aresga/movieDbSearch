@@ -3,8 +3,6 @@ import { Document, Types } from 'mongoose';
 
 @Schema({ timestamps: true })
 export class ChatRoom extends Document {
-  @Prop({ required: true })
-  name: string;
 
   @Prop({ type: [Types.ObjectId], ref: 'User', required: true })
   participants: string[];
