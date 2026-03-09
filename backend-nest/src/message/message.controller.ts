@@ -18,15 +18,22 @@ export class MessageController {
 		return room;
 	}
 
-	@Post('rooms/:roomId/messages')
+	@Post('rooms/:roomId/chat')
 	async sendMessage( @Request() Req, @Param('roomId') roomId: string, @Body() dto: CreateMessageDto,) 
 	{
 		const message = await this.messageService.storeMessage(roomId, Req.user.id, dto.content);
 		return (message);
 	}
 
-	@Get()
+	@Get('rooms/:userId')
 	async getUserRooms(@Request() req) {
 		return await this.messageService.getChatRooms(req.user.id)
+	}
+
+	@UseGuards(JwtAuthGuard)
+	@Get('rooms/:roomId')
+	async getRoomMessages(@Request() Req, @Param('roomId') roomId: string)
+	{
+		return await this.messageService.getRoomMessages(roomId);
 	}
 }

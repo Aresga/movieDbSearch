@@ -15,8 +15,7 @@ export class MessageService {
 	{
 		const participants = [userId1, userId2].sort();
 
-		let room = await this.chatRoomModel.findOne({
-			$all: participants
+		let room = await this.chatRoomModel.findOne({ participants: { $all: participants, $size: 2 },
 		});
 		if (!room) {
 			room = new this.chatRoomModel({ participants, });
@@ -47,14 +46,12 @@ export class MessageService {
 		.sort({createdAt: -1})
 		.skip(skip)
 		.limit(limit)
-		.populate('senderId');
 	}
 
 	async getChatRooms(userId: string)
 	{
 		return await this.chatRoomModel.find({participants: userId })
 		.populate('lastMessage')
-		.populate('participants')
 		.sort({ updatedAt: -1 });
 	}
 

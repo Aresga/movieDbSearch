@@ -6,7 +6,7 @@ export class Message extends Document {
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   senderId: string;
 
-  @Prop({ type: Types.ObjectId, ref: 'CHatRoom', required: true })
+  @Prop({ type: Types.ObjectId, ref: 'ChatRoom', required: true })
   roomId: string;
 
   @Prop({ required: true })
