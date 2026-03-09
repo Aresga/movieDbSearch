@@ -1,5 +1,4 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Reviews } from './review.controller';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()

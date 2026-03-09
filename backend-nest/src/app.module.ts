@@ -30,6 +30,7 @@ import { TwofactorauthModule } from './twofactorauth/twofactorauth.module';
     FriendsModule,
     GatewayModule,
     TwofactorauthModule,
+    MessageModule,
   ],
   controllers: [AppController],
   providers: [AppService, TwofactorauthService, TwofactorauthService],

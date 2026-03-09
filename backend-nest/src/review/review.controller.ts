@@ -5,21 +5,30 @@ import { ReviewsService } from './review.service';
 import { ReviewDto } from './dto';
 
 @Controller('reviews')
-export class Reviews {
+export class ReviewsController {
 	constructor(private readonly reviewsService: ReviewsService) {}
 
-	@Get(':reviews')
-	getReviews(@Request() req, @Param('movieID') movieId: string) {
+	@Get('movie/reviews/:movieId')
+	getReviewsByMovie(@Request() req, @Param('movieID') movieId: string) {
 		return this.reviewsService.getReviewsbyMovie(movieId);
 	}
 
 	@UseGuards(JwtAuthGuard)
-	@Post('postReview')
-	postReview(@Request req, @Param('movieID') movieId: number, @Body() dto: ReviewDto)
-	{
+	@Post('movie/reviews/:movieId')
+	postReview(@Request() req, @Param('movieID') movieId: number, @Body() dto: ReviewDto) {
 		return this.reviewsService.saveReview(dto.rating, dto.comment, req.user.id, movieId);
 	}
 
 	@UseGuards(JwtAuthGuard)
+	@Delete('reviewID')
+	deleteReview(@Request() req, @Param('movieId') movieId: string) {
+		return this.reviewsService.deleteReview(req.user.id, movieId);
+	}
+
+	@UseGuards(JwtAuthGuard)
+	@Get('user/reviews/:userID')
+	getReviewsByUser(@Request() req) {
+		return this.reviewsService.getReviewsByUser(req.user.id);
+	}
 
 }
