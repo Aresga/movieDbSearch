@@ -9,7 +9,7 @@ export class ReviewsController {
 	constructor(private readonly reviewsService: ReviewsService) {}
 
 	@Get('movie/reviews/:movieId')
-	getReviewsByMovie(@Request() req, @Param('movieID') movieId: string) {
+	getReviewsByMovie(@Request() req, @Param('movieID') movieId: number) {
 		return this.reviewsService.getReviewsbyMovie(movieId);
 	}
 
@@ -21,7 +21,7 @@ export class ReviewsController {
 
 	@UseGuards(JwtAuthGuard)
 	@Delete('reviewID')
-	deleteReview(@Request() req, @Param('movieId') movieId: string) {
+	deleteReview(@Request() req, @Param('movieId') movieId: number) {
 		return this.reviewsService.deleteReview(req.user.id, movieId);
 	}
 

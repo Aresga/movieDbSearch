@@ -38,7 +38,7 @@ export class MessageService {
 			updatedAt: new Date(),
 		});
 
-		return savedMessage();
+		return savedMessage;
 	}
 
 	async getRoomMessages(roomId: string, limit: number = 50, skip: number = 0)

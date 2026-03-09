@@ -16,7 +16,7 @@ export class ReviewsService {
 		});
 	}
 
-	async getReviewsbyMovie(mId: string)
+	async getReviewsbyMovie(mId: number)
 	{
 		return this.prisma.review.findMany({
 			where: { movieId: mId }
@@ -30,7 +30,7 @@ export class ReviewsService {
 		});
 	}
 
-	async deleteReview(uId: string, mId: string)
+	async deleteReview(uId: string, mId: number)
 	{
 		return this.prisma.review.delete({
 			where: { userId_movieId: 
