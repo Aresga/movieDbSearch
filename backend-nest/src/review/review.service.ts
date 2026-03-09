@@ -19,7 +19,7 @@ export class ReviewsService {
 	async getReviewsbyMovie(mId: string)
 	{
 		return this.prisma.review.findMany({
-			where: { movieId: movieId }
+			where: { movieId: mId }
 		});
 	}
 
