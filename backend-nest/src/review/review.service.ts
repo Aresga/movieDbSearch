@@ -33,7 +33,7 @@ export class ReviewsService {
 	async deleteReview(userId: string, movieId: string)
 	{
 		return this.prisma.review.delete({
-			where: { userId }
+			where: { id: userId }
 		});
 	}
 
