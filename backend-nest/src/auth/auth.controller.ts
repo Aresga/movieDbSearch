@@ -70,22 +70,10 @@ export class AuthController {
                 maxAge: 5 * 60 * 1000,
             });
             return { requiresTwoFactor: true };
-
         }
 
         this.setTokenCookies(res, result.access_token, result.refresh_token);
         return { user: result.user };
-
-        // return result; // this one has access_token and refresh token and user 
-
-        // const { access_token , user, requiresTwoFactor } = await this.authService.login(req.user);
-        // return {
-        //     message: 'Login Succesful',
-        //     access_token,
-        //     id: user?.id,
-        //     welcome: req.user.username,
-        //     requiresTwoFactor,
-        // };
     }
 
     // --- refresh -----// 
@@ -109,13 +97,11 @@ export class AuthController {
 
     @Get('google')
     @UseGuards(GoogleAuthGuard)
-    async googleAuth() {
-    }
+    async googleAuth() {}
 
     @Get('github')
     @UseGuards(GithubAuthGuard)
-    async githubAuth() {
-    }
+    async githubAuth() {}
 
     @Get('google/callback')
     @UseGuards(GoogleAuthGuard)
@@ -152,13 +138,7 @@ export class AuthController {
     async logout(@Request() req, @Res({ passthrough: true }) res: Response) {
         await this.authService.logout(req.user.sub);
         this.clearTokenCookies(res);
-        // res.clearCookie('access_token', {
-        //     httpOnly: true,
-        //     secure: false,
-        //     sameSite: 'lax',
-        // });
-        return { 
-            message: 'Logged out succesfully'
-        };
+        return { message: 'Logged out succesfully' };
     }
+
 }

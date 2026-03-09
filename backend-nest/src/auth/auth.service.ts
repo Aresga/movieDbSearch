@@ -6,24 +6,21 @@ import { RegisterDto } from './dto/register.dto';
 import { randomBytes } from 'crypto';
 import { ConfigService } from '@nestjs/config';
 import type { StringValue } from 'ms';
-import { access } from 'fs';
 import ms from 'ms';
 
-// Add these interfaces at the top of the file (or in a types file)
-export type LoginResult =
-  | { requiresTwoFactor: true; access_token: string }
-  | { 
-        requiresTwoFactor?: false; 
-        access_token: string; 
-        refresh_token: string; 
-        user: { 
-            id: string; 
-            email: string; 
-            username: string; 
-            avatarUrl: string | null 
-        } 
-    };
-
+export type LoginResult = 
+    |   { requiresTwoFactor: true; access_token: string }
+    |   { 
+            requiresTwoFactor?: false; 
+            access_token: string; 
+            refresh_token: string; 
+            user: { 
+                id: string; 
+                email: string; 
+                username: string; 
+                avatarUrl: string | null
+            } 
+        };
 
 
 @Injectable()
@@ -46,8 +43,6 @@ export class AuthService {
     private async generateTokenPair(user: any) {
         const payload = {
             sub: user.id,
-            email: user.email,
-            username: user.username,
         };
         
         const access_token = this.jwtService.sign(payload);
@@ -145,8 +140,6 @@ export class AuthService {
         if (user.isTwoFactorEnabled) {
             const partialPayload = {
                     sub: user.id,
-                    email: user.email,
-                    username: user.username,
                     isTwoFactorAuthenticated: false,
                 };
                 return {
@@ -155,20 +148,12 @@ export class AuthService {
                     }), requiresTwoFactor: true,
                 };
             }
-        
-        // const payload = {
-        //     sub: user.id,
-        //     email: user.email,
-        //     username: user.username,
-
-        // };
 
         const tokens = await this.generateTokenPair(user);
         await this.saveRefreshToken(user.id, tokens.refresh_token);
 
         return {
             ...tokens,
-            // access_token: this.jwtService.sign(payload),
             user: {
                 id: user.id,
                 email: user.email,
@@ -276,7 +261,6 @@ export class AuthService {
             isTwoFactorAuthenticated: true,
         };
 
-
         const tokens = await this.generateTokenPair({ ...user, ...payload });
         await this.saveRefreshToken(user.id, tokens.refresh_token);
 
@@ -290,28 +274,7 @@ export class AuthService {
                 avatarUrl: user.avatarUrl, 
             }
         };
-
-        // const access_token = this.jwtService.sign(payload);
-        // const refresh_token = this.jwtService.sign(payload, {
-        //     secret: this.getRefreshSecret(),
-        //     expiresIn: this.getRefreshExpiresIn(),
-        // });
-
-        // await this.saveRefreshToken(user.id, refresh_token);
-
-        // return {
-        //     access_token,
-        //     refresh_token,
-        //     // access_token: this.jwtService.sign(payload),
-        //     user: {
-        //         id: user.id,
-        //         email: user.email,
-        //         username: user.username,
-        //         avatarUrl: user.avatarUrl,
-        //     },
-        // };
     }
-
 
     async logout(userId: string) {
         await this.clearRefreshToken(userId);
