@@ -4,6 +4,7 @@ import { Server, Socket } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { OnEvent } from '@nestjs/event-emitter';
 import { MessageService } from 'src/message/message.service';
+import { parse } from 'cookie';
 
 @WebSocketGateway({
   cors: { origin: '*'},
@@ -29,15 +30,16 @@ export class GatewayGateway implements OnGatewayConnection, OnGatewayDisconnect 
 
 
   async handleConnection(client: Socket) {
-    try {
       const token = client.handshake.auth?.token
         || client.handshake.headers?.authorization?.split(' ')[1]
-        || client.handshake.headers?.token;
+        || client.handshake.headers?.token
+        || (() => {
+          const cookies = parse(client.handshake.headers?.cookie || '');
+          return cookies['access_token'];
+          })();
       if (!token) {
         client.disconnect();
-      const userId = client.handshake.auth.userId;
-      this.userRooms.set(userId, new Set());
-      return ;
+        return ;
       }
 
       const payload = this.jwtService.verify(token);
@@ -52,12 +54,7 @@ export class GatewayGateway implements OnGatewayConnection, OnGatewayDisconnect 
       });
 
       await this.notifyFriendsStatus(userId, true);
-
       console.log(`User ${userId} connected`);
-    } catch {
-      client.disconnect();
-    }
-
   }
 
 
@@ -111,7 +108,7 @@ export class GatewayGateway implements OnGatewayConnection, OnGatewayDisconnect 
       const message = await this.messageService.storeMessage(
         roomId, senderId, content,
       );
-    
+
       this.server.to(roomId).emit('receiveMessage', {
         id: message._id,
         roomId,
