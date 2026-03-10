@@ -20,15 +20,15 @@ export class ReviewsController {
 	}
 
 	@UseGuards(JwtAuthGuard)
-	@Delete('reviewID')
+	@Delete('movie/reviews/:reviewID')
 	deleteReview(@Request() req, @Param('movieId') movieId: number) {
 		return this.reviewsService.deleteReview(req.user.id, movieId);
 	}
 
 	@UseGuards(JwtAuthGuard)
 	@Get('user/reviews/:userID')
-	getReviewsByUser(@Request() req) {
-		return this.reviewsService.getReviewsByUser(req.user.id);
+	getReviewsByUser(@Request() req, @Param('userId') userId: string) {
+		return this.reviewsService.getReviewsByUser(userId);
 	}
 
 }

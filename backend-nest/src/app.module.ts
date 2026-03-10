@@ -10,6 +10,7 @@ import { GatewayModule } from './gateway/gateway.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { MessageModule } from './message/message.module';
+import { ReviewsModule } from './review/review.module';
 import { TwofactorauthService } from './twofactorauth/twofactorauth.service';
 import { TwofactorauthModule } from './twofactorauth/twofactorauth.module';
 
@@ -29,6 +30,7 @@ import { TwofactorauthModule } from './twofactorauth/twofactorauth.module';
     UserModule,
     FriendsModule,
     GatewayModule,
+    ReviewsModule,
     TwofactorauthModule,
     MessageModule,
   ],
