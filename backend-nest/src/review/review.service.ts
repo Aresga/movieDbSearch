@@ -34,7 +34,7 @@ export class ReviewsService {
 	async deleteReview(uId: string, mId: number)
 	{
 		return this.prisma.review.delete({
-			where: { userId_movieId: 
+			where: { userId_movieId:
 				{
 					userId: uId,
 					movieId: mId
@@ -46,14 +46,22 @@ export class ReviewsService {
 	async getSingleReview(mId: number, uId: string)
 	{
 		return this.prisma.review.findUnique({
-			where: { userId_movieId: 
+			where: { userId_movieId:
 				{
 					userId: uId,
 					movieId: mId
 				}
 			}
-		});	
+		});
 	}
 
+	async editReview(mId: number, uId: string, ratingEdit: number, commentEdit: string)
+	{
+		const updateReview = await this.prisma.review.update({
+			where: { userId: uId, movieId: mId },
+			data: { comment: commentEdit, rating: ratingEdit },
+		});
+		return updateReview;
+	}
 
 }

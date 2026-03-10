@@ -31,4 +31,10 @@ export class ReviewsController {
 		return this.reviewsService.getReviewsByUser(userId);
 	}
 
+	@UseGuards(JwtAuthGuard)
+	@Post('movie/reviews/:movieId/edit')
+	editReview(@Request() req, @Param('movieID') movieId: number, @Body() dto: ReviewDto) {
+		return this.reviewsService.editReview(movieId, req.user.id, dto.rating, dto.comment);
+	}
+
 }
