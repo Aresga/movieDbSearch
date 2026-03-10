@@ -10,6 +10,7 @@ import { FriendsModule } from './friends/friends.module';
 import { GatewayModule } from './gateway/gateway.module';
 import { TwofactorauthService } from './twofactorauth/twofactorauth.service';
 import { TwofactorauthModule } from './twofactorauth/twofactorauth.module';
+import { TmdbModule } from './tmdb/tmdb.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { TwofactorauthModule } from './twofactorauth/twofactorauth.module';
     FriendsModule,
     GatewayModule,
     TwofactorauthModule,
+    TmdbModule,
   ],
   controllers: [AppController],
   providers: [AppService, TwofactorauthService, TwofactorauthService],

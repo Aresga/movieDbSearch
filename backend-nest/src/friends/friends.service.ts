@@ -13,12 +13,18 @@ const safeFriendsSelect = {
 export class FriendsService {
     constructor(private readonly prisma: PrismaService) {}
 
-    async addFriend(userId: string, friendId: string) {
-        if (userId === friendId)
+    async addFriend(userId: string, friendIdentifier: string) {
+        if (userId === friendIdentifier)
             throw new BadRequestException('Cannot add yourself as a friend');
 
-        const friend = await this.prisma.user.findUnique({
-            where: { id: friendId }
+        const friend = await this.prisma.user.findFirst({
+            where: {
+                OR: [
+                    { id: friendIdentifier },
+                    { username: friendIdentifier },
+                    { email: friendIdentifier }
+                ]
+            }
         });
 
         if (!friend)
@@ -28,10 +34,10 @@ export class FriendsService {
         await this.prisma.$transaction([
             this.prisma.user.update({
                 where: { id: userId },
-                data: { friends: { connect: { id: friendId }}},
+                data: { friends: { connect: { id: friend.id }}},
             }),
             this.prisma.user.update({
-                where: { id: friendId },
+                where: { id: friend.id },
                 data: { friends: { connect: { id: userId }}},
             }),
         ]);
@@ -41,16 +47,22 @@ export class FriendsService {
         };
     }
 
-    async removeFriend(userId: string, friendId: string) {
-        const friend = await this.prisma.user.findUnique({
-            where: { id: friendId },
+    async removeFriend(userId: string, friendIdentifier: string) {
+        const friend = await this.prisma.user.findFirst({
+            where: {
+                OR: [
+                    { id: friendIdentifier },
+                    { username: friendIdentifier },
+                    { email: friendIdentifier }
+                ]
+            }
         });
-        if (!friend) throw new NotFoundException('User Not found');
+        if (!friend) throw new NotFoundException('User not found');
 
         const areFriends = await this.prisma.user.findFirst({
             where: {
                 id: userId,
-                friends: { some: { id: friendId }},
+                friends: { some: { id: friend.id }},
             },
         });
         if (!areFriends) throw new BadRequestException('You are not friends');
@@ -59,11 +71,11 @@ export class FriendsService {
         await this.prisma.$transaction([
             this.prisma.user.update({
                 where: { id: userId },
-                data: { friends: { disconnect: { id: friendId }}},
+                data: { friends: { disconnect: { id: friend.id }}},
             }),
 
             this.prisma.user.update({
-                where: { id: friendId },
+                where: { id: friend.id },
                 data: { friends: { disconnect: { id: userId } } },
             }),
         ]);

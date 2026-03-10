@@ -1,4 +1,5 @@
-import { Controller, Req, UseGuards, Get, Post, HttpCode, Body, UnauthorizedException } from '@nestjs/common';
+import { Controller, Req, Res, UseGuards, Get, Post, HttpCode, Body, UnauthorizedException } from '@nestjs/common';
+import type { Response } from 'express';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { TwofactorauthService } from './twofactorauth.service';
 import { UserService } from 'src/user/user.service';
@@ -42,20 +43,35 @@ export class TwofactorauthController {
 
     @Post('verify')
     @HttpCode(200)
-    async verify(@Req() req, @Body() dto: TwoFactorTokenDto) {
-        const user = await this.userService.findById(req.user.id);
-        if (!user.isTwoFactorEnabled) throw new UnauthorizedException('2FA is not enabled');
+    async verify(
+        @Req() req,
+        @Body() dto: TwoFactorTokenDto,
+        @Res({ passthrough: true }) res: Response, 
+    ) {
+    const user = await this.userService.findById(req.user.id)
+    if (!user.isTwoFactorEnabled) throw new UnauthorizedException('2FA is not enabled')
 
-        const secret = await this.userService.findTwoFactorSecret(req.user.id);
-        if (!secret) throw new UnauthorizedException('2FA setup not initialized')
+    const secret = await this.userService.findTwoFactorSecret(req.user.id)
+    if (!secret) throw new UnauthorizedException('2FA setup not initialized')
 
-        const isValid = await this.twofactorauthservice.verifyToken(dto.token, secret);
-        console.log('secret:', secret);
-        console.log('token:', dto.token);
-        console.log('isValid:', isValid);
-        if (!isValid) throw new UnauthorizedException('Invalid authentication code');
+    const isValid = await this.twofactorauthservice.verifyToken(dto.token, secret)
+    if (!isValid) throw new UnauthorizedException('Invalid authentication code')
 
+    const result = await this.authService.loginWith2FA(user)
 
-        return this.authService.loginWith2FA(user);
+    res.cookie('access_token', result.access_token, {
+        httpOnly: true,
+        secure: false,
+        sameSite: 'lax',
+        maxAge: 15 * 60 * 1000,
+    })
+    res.cookie('refresh_token', result.refresh_token, {
+        httpOnly: true,
+        secure: false,
+        sameSite: 'lax',
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+    })
+
+    return { user: result.user } 
     }
 }

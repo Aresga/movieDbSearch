@@ -71,12 +71,11 @@ export class AuthService {
         await this.prisma.user.update({
             where: { id : userId },
             data: {
-                refreshTokenHash: null,
+                refreshTokenHash: null, 
                 refreshTokenExpiresAt: null, 
             },
         });
     }
-
 
     //
     async refreshTokens(userId: string, refreshToken: string) {

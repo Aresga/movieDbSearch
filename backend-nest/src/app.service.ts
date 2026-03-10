@@ -80,5 +80,31 @@ export class AppService {
 
   return movie
   }
-  
+
+  async getTrending(limit: number = 20) {
+    const movies = await this.prisma.movies.findMany({
+      where: {
+        popularity: { not: null },
+        poster_path: { not: null },
+      },
+      orderBy: { popularity: 'desc' },
+      take: limit,
+      select: {
+              id: true,
+              tmdb_id: true,
+              title: true,
+              overview: true,
+              genres: true,
+              tagline: true,
+              release_year: true,
+              vote_average: true,
+              vote_count: true,
+              runtime: true,
+              popularity: true,
+              poster_path: true,
+              backdrop_path: true,
+            },
+    });
+    return { movies };
+  }
 }
