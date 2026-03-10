@@ -58,10 +58,10 @@ export class ReviewsService {
 	async editReview(mId: number, uId: string, ratingEdit: number, commentEdit: string)
 	{
 		const updateReview = await this.prisma.review.update({
-			where: { userId: uId, movieId: mId },
+			where: { userId_movieId: { userId: uId, movieId: mId } },
 			data: { comment: commentEdit, rating: ratingEdit },
 		});
-		return updateReview;
+		return;
 	}
 
 }
