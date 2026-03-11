@@ -4,6 +4,7 @@ model User {
   password  String? // nullable for Oauth Users
   username  String  @unique
   avatarUrl String?
+  bio       String?
 
   // for 2fa Sec
   isTwoFactorEnabled Boolean @default(false)

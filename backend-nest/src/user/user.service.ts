@@ -10,6 +10,7 @@ const safeUserSelect = {
   isTwoFactorEnabled: true,
   provider: true,
   isOnline: true,
+  bio: true,
   createdAt: true,
 };
 
@@ -18,6 +19,7 @@ const safeUserSelectPublic = {
   username: true,
   avatarUrl: true,
   isOnline: true,
+  bio: true,
   createdAt: true,
 }
 

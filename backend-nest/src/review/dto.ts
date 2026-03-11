@@ -6,7 +6,7 @@ export class ReviewDto {
 	@IsNumber()
 	rating: number;
 
+	@IsOptional()
     @IsString()
-	@IsNotEmpty()
-    comment: string;
+    comment?: string;
 }
