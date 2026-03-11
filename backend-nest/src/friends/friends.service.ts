@@ -5,6 +5,7 @@ const safeFriendsSelect = {
     id: true,
     username: true,
     avatarUrl: true,
+    isOnline: true,
     // email: true,
 };
 
