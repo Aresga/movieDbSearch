@@ -1,7 +1,10 @@
 import { JwtService } from '@nestjs/jwt';
-import { OnGatewayConnection, OnGatewayDisconnect, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+import { OnGatewayConnection, OnGatewayDisconnect, WebSocketGateway, WebSocketServer, MessageBody, SubscribeMessage } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { OnEvent } from '@nestjs/event-emitter';
+import { MessageService } from 'src/message/message.service';
+import { parse } from 'cookie';
 
 @WebSocketGateway({
   cors: { origin: '*'},
@@ -11,20 +14,29 @@ export class GatewayGateway implements OnGatewayConnection, OnGatewayDisconnect 
   @WebSocketServer()
   server: Server;
 
-  // map to track userId 
+  private userRooms = new Map();
+  @OnEvent('message.create')
+  handleMessageCreateEvent(payload: any) {
+	this.server.emit('onMessage', payload);
+  }
+  // map to track userId
   private connectedUsers = new Map<string, string>();
 
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
+    private readonly messageService: MessageService
   ) {}
 
 
   async handleConnection(client: Socket) {
-    try {
-      const token = client.handshake.auth?.token 
+      const token = client.handshake.auth?.token
         || client.handshake.headers?.authorization?.split(' ')[1]
-        || client.handshake.headers?.token;
+        || client.handshake.headers?.token
+        || (() => {
+          const cookies = parse(client.handshake.headers?.cookie || '');
+          return cookies['access_token'];
+          })();
       if (!token) {
         client.disconnect();
         return ;
@@ -42,20 +54,15 @@ export class GatewayGateway implements OnGatewayConnection, OnGatewayDisconnect 
       });
 
       await this.notifyFriendsStatus(userId, true);
-
       console.log(`User ${userId} connected`);
-    } catch {
-      client.disconnect();
-    }
-    
   }
-
 
 
   async handleDisconnect(client: Socket) {
     const userId = client.data?.userId;
     if (!userId) return ;
 
+    this.userRooms.delete(userId);
     this.connectedUsers.delete(userId);
 
     await this.prisma.user.update({
@@ -85,6 +92,34 @@ export class GatewayGateway implements OnGatewayConnection, OnGatewayDisconnect 
           isOnline,
         });
       }
+    }
+  }
+
+  @SubscribeMessage('sendMessage')
+  async handleMessage(
+    client: Socket,
+    data: { roomId: string; content: string },
+  )
+  {
+    try {
+      const senderId = client.data.userId;
+      const { roomId, content } = data;
+
+      const message = await this.messageService.storeMessage(
+        roomId, senderId, content,
+      );
+
+      this.server.to(roomId).emit('receiveMessage', {
+        id: message._id,
+        roomId,
+        senderId,
+        content: message.content,
+        timestamp: message.createdAt,
+      });
+
+      return { success: true, messageId: message._id };
+    } catch (error) {
+      return { success: false, error: error.message };
     }
   }
 }

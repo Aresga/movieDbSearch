@@ -40,6 +40,29 @@ services:
     networks:
       - moviedb-network
 
+  mongodb:
+    image: mongo:7
+    container_name: Movie_mongodb
+    command: mongod --quiet
+    env_file:
+      - .env
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_ROOT_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_ROOT_PASSWORD}
+      - MONGO_INITDB_DATABASE=${MONGO_DB_NAME}
+    volumes:
+      - mongodb_data:/data/db
+      - mongodb_config:/data/configdb
+    ports:
+      - "27017:27017"
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - moviedb-network
+
   backend-nest:
     container_name: Movie_nest_api
     build: 
@@ -54,6 +77,8 @@ services:
       - /app/node_modules
     depends_on:
       postgres:
+        condition: service_healthy
+      mongodb:
         condition: service_healthy
       backend-python:
         condition: service_healthy
@@ -80,6 +105,8 @@ services:
 
 volumes:
   postgres_data:
+  mongodb_data:
+  mongodb_config:
 
 networks:
   moviedb-network:
