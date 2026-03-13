@@ -107,4 +107,31 @@ export class AppService {
     });
     return { movies };
   }
+
+  async analyzeSentiment(text: string) {
+    const baseUrl = this.configService.get<string>('AI_SERVICE_URL')
+
+    if (!baseUrl) {
+      throw new Error('AI_SERVICE_URL is not defined');
+    }
+    
+    const cleanBase = baseUrl.replace(/\/$/, '')
+
+    try {
+      const response = await lastValueFrom(
+        this.httpService.post<{ label: string; score: number }>(
+          `${cleanBase}/sentiment`,
+          { text }
+        ).pipe(map((res) => res.data))
+      )
+      return response
+    } catch (error) {
+      // don't block review creation if sentiment fails
+      console.error('Sentiment analysis failed:', error.message)
+      return null
+    }
+  }
+
+
+
 }

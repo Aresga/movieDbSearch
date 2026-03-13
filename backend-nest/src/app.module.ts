@@ -37,6 +37,7 @@ import { TmdbModule } from './tmdb/tmdb.module';
     MessageModule,
   ],
   controllers: [AppController],
-  providers: [AppService, TwofactorauthService, TwofactorauthService],
+  providers: [AppService, TwofactorauthService],
+  exports: [AppService],
 })
 export class AppModule {}

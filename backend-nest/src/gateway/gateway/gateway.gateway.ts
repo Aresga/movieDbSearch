@@ -95,6 +95,14 @@ export class GatewayGateway implements OnGatewayConnection, OnGatewayDisconnect 
     }
   }
 
+  sendToUser(userId: string, event: string, payload: any) {
+    const socketId = this.connectedUsers.get(userId);
+    if (socketId) {
+      this.server.to(socketId).emit(event, payload);
+    }
+  }
+
+
   @SubscribeMessage('sendMessage')
   async handleMessage(
     client: Socket,

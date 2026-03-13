@@ -1,14 +1,22 @@
 import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
+import { AppService } from 'src/app.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class ReviewsService {
-	constructor(private readonly prisma: PrismaService) {}
+	constructor(
+		private readonly prisma: PrismaService, 
+		private readonly appservice: AppService
+	) {}
 
 	private async findMovieByTmdbId(tmdbId: number) {
 		const movie = await this.prisma.movies.findUnique({
 			where: { tmdb_id: tmdbId },
-			select: { id: true },
+			select: { 
+				tmdb_id: true,
+				title: true,
+				id: true 
+			},
 		});
 		if (!movie) throw new NotFoundException(`Movie with tmdb_id ${tmdbId} not found`);
 		return movie;
@@ -22,8 +30,29 @@ export class ReviewsService {
 			throw new ConflictException('You have already reviewed this movie');
 		}
 
+		let sentiment: string | null = null
+		let sentimentScore: number | null = null 
+		if (comment) {
+			const result = await this.appservice.analyzeSentiment(comment)
+			if (result) {
+			sentiment = result.label
+			sentimentScore = Math.round(result.score * 100)
+			}
+		}
+
+
 		return this.prisma.review.create({
-			data: { rating, comment, userId, movieId: movie.id },
+			data: { 
+				rating, 
+				comment, 
+				userId, 
+				movieId: movie.id, 
+				title: movie.title, 
+				tmdb_id: movie.tmdb_id,
+				sentiment,
+				sentimentScore,
+
+			},
 			include: this.userSelect,
 		});
 	}
@@ -82,9 +111,21 @@ export class ReviewsService {
 
 	async editReview(tmdbId: number, uId: string, ratingEdit: number, commentEdit: string | null) {
 		const movie = await this.findMovieByTmdbId(tmdbId);
+
+		let sentiment: string | null = null
+		let sentimentScore: number | null = null
+		if (commentEdit) {
+			const result = await this.appservice.analyzeSentiment(commentEdit)
+			if (result) {
+				sentiment = result.label
+				sentimentScore = Math.round(result.score *  10)
+			}
+		}
+
+
 		return this.prisma.review.update({
 			where: { userId_movieId: { userId: uId, movieId: movie.id } },
-			data: { comment: commentEdit, rating: ratingEdit },
+			data: { comment: commentEdit, rating: ratingEdit, sentiment, sentimentScore },
 			include: this.userSelect,
 		});
 	}

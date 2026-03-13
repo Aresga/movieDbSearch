@@ -1,4 +1,4 @@
-import { Controller, Req, Res, UseGuards, Get, Post, HttpCode, Body, UnauthorizedException } from '@nestjs/common';
+import { Controller, Req, Res, UseGuards, Get, Post, HttpCode, Body, UnauthorizedException, Delete } from '@nestjs/common';
 import type { Response } from 'express';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { TwofactorauthService } from './twofactorauth.service';
@@ -23,7 +23,7 @@ export class TwofactorauthController {
         // store secret temp
         await this.userService.setTwoFactorSecret(req.user.id, secret);
         const qrcode = await this.twofactorauthservice.generateQrCode(otpauthUrl);
-        return { qrcode };
+        return { qrcode, secret };
     }
 
 
@@ -32,7 +32,7 @@ export class TwofactorauthController {
     async activate(@Req() req, @Body() dto: TwoFactorTokenDto) {
         const secret = await this.userService.findTwoFactorSecret(req.user.id);
         if (!secret) throw new UnauthorizedException('2FA setup not initialized')
-        const isValid = this.twofactorauthservice.verifyToken(dto.token, secret);
+        const isValid = await this.twofactorauthservice.verifyToken(dto.token, secret);
         if (!isValid) throw new UnauthorizedException('Invalid authentication code');
 
         await this.userService.enableTwoFactor(req.user.id);
@@ -74,4 +74,10 @@ export class TwofactorauthController {
 
     return { user: result.user } 
     }
+
+    @Delete('disable')
+    discale2FA(@Req() req) {
+        return this.twofactorauthservice.disable2FA(req.user.id);
+    }
+
 }

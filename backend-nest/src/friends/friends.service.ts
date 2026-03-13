@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { GatewayGateway } from 'src/gateway/gateway/gateway.gateway';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 const safeFriendsSelect = {
@@ -12,18 +13,34 @@ const safeFriendsSelect = {
 
 @Injectable()
 export class FriendsService {
-    constructor(private readonly prisma: PrismaService) {}
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly gateway: GatewayGateway,
+    ) {}
 
-    async addFriend(userId: string, friendIdentifier: string) {
-        if (userId === friendIdentifier)
+    async addFriend(userId: string, friendId: string) {
+        
+        const adder = await this.prisma.user.findUnique({
+            where: { id: userId },
+            select: { 
+                username: true,
+                id: true,
+                email: true
+            },
+        })
+        
+        if ( adder?.id === friendId ||
+            adder?.email === friendId ||
+            adder?.username === friendId
+        )
             throw new BadRequestException('Cannot add yourself as a friend');
 
         const friend = await this.prisma.user.findFirst({
             where: {
                 OR: [
-                    { id: friendIdentifier },
-                    { username: friendIdentifier },
-                    { email: friendIdentifier }
+                    { id: friendId },
+                    { username: friendId },
+                    { email: friendId }
                 ]
             }
         });
@@ -42,6 +59,16 @@ export class FriendsService {
                 data: { friends: { connect: { id: userId }}},
             }),
         ]);
+
+        // const adder = await this.prisma.user.findUnique({
+        //     where: { id: userId },
+        //     select: { username: true },
+        // })
+
+        this.gateway.sendToUser(friend.id, 'friendRequest', {
+            from: adder!.username,
+            userId: userId,
+        })
 
         return {
             message: 'Friend added succesfully'
@@ -96,4 +123,19 @@ export class FriendsService {
         if (!user) throw new NotFoundException('User not found');
         return user.friends;
     }
+
+    async getFriendsCount(userId: string) {
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+            select: {
+                _count: {
+                    select: { friends: true },
+                },
+            },
+        });
+        if (!user) throw new NotFoundException('User not found');
+        console.log(user._count.friends)
+        return user._count.friends;
+    }
+
 }
