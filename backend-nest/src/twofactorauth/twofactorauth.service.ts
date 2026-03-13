@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { generateSecret, verify, generateURI } from 'otplib';
 import * as qrcode from 'qrcode';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -9,11 +9,11 @@ export class TwofactorauthService {
         private readonly prisma: PrismaService,
     ) {}
 
-    generateSecret(userId: string): { secret: string; otpauthUrl: string } {
+    generateSecret(username: string): { secret: string; otpauthUrl: string } {
         const secret = generateSecret();
         const otpauthUrl = generateURI({
             issuer: 'MovieDbsearch',
-            label: 'cool',
+            label: username,
             secret,
         });
         return { secret, otpauthUrl };

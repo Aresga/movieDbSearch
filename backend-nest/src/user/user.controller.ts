@@ -53,4 +53,11 @@ export class UserController {
   deleteMe(@Request() req) {
     return this.userService.deleteUser(req.user.id);
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('me/export')
+  exportMyData(@Request() req) {
+    return this.userService.exportData(req.user.id);
+  }
+
 }

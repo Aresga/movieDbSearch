@@ -18,7 +18,8 @@ export class TwofactorauthController {
     // Generate secret and qr code for authenticated user
     @Get('setup')
     async setup(@Req() req) {
-        const { secret, otpauthUrl } = this.twofactorauthservice.generateSecret(req.id);
+        const { secret, otpauthUrl } = this.twofactorauthservice.generateSecret(req.user.username);
+        console.log(req.user);
 
         // store secret temp
         await this.userService.setTwoFactorSecret(req.user.id, secret);

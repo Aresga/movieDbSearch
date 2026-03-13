@@ -27,6 +27,18 @@ const safeUserSelectPublic = {
   createdAt: true,
 }
 
+const exportMyData = {
+  id: true,
+  email: true,
+  username: true,
+  avatarUrl: true,
+  isTwoFactorEnabled: true,
+  provider: true,
+  isOnline: true,
+  bio: true,
+  createdAt: true,
+};
+
 @Injectable()
 export class UserService {
   constructor(private readonly prisma: PrismaService) {}
@@ -167,6 +179,26 @@ export class UserService {
     })
 
     return { message: 'Password set successfully' }
+  }
+
+  async exportData(userId: string) {
+    const user = this.prisma.user.findUnique({
+      where: { id: userId },
+      select:  {
+        ...exportMyData,
+        reviews: true,
+        friends: {
+          select: {
+            id: true,
+            username: true,
+            avatarUrl: true,
+            bio: true,
+          }
+        },
+      },
+    });
+    if (!user) throw new NotFoundException('User not found');
+    return user;
   }
 
 }

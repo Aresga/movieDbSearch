@@ -25,7 +25,7 @@ class SentimentService:
         label = result["label"].lower()
         score = round(result["score"], 4)
 
-        # if score < 0.75:
-        #     label = "neutral"
+        if score < 0.40:
+            label = "neutral"
 
         return {"label": label, "score": score}
