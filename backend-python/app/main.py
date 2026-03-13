@@ -6,6 +6,7 @@ from .config.settings import settings
 from .database.connection import DatabaseConnection
 from .api.dependencies import container
 from .api.endpoints import router
+from .services.sentiment_service import SentimentService
 
 # --- Logging ---
 logging.basicConfig(level=logging.INFO)
@@ -18,11 +19,13 @@ async def lifespan(app: FastAPI):
     logger.info("Starting up ... Loading AI Model...")
     try:
         db_connection = DatabaseConnection()
+        sentiment_service = SentimentService()
         engine = db_connection.create_engine()
         model = SentenceTransformer(settings.model_name)
 
         container.engine = engine
         container.model = model
+        container.sentiment_service = sentiment_service
 
         # # Init and Ingest -> create the db with emb vects
         # container.ingestion_service.init_db()
