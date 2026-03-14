@@ -95,6 +95,18 @@ export class GatewayGateway implements OnGatewayConnection, OnGatewayDisconnect 
     }
   }
 
+  @SubscribeMessage('joinRoom')
+  async handleRoomJoin(client: Socket)
+  {
+    const userId = client.data.userId;
+    const rooms = await this.messageService.getChatRooms(userId);
+    for (const room of rooms)
+    {
+      client.join(room._id.toString());
+    }
+    return { success: true, rooms: rooms.map(r => r._id.toString()) };
+  }
+
   @SubscribeMessage('sendMessage')
   async handleMessage(
     client: Socket,
