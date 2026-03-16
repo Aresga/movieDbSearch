@@ -31,7 +31,7 @@ export class MessageController {
 	}
 
 	@UseGuards(JwtAuthGuard)
-	@Get('rooms/:roomId')
+	@Get('rooms/:roomId/messages')
 	async getRoomMessages(@Request() Req, @Param('roomId') roomId: string)
 	{
 		return await this.messageService.getRoomMessages(roomId);
