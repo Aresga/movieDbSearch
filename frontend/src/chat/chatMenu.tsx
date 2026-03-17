@@ -34,24 +34,22 @@ export default function ChatMenu({ token } : { token: string }) {
   }
 
   const createRoom = async (friendId: string) => {
+	setRoomCreated(false);
 	try {
 		const response = await fetch(`/api/message/rooms/${friendId}`, {
 			method: 'POST',
 			headers: { Authorization: `Bearer ${token}` },
 		});
-
 		const room = await response.json();
-
+		setRooms(room);
 	} finally {
 		setRoomCreated(true);
 	}
   };
 
-
-
   return (
 	<div>
-		
+		<h1>Create new chat!</h1>
 	<button onClick={createRoom} disabled={roomCreated}> {roomCreated ? 'Creating...' :'Create Room'} </button>
 	</div>
   )
