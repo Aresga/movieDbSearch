@@ -24,7 +24,7 @@ export default function Chat({ token, friendId } : { token: string; friendId: st
 }, [token]);
 
   const loadMessages = async (nextRoom: string) => {
-	
+
 	try {
 		const response = await fetch(`/api/message/rooms/${nextRoom}`, {
 			headers: { Authorization: `Bearer ${token}` },
@@ -59,18 +59,25 @@ export default function Chat({ token, friendId } : { token: string; friendId: st
 	setInput('');
   };
 
+  const getSenderInfo = async (senderId: string) => {
+	try {
+		const response = await fetch(`/api/user/${senderId}`);
+		const userInfo = await response.json();
+		return userInfo.username;
+	} catch
+	{
+		return "user not found";
+	}
+  };
 
   return (
-	<div>
-		{!roomId && (
-			<button onClick={createRoom} disabled={roomCreated}>
-			{roomCreated ? 'Creating...' :'Create Room'}
-			</button>
-		)}
+	<div class="chat">
 	{roomId && !messagesLoaded && <p>Loading messages</p>}
 	{roomId && messagesLoaded && messages.length === 0 && <p>Start a conversation!</p>}
 	{messages.map((message, index) => (
+		<p class="userName" key={message.id ?? index}>{getSenderInfo(message.senderId)}</p>
 		<p key={message.id ?? index}>{message.content}</p>
+		<span class="time">{message.createdAt}</span>
 	))}
 	<input value={input} onChange={e => setInput(e.target.value)} disabled={!roomId}/>
 	<button onClick={sendMessage} disabled={!roomId || !input.trim()}>Send</button>
