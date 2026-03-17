@@ -37,23 +37,7 @@ export default function Chat({ token, friendId } : { token: string; friendId: st
   }
   };
 
-  const createRoom = async () => {
-	try {
-		const response = await fetch(`/api/message/rooms/${friendId}`, {
-			method: 'POST',
-			headers: { Authorization: `Bearer ${token}` },
-		});
-
-		const room = await response.json();
-		setRoomId(room._id);
-
-		await loadMessages(room._id);
-	} finally {
-		setRoomCreated(true);
-	}
-  };
-
-    const sendMessage = () => {
+  	  const sendMessage = () => {
 	if (!roomId || !input.trim()) return;
 	socketRef.current.emit('sendMessage', { roomId, content: input });
 	setInput('');
@@ -68,6 +52,7 @@ export default function Chat({ token, friendId } : { token: string; friendId: st
 	{
 		return "user not found";
 	}
+
   };
 
   return (

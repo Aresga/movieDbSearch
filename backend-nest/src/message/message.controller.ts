@@ -8,6 +8,8 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 export class MessageController {
 	constructor(private readonly messageService: MessageService) {}
 
+
+	@UseGuards(JwtAuthGuard)
 	@Post('rooms/:userId')
 	async getCreateRoom(@Request() req, @Param('userId') userId2: string)
 	{
@@ -18,13 +20,15 @@ export class MessageController {
 		return room;
 	}
 
+	@UseGuards(JwtAuthGuard)
 	@Post('rooms/:roomId/chat')
-	async sendMessage( @Request() Req, @Param('roomId') roomId: string, @Body() dto: CreateMessageDto,) 
+	async sendMessage( @Request() Req, @Param('roomId') roomId: string, @Body() dto: CreateMessageDto,)
 	{
 		const message = await this.messageService.storeMessage(roomId, Req.user.id, dto.content);
 		return (message);
 	}
 
+	@UseGuards(JwtAuthGuard)
 	@Get('rooms/:userId')
 	async getUserRooms(@Request() req) {
 		return await this.messageService.getChatRooms(req.user.id)
