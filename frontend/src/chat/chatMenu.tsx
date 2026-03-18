@@ -4,6 +4,7 @@ import { io, Socket } from 'socket.io-client';
 export default function ChatMenu({ token } : { token: string }) {
 
 	const [rooms, setRooms] = useState<any[]>([]);
+	const [friendNames, setFriendNames] = useState<string[]>([]);
 	const [lastMessages, setLastMessages] = useState<any[]>([]);
 	const [input, setInput] = useState('');
 	const [roomsLoaded, setRoomsLoaded] = useState(false);
@@ -54,7 +55,9 @@ export default function ChatMenu({ token } : { token: string }) {
 			secondUser = room.participants[1];
 		else
 			secondUser = room.participants[0];
-		
+		const response = await fetch(`/api/user/${secondUser}`);
+		const friend = await response.json();
+		setFriendNames(friend);
 	}
   }
 
