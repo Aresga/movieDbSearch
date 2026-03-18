@@ -36,3 +36,6 @@ model Wishlist {
   @@index([userId])
   @@index([movieId])
 }
+
+
+// watchlist 

@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request }
 import { UserService } from './user.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
-import { OwnershipGuard } from 'src/auth/guards/ownership.guard';
+// import { OwnershipGuard } from 'src/auth/guards/ownership.guard';
 import { UpdateEmailDto } from './dto/update-email.dto';
 import { UpdatePasswordDto } from './dto/update.password.dto';
 import { SetPasswordDto } from './dto/set-password.dto';
