@@ -1,8 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
 
-export default function Chat({ token, friendId } : { token: string; friendId: string }) {
-	const [roomId, setRoomId] = useState<string | null>(null);
+export default function Chat({ token, friendId, roomId } : { token: string; friendId: string, roomId: string }) {
 	const [messages, setMessages] = useState<any[]>([]);
 	const [input, setInput] = useState('');
 	const [messagesLoaded, setMessagesLoaded] = useState(false);

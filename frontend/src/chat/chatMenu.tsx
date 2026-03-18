@@ -47,10 +47,23 @@ export default function ChatMenu({ token } : { token: string }) {
 	}
   };
 
+  const getRoomsNames = async (userId: string) => {
+	var secondUser;
+	for (var room of rooms) {
+		if (room.participants[0] == userId)
+			secondUser = room.participants[1];
+		else
+			secondUser = room.participants[0];
+		
+	}
+  }
+
   return (
 	<div>
-		<h1>Create new chat!</h1>
-	<button onClick={createRoom} disabled={roomCreated}> {roomCreated ? 'Creating...' :'Create Room'} </button>
+		<div class="sidebar">
+			<a class="active" href="#chats">Chats</a>
+			{}
+		</div>
 	</div>
   )
 
@@ -61,4 +74,6 @@ export default function ChatMenu({ token } : { token: string }) {
 // 			<button onClick={createRoom} disabled={roomCreated}>
 // 			{roomCreated ? 'Creating...' :'Create Room'}
 // 			</button>
+//		<h1>Create new chat!</h1>
+//	<button onClick={createRoom} disabled={roomCreated}> {roomCreated ? 'Creating...' :'Create Room'} </button>
 // 		)}
