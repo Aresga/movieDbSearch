@@ -13,6 +13,8 @@ import { MessageModule } from './message/message.module';
 import { ReviewsModule } from './review/review.module';
 import { TwofactorauthService } from './twofactorauth/twofactorauth.service';
 import { TwofactorauthModule } from './twofactorauth/twofactorauth.module';
+import { TmdbModule } from './tmdb/tmdb.module';
+import { WishlistModule } from './wishlist/wishlist.module';
 
 @Module({
   imports: [
@@ -32,9 +34,12 @@ import { TwofactorauthModule } from './twofactorauth/twofactorauth.module';
     GatewayModule,
     ReviewsModule,
     TwofactorauthModule,
+    TmdbModule,
     MessageModule,
+    WishlistModule,
   ],
   controllers: [AppController],
-  providers: [AppService, TwofactorauthService, TwofactorauthService],
+  providers: [AppService, TwofactorauthService],
+  exports: [AppService],
 })
 export class AppModule {}
