@@ -1,7 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
+import { useNavigate, Navigate } from 'react-router';
 
-export function ChatMenuPage({ token } : { token: string }) {
+type User = {
+	_id: string;
+	username?: string;
+}
+
+export function ChatMenuPage({ token, userId } : { token: string, userId: string }) {
 
 	const [rooms, setRooms] = useState<any[]>([]);
 	const [friendNames, setFriendNames] = useState<string[]>([]);
@@ -16,14 +22,15 @@ export function ChatMenuPage({ token } : { token: string }) {
 	const socket = io('http://localhost:3000', { auth: { token } });
 	socketRef.current = socket;
 
+	loadRooms();
   	return () => {
 		socket.disconnect();
   };
 }, [token]);
 
-  const loadRooms = async (userId: string) => {
+  const loadRooms = async () => {
 	try {
-		const response = await fetch(`/api/rooms/${userId}`, {
+		const response = await fetch(`menu/rooms`, {
 			headers: { Authorization: `Bearer ${token}`},
 		});
 		const rooms = await response.json();
@@ -34,10 +41,14 @@ export function ChatMenuPage({ token } : { token: string }) {
 
   }
 
+  const getFriendName = async (participants: User[]) => {
+	return participants.find((p) => p._id !== userId);
+  }
+
   const createRoom = async (friendId: string) => {
 	setRoomCreated(false);
 	try {
-		const response = await fetch(`/api/message/rooms/${friendId}`, {
+		const response = await fetch(`/rooms/create`, {
 			method: 'POST',
 			headers: { Authorization: `Bearer ${token}` },
 		});
@@ -48,6 +59,10 @@ export function ChatMenuPage({ token } : { token: string }) {
 	}
   };
 
+  const openRoom = (roomId: string) => {
+	Navigate(`/chat/${roomId}`);
+  };
+
   const getRoomsNames = async (userId: string) => {
 	var secondUser;
 	for (var room of rooms) {
@@ -55,7 +70,7 @@ export function ChatMenuPage({ token } : { token: string }) {
 			secondUser = room.participants[1];
 		else
 			secondUser = room.participants[0];
-		const response = await fetch(`/api/user/${secondUser}`);
+		const response = await fetch(`/user/${secondUser}`);
 		const friend = await response.json();
 		setFriendNames(friend.username);
 	}
@@ -64,12 +79,18 @@ export function ChatMenuPage({ token } : { token: string }) {
   return (
 	<div>
 		<menu>
-			{ !roomsLoaded && <p>Loading Messages...</p> }
-			{rooms.map((room, i) => (
-   			<li className="room" key={room.id ?? i}>
-			{room.name ?? `Room ${i + 1}`}
-			</li>
-			))}
+			{!roomsLoaded && <p>Loading Messages...</p> }
+			{if roomsLoaded && rooms.map((room) =>
+			const friend = getOtherParticipant(room.participants)
+			const otherName = other?.username
+			const prevMessage = room.lastMessage
+
+			return (
+				<li key={room._id} className="room" onClick={() => openRoom(room._id)}><div>{otherName}</div>
+				<small>{preview}</small>
+				</li>
+			);
+			)}
 		</menu>
 	</div>
   )

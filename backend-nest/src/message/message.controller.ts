@@ -10,7 +10,7 @@ export class MessageController {
 
 
 	@UseGuards(JwtAuthGuard)
-	@Post('rooms/:userId')
+	@Post('rooms/create')
 	async getCreateRoom(@Request() req, @Param('userId') userId2: string)
 	{
 		const room = await this.messageService.getCreateRoom(

@@ -67,7 +67,6 @@ export class MessageService {
 		return await this.chatRoomModel.find({participants: userId })
 		.populate('lastMessage')
 		.populate('participants')
-		.populate('updatedAt')
 		.sort({ updatedAt: -1 });
 	}
 
