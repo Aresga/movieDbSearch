@@ -57,7 +57,7 @@ export function ChatMenuPage({ token } : { token: string }) {
 			secondUser = room.participants[0];
 		const response = await fetch(`/api/user/${secondUser}`);
 		const friend = await response.json();
-		friendNames.append(friend.username);
+		setFriendNames(friend.username);
 	}
   }
 

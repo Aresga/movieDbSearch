@@ -64,7 +64,11 @@ export class MessageService {
 
 	async getMenuRooms(userId: string)
 	{
-		
+		return await this.chatRoomModel.find({participants: userId })
+		.populate('lastMessage')
+		.populate('participants')
+		.populate('updatedAt')
+		.sort({ updatedAt: -1 });
 	}
 
 }
