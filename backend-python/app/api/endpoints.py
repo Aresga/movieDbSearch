@@ -1,6 +1,14 @@
 from fastapi import APIRouter, Depends, Query
 from app.services.search_service import SearchService
-from .dependencies import get_search_service
+from pydantic import BaseModel
+from app.services.sentiment_service import SentimentService
+from .dependencies import get_search_service, get_sentiment_service
+
+class reviewRequest(BaseModel):
+    text: str
+
+class BatchReviewRequest(BaseModel):
+    texts: list[str]
 
 router = APIRouter()
 
@@ -18,3 +26,13 @@ async def search_movies(
     Search for movies endpoint.
     """
     return service.search_movies(q, limit)
+
+@router.post("/sentiment")
+def analyze_sentiment(
+    body: reviewRequest,
+    svc: SentimentService = Depends(get_sentiment_service)
+): 
+    """
+    Get sentiment analyzis
+    """
+    return svc.analyze(body.text)

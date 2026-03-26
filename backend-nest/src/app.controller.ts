@@ -1,9 +1,14 @@
 import { BadRequestException, Controller, Get, Param, ParseIntPipe, Query, Req } from '@nestjs/common';
 import { AppService } from './app.service';
+import { TmdbService } from './tmdb/tmdb.service';
+import { ParamsTokenFactory } from '@nestjs/core/pipes';
 
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) {}
+  constructor(
+    private readonly appService: AppService,
+    private readonly tmdb: TmdbService,
+  ) {}
 
   @Get('health')
   health(): object {
@@ -25,6 +30,19 @@ export class AppController {
   @Get('movie/:id')
   async fetchmovie(@Param('id', ParseIntPipe) tmdbId: number) {
     return this.appService.findMovie(tmdbId);
+  }
+
+  @Get('trending')
+  async trending(@Query('limit') limit: number = 20) {
+    return this.appService.getTrending(limit);
+  }
+
+  @Get('movie/:id/full')
+  async movieFull(
+    @Param('id', ParseIntPipe) tmdbId: number,
+    @Query('lang') lang: string = 'en-US',
+  ) {
+    return this.tmdb.getMovieFull(tmdbId, lang)
   }
 
 }

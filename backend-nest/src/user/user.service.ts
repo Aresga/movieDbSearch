@@ -1,6 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { UpdatePasswordDto } from './dto/update.password.dto';
+import * as bcrypt from 'bcrypt'
+import { SetPasswordDto } from './dto/set-password.dto';
 
 const safeUserSelect = {
   id: true,
@@ -10,7 +13,9 @@ const safeUserSelect = {
   isTwoFactorEnabled: true,
   provider: true,
   isOnline: true,
+  bio: true,
   createdAt: true,
+  password: true,
 };
 
 const safeUserSelectPublic = {
@@ -18,8 +23,21 @@ const safeUserSelectPublic = {
   username: true,
   avatarUrl: true,
   isOnline: true,
+  bio: true,
   createdAt: true,
 }
+
+const exportMyData = {
+  id: true,
+  email: true,
+  username: true,
+  avatarUrl: true,
+  isTwoFactorEnabled: true,
+  provider: true,
+  isOnline: true,
+  bio: true,
+  createdAt: true,
+};
 
 @Injectable()
 export class UserService {
@@ -40,25 +58,31 @@ export class UserService {
       select: safeUserSelect,
     });
     if (!user) throw new NotFoundException('User not found');
-    return user;
+
+    const { password, ...rest } = user;
+
+    return {
+      ...rest,
+      hasPassword: !!password,
+    };
   }
 
-  // async findByEmail(email: string) {
-    
-  //   const user = await this.prisma.user.findUnique({
-  //     where: { email },
-  //     select: { safeUserSelect },
-  //   });
-  //   if (!user) throw new NotFoundException('User not found');
-  //   return user;
-
-  // }
-
   async updateProfile(id: string, dto: UpdateUserDto) {
-    const updatedUser = this.prisma.user.update({
+    if (dto.username) {
+      const verifyuser = await this.prisma.user.findFirst({
+        where: { username: dto.username, NOT: { id } },
+      })
+      if (verifyuser) throw new ConflictException('Username already in use')
+    }
+
+    const updatedUser = await this.prisma.user.update({
       where: { id },
       data: dto,
-      select: safeUserSelect,
+      select: {
+        username: true,
+        avatarUrl: true,
+        bio: true,
+      },
     });
     if (!updatedUser) throw new NotFoundException('User not found');
     return updatedUser;
@@ -103,6 +127,78 @@ export class UserService {
     });
     if (!user) throw new NotFoundException('User not found');
     return user.twoFactorSecret;
+  }
+
+  async updateEmail(id: string, newEmail: string) {
+    const existing = await this.prisma.user.findFirst({
+      where: { email: newEmail, NOT: { id }},
+    })
+
+    if (existing) throw new ConflictException('Email already in use')
+
+    return this.prisma.user.update({
+      where: { id },
+      data: { email: newEmail },
+      select: { email: true },
+    })
+  }
+
+  async updatePassword(id: string, dto: UpdatePasswordDto) {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+    })
+
+    if (!user) throw new NotFoundException('User not found ')
+    if (!user.password) throw new BadRequestException('Your account uses OAuth login and has no password. Please set a password first.')
+
+    const isMatch = await bcrypt.compare(dto.currentPassword, user.password)
+    if (!isMatch) throw new UnauthorizedException('Current password is incorrect')
+
+    const hashed = await bcrypt.hash(dto.newPassword, 10)
+
+    await this.prisma.user.update({
+      where: { id },
+      data: { password: hashed },
+    })
+
+    return { message: 'Password updated successfully'}
+  }
+
+  async setPassword(id: string, dto: SetPasswordDto) {
+    const user = await this.prisma.user.findUnique({
+      where: { id }
+    })
+
+    if (!user) throw new NotFoundException('User not found ')
+    if (user.password) throw new BadRequestException('Use password instead')
+
+    const hashed = await bcrypt.hash(dto.newPassword, 10)
+    await this.prisma.user.update({
+      where: { id },
+      data: { password: hashed },
+    })
+
+    return { message: 'Password set successfully' }
+  }
+
+  async exportData(userId: string) {
+    const user = this.prisma.user.findUnique({
+      where: { id: userId },
+      select:  {
+        ...exportMyData,
+        reviews: true,
+        friends: {
+          select: {
+            id: true,
+            username: true,
+            avatarUrl: true,
+            bio: true,
+          }
+        },
+      },
+    });
+    if (!user) throw new NotFoundException('User not found');
+    return user;
   }
 
 }
