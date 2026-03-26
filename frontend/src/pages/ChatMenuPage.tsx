@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
 
-export default function ChatMenu({ token } : { token: string }) {
+export function ChatMenuPage({ token } : { token: string }) {
 
 	const [rooms, setRooms] = useState<any[]>([]);
 	const [friendNames, setFriendNames] = useState<string[]>([]);
@@ -57,20 +57,25 @@ export default function ChatMenu({ token } : { token: string }) {
 			secondUser = room.participants[0];
 		const response = await fetch(`/api/user/${secondUser}`);
 		const friend = await response.json();
-		setFriendNames(friend);
+		friendNames.append(friend.username);
 	}
   }
 
   return (
 	<div>
-		<div class="sidebar">
-			<a class="active" href="#chats">Chats</a>
-			{}
-		</div>
+		<menu>
+			{ !roomsLoaded && <p>Loading Messages...</p> }
+			{rooms.map((room, i) => (
+   			<li className="room" key={room.id ?? i}>
+			{room.name ?? `Room ${i + 1}`}
+			</li>
+			))}
+		</menu>
 	</div>
   )
 
 }
+
 
 
 // {!roomId && (

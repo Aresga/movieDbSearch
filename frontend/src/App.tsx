@@ -15,6 +15,7 @@ import { UserPage } from '@/pages/UserPage'
 import { FriendsPage } from '@/pages/FriendsPage'
 import { useAuthStore } from '@/store/authStore'
 import { MyProfilePage } from './pages/MyProfilePage'
+import { ChatMenuPage } from './pages/ChatMenuPage'
 
 function RootRedirect() {
   return <Navigate to={'/home'} replace />
@@ -42,7 +43,7 @@ function App() {
 
         {/* Protected */}
         <Route element={<AppLayout />}>
-            
+
           <Route path="/home" element={<HomePage />} />
           <Route path="/movie/:id" element={<MoviePage />} />
 
@@ -55,6 +56,7 @@ function App() {
             <Route path="/user/:id" element={<UserPage />} />
             <Route path="/friends" element={<FriendsPage />} />
             <Route path="/2fa/setup" element={<TwoFactorSetupPage />} />
+			<Route path="rooms/:id" element={<ChatMenuPage /> } />
           </Route>
         </Route>
 

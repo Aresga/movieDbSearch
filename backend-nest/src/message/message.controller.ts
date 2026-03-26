@@ -35,6 +35,12 @@ export class MessageController {
 	}
 
 	@UseGuards(JwtAuthGuard)
+	@Get('menu/rooms')
+	async getMenuRooms(@Request() req) {
+  		return this.messageService.getMenuRooms(req.user.id);
+	}
+
+	@UseGuards(JwtAuthGuard)
 	@Get('rooms/:roomId/messages')
 	async getRoomMessages(@Request() Req, @Param('roomId') roomId: string)
 	{

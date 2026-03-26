@@ -10,7 +10,7 @@ export class MessageService {
 		@InjectModel(Message.name) private messageModel: Model<Message>,
 		@InjectModel(ChatRoom.name) private chatRoomModel: Model<ChatRoom>
 	) {}
-	
+
 	async getCreateRoom(userId1: string, userId2: string)
 	{
 		const participants = [userId1, userId2].sort();
@@ -53,6 +53,18 @@ export class MessageService {
 		return await this.chatRoomModel.find({participants: userId })
 		.populate('lastMessage')
 		.sort({ updatedAt: -1 });
+	}
+
+	async markAsRead(messageId: string)
+	{
+		await this.messageModel.findByIdAndUpdate(messageId, {
+			read: true,
+		});
+	}
+
+	async getMenuRooms(userId: string)
+	{
+		
 	}
 
 }

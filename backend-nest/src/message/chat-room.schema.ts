@@ -12,5 +12,6 @@ export class ChatRoom extends Document {
 
   @Prop()
   updatedAt: Date;
+
 }
 export const ChatRoomSchema = SchemaFactory.createForClass(ChatRoom);
