@@ -1,26 +1,37 @@
 import { useState, useEffect, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
-import { useNavigate, Navigate } from 'react-router';
+import { useNavigate } from 'react-router';
 
 type User = {
 	_id: string;
 	username?: string;
 }
 
+type Room = {
+	_id: string;
+	participans: User[];
+	lastMessage?: Message | null;
+	updatedAt?: string;
+}
+
+type Message = {
+	id: string;
+	roomId: string;
+	senderId: string;
+	content: string;
+	timestamp: string;
+}
+
 export function ChatMenuPage({ token, userId } : { token: string, userId: string }) {
 
-	const [rooms, setRooms] = useState<any[]>([]);
-	const [friendNames, setFriendNames] = useState<string[]>([]);
-	const [lastMessages, setLastMessages] = useState<any[]>([]);
-	const [input, setInput] = useState('');
+	const [rooms, setRooms] = useState<Room[]>([]);
 	const [roomsLoaded, setRoomsLoaded] = useState(false);
 	const [roomCreated, setRoomCreated] = useState(false);
 	const socketRef = useRef<Socket | null>(null);
 
 
   useEffect(() => {
-	const socket = io('http://localhost:3000', { auth: { token } });
-	socketRef.current = socket;
+
 
 	loadRooms();
   	return () => {
@@ -38,8 +49,29 @@ export function ChatMenuPage({ token, userId } : { token: string, userId: string
 	} finally {
 		setRoomsLoaded(true);
 	}
-
   }
+
+  useEffect(() => {
+	const socket = io('http://localhost:3000', { auth: { token } });
+	socketRef.current = socket;
+
+	socket.on('receiveMessage', (message: Message) => {
+		setRooms((prev) => {
+			const next = prev.map((room) => {
+				if (room._id !== message.roomId) return room;
+				return {
+					...room,
+					lastMessage: { _id: message.id, content: message.content },
+					updatedAt: message.timestamp,
+				};
+			});
+			next.sort((a, b) =>
+				new Date(b.updatedAt || 0).getTime() - new Date(a.updatedAt || 0).getTime(),
+		);
+		return next
+		});
+	})
+  });
 
   const getFriendName = async (participants: User[]) => {
 	return participants.find((p) => p._id !== userId);
@@ -60,21 +92,9 @@ export function ChatMenuPage({ token, userId } : { token: string, userId: string
   };
 
   const openRoom = (roomId: string) => {
-	Navigate(`/chat/${roomId}`);
+	useNavigate(`/chat/${roomId}`);
   };
 
-  const getRoomsNames = async (userId: string) => {
-	var secondUser;
-	for (var room of rooms) {
-		if (room.participants[0] == userId)
-			secondUser = room.participants[1];
-		else
-			secondUser = room.participants[0];
-		const response = await fetch(`/user/${secondUser}`);
-		const friend = await response.json();
-		setFriendNames(friend.username);
-	}
-  }
 
   return (
 	<div>
