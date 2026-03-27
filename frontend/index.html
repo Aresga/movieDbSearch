@@ -1,12 +1,13 @@
 <!doctype html>
 <!--
-* en - ells screen readers (for visually impaired users) and search engines
-* that the page is in English
-* dark - ensures the browser paints a dark background instantly before React even loads,
-* preventing a harsh white screen "flash"
+* en - tells screen readers and search engines the page is in English.
+* Note: The "dark" class was removed from here because the <ThemeProvider> 
+* in main.tsx accurately detects the user's OS "System" preference 
+* and injects the correct class instantly!
 -->
-<html lang="en" class="dark">
-  <head>
+<html lang="en">
+
+<head>
     <!-- browser to understand and perfectly render modern text characters -->
     <meta charset="UTF-8" />
     <!-- tells the browser what tiny icon to put on the browser tab right next to the site's name -->
@@ -16,25 +17,29 @@
     <!-- what shows up in the browser tab -->
     <title>MovieDb - Semantic search engine</title>
     <!-- meta tags for SEO -->
-    <meta name="description" content="Search millions of movies, build your ultimate watchlist, and connect with friends who share your cinematic taste.">
-    <meta name="theme-color" content="#09090b" />
-    <meta name="robots" content="index, follow" />
-    
-    <!-- Open Graph / Facebook / Discord (Link Previews) -->
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content="MovieDb - Semantic Search Engine" />
-    <meta property="og:description" content="Search millions of movies, build your ultimate watchlist, and connect with friends who share your cinematic taste." />
-    <!-- Uncomment these when deploy to a real domain: -->
-    <!-- <meta property="og:url" content="https://ourwebsite.com/" /> -->
-    <!-- <meta property="og:image" content="https://ourwebsite.com/og-image.jpg" /> -->
+<meta name="description"
+    content="Search millions of movies, build your ultimate watchlist, and connect with friends who share your cinematic taste.">
+<meta name="theme-color" content="#09090b" />
+<meta name="robots" content="index, follow" />
 
-    <!-- Twitter / X -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="MovieDb - Semantic Search Engine" />
-    <meta name="twitter:description" content="Search millions of movies, build your ultimate watchlist, and connect with friends who share your cinematic taste." />
-    <!-- <meta name="twitter:image" content="https://ourwebsite.com/og-image.jpg" /> -->
-  </head>
-  <body>
+<!-- Open Graph / Facebook / Discord (Link Previews) -->
+<meta property="og:type" content="website" />
+<meta property="og:title" content="MovieDb - Semantic Search Engine" />
+<meta property="og:description"
+    content="Search millions of movies, build your ultimate watchlist, and connect with friends who share your cinematic taste." />
+<!-- Uncomment these when deploy to a real domain: -->
+<!-- <meta property="og:url" content="https://ourwebsite.com/" /> -->
+<!-- <meta property="og:image" content="https://ourwebsite.com/og-image.jpg" /> -->
+
+<!-- Twitter / X -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="MovieDb - Semantic Search Engine" />
+<meta name="twitter:description"
+    content="Search millions of movies, build your ultimate watchlist, and connect with friends who share your cinematic taste." />
+<!-- <meta name="twitter:image" content="https://ourwebsite.com/og-image.jpg" /> -->
+</head>
+
+<body>
     <!-- the placeholder box where React lives -->
     <div id="root"></div>
     <!--
@@ -43,6 +48,7 @@
         * grab  main.tsx, compile it, run it, 
         * and let React take complete control of the <div id="root"> 
         -->
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<script type="module" src="/src/main.tsx"></script>
+</body>
+
 </html>
