@@ -24,6 +24,27 @@ model Wishlist {
 export class WishlistController {
   constructor(private readonly wishlistService: WishlistService) {}
 
+// Read the user's wishlist
+  @Get()
+  getMyWishlist(@Request() req) {
+  return this.wishlistService.getWishlist(req.user.id);
+  }
+
+// Read a specific user's wishlist (for friends or any users?)
+  @Get('user/:userId')
+  getUserWishlist(@Param('userId') userId: string) {
+  return this.wishlistService.getWishlist(userId);
+  }
+
+// Check if a movie is in the user's wishlist (for heart icon?)
+  @Get('status/:movieId')
+  isInWishlist(
+    @Request() req, 
+    @Param('movieId', ParseIntPipe) movieId: number
+  ) {
+    return this.wishlistService.isInWishlist(req.user.id, movieId);
+  }
+
 // Add a movie to the user's wishlist
   @Post(':movieId')
   addToWishlist(
@@ -40,21 +61,5 @@ export class WishlistController {
     @Param('movieId', ParseIntPipe) movieId: number
   ) {
     return this.wishlistService.removeFromWishlist(req.user.id, movieId);
-  }
- 
-// Read the user's wishlist
-  @Get()
-  getMyWishlist(@Request() req) {
-  return this.wishlistService.getWishlist(req.user.id);
-  }
-
-// Check if a movie is in the user's wishlist (for heart icon?)
-  @Get('status/:movieId')
-  isInWishlist(
-    @Request() req, 
-    @Param('movieId', ParseIntPipe) movieId: number
-  ) {
-    return this.wishlistService.isInWishlist(req.user.id, movieId);
-  }
+  } 
 }
-
