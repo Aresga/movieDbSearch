@@ -17,11 +17,11 @@ type Room = {
 };
 
 type Message = {
-  id: string;
+  _id: string;
   roomId: string;
   senderId: string;
   content: string;
-  timestamp: string;
+  createdAt: string;
 };
 
 type Friend = IdLike & {
@@ -62,7 +62,7 @@ export function ChatMenuPage({ token, userId }: { token: string; userId: string 
         const next = prev.map((room) =>
           room._id !== message.roomId
             ? room
-            : { ...room, lastMessage: message, updatedAt: message.timestamp }
+            : { ...room, lastMessage: message, updatedAt: message.createdAt }
         );
 
         next.sort(

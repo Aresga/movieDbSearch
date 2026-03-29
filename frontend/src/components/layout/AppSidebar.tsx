@@ -29,7 +29,7 @@ const authNavItems = [
   { title: 'My profile', url: '/user/me', icon: User },
   { title: 'Friends', url: '/friends', icon: Users },
   { title: 'Settings', url: '/settings', icon: Settings },
-  { title: 'Chats', url: '/rooms', icon: Users }
+  { title: 'Chats', url: '/menu/rooms', icon: Users }
   // { title: '2FA Security', url: '/2fa/setup', icon: Shield },
 ]
 

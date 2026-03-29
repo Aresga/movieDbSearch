@@ -16,6 +16,7 @@ import { FriendsPage } from '@/pages/FriendsPage'
 import { useAuthStore } from '@/store/authStore'
 import { MyProfilePage } from './pages/MyProfilePage'
 import { ChatMenuPage } from './pages/ChatMenuPage'
+import { ChatPage } from './pages/ChatPage'
 
 function RootRedirect() {
   return <Navigate to={'/home'} replace />
@@ -57,6 +58,7 @@ function App() {
             <Route path="/friends" element={<FriendsPage />} />
             <Route path="/2fa/setup" element={<TwoFactorSetupPage />} />
             <Route path="/menu/rooms" element={<ChatMenuPage token={useAuthStore().token} userId={useAuthStore().userId} />} />
+            <Route path="/rooms/:roomId" element={<ChatPage token={useAuthStore().token} userId={useAuthStore().userId} />} />
           </Route>
         </Route>
 

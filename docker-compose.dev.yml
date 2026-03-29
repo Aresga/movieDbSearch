@@ -55,9 +55,11 @@ services:
       - mongodb_config:/data/configdb
     ports:
       - "27017:27017"
+    logging:
+      driver: "none"
     healthcheck:
       test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
-      interval: 10s
+      interval: 180s
       timeout: 5s
       retries: 5
     networks:
