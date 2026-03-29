@@ -11,7 +11,7 @@ export class MessageController {
 
 	@UseGuards(JwtAuthGuard)
 	@Post('rooms/create')
-	async getCreateRoom(@Request() req, @Param('userId') userId2: string)
+	async getCreateRoom(@Request() req, @Param('friendId') userId2: string)
 	{
 		const room = await this.messageService.getCreateRoom(
 			req.user.id,

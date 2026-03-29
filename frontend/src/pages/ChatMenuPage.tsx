@@ -1,128 +1,151 @@
-import { useState, useEffect, useRef } from 'react';
-import { io, Socket } from 'socket.io-client';
-import { useNavigate } from 'react-router';
+import React, { useState, useEffect, useMemo } from 'react';
+import { io } from 'socket.io-client';
+import { useNavigate } from 'react-router-dom';
+import { useFriends } from '@/hooks/useFriends';
 
-type User = {
-	_id: string;
-	username?: string;
-}
+type IdLike = { id?: string; _id?: string };
+
+type User = IdLike & {
+  username?: string;
+};
 
 type Room = {
-	_id: string;
-	participans: User[];
-	lastMessage?: Message | null;
-	updatedAt?: string;
-}
+  _id: string;
+  participants: User[];
+  lastMessage?: Message | null;
+  updatedAt?: string;
+};
 
 type Message = {
-	id: string;
-	roomId: string;
-	senderId: string;
-	content: string;
-	timestamp: string;
-}
+  id: string;
+  roomId: string;
+  senderId: string;
+  content: string;
+  timestamp: string;
+};
 
-export function ChatMenuPage({ token, userId } : { token: string, userId: string }) {
+type Friend = IdLike & {
+  username?: string;
+};
 
-	const [rooms, setRooms] = useState<Room[]>([]);
-	const [roomsLoaded, setRoomsLoaded] = useState(false);
-	const [roomCreated, setRoomCreated] = useState(false);
-	const socketRef = useRef<Socket | null>(null);
+export function ChatMenuPage({ token, userId }: { token: string; userId: string }) {
+  const [rooms, setRooms] = useState<Room[]>([]);
+  const [showFriends, setShowFriends] = useState(false);
+  const [isCreatingRoom, setIsCreatingRoom] = useState(false);
+  const navigate = useNavigate();
 
+  const { data: friends = [], isLoading: isFriendsLoading } = useFriends();
 
-  useEffect(() => {
-
-
-	loadRooms();
-  	return () => {
-		socket.disconnect();
-  };
-}, [token]);
-
-  const loadRooms = async () => {
-	try {
-		const response = await fetch(`menu/rooms`, {
-			headers: { Authorization: `Bearer ${token}`},
-		});
-		const rooms = await response.json();
-		setRooms(rooms);
-	} finally {
-		setRoomsLoaded(true);
-	}
-  }
+  const getId = (value: IdLike | undefined) => value?.id ?? value?._id ?? '';
 
   useEffect(() => {
-	const socket = io('http://localhost:3000', { auth: { token } });
-	socketRef.current = socket;
+    const loadRooms = async () => {
+      const response = await fetch('/api/menu/rooms', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data: Room[] = await response.json();
+      data.sort(
+        (a, b) =>
+          new Date(b.updatedAt ?? 0).getTime() - new Date(a.updatedAt ?? 0).getTime()
+      );
+      setRooms(data);
+    };
 
-	socket.on('receiveMessage', (message: Message) => {
-		setRooms((prev) => {
-			const next = prev.map((room) => {
-				if (room._id !== message.roomId) return room;
-				return {
-					...room,
-					lastMessage: { _id: message.id, content: message.content },
-					updatedAt: message.timestamp,
-				};
-			});
-			next.sort((a, b) =>
-				new Date(b.updatedAt || 0).getTime() - new Date(a.updatedAt || 0).getTime(),
-		);
-		return next
-		});
-	})
-  });
+    loadRooms();
+  }, [token]);
 
-  const getFriendName = async (participants: User[]) => {
-	return participants.find((p) => p._id !== userId);
-  }
+  useEffect(() => {
+    const socket = io('http://localhost:3000', { auth: { token } });
+
+    socket.on('receiveMessage', (message: Message) => {
+      setRooms((prev) => {
+        const next = prev.map((room) =>
+          room._id !== message.roomId
+            ? room
+            : { ...room, lastMessage: message, updatedAt: message.timestamp }
+        );
+
+        next.sort(
+          (a, b) =>
+            new Date(b.updatedAt ?? 0).getTime() - new Date(a.updatedAt ?? 0).getTime()
+        );
+        return next;
+      });
+    });
+
+    return () => socket.disconnect();
+  }, [token]);
+
+  const existingChatFriendIds = useMemo(() => {
+    return new Set(
+      rooms
+        .map((room) => room.participants.find((p) => getId(p) !== userId))
+        .map((p) => getId(p))
+        .filter(Boolean)
+    );
+  }, [rooms, userId]);
+
+  const validFriends = useMemo(() => {
+    return (friends as Friend[]).filter((f) => {
+      const fid = getId(f);
+      return !!fid && fid !== userId && !existingChatFriendIds.has(fid);
+    });
+  }, [friends, existingChatFriendIds, userId]);
 
   const createRoom = async (friendId: string) => {
-	setRoomCreated(false);
-	try {
-		const response = await fetch(`/rooms/create`, {
-			method: 'POST',
-			headers: { Authorization: `Bearer ${token}` },
-		});
-		const room = await response.json();
-		setRooms(room);
-	} finally {
-		setRoomCreated(true);
-	}
-  };
+    setIsCreatingRoom(true);
+    try {
+      const response = await fetch(`/api/message/rooms/create/${friendId}`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-  const openRoom = (roomId: string) => {
-	useNavigate(`/chat/${roomId}`);
-  };
+      const room: Room = await response.json();
 
+      setRooms((prev) => {
+        const exists = prev.some((r) => r._id === room._id);
+        const next = exists ? prev.map((r) => (r._id === room._id ? room : r)) : [room, ...prev];
+        next.sort(
+          (a, b) =>
+            new Date(b.updatedAt ?? 0).getTime() - new Date(a.updatedAt ?? 0).getTime()
+        );
+        return next;
+      });
+
+      navigate(`/rooms/${room._id}`);
+    } finally {
+      setIsCreatingRoom(false);
+    }
+  };
 
   return (
-	<div>
-		<menu>
-			{!roomsLoaded && <p>Loading Messages...</p> }
-			{if roomsLoaded && rooms.map((room) =>
-			const friend = getOtherParticipant(room.participants)
-			const otherName = other?.username
-			const prevMessage = room.lastMessage
+    <div>
+      <button onClick={() => setShowFriends((v) => !v)} disabled={isCreatingRoom}>
+        Create a new chat!
+      </button>
 
-			return (
-				<li key={room._id} className="room" onClick={() => openRoom(room._id)}><div>{otherName}</div>
-				<small>{preview}</small>
-				</li>
-			);
-			)}
-		</menu>
-	</div>
-  )
-
+      {showFriends && (
+        <div>
+          {isFriendsLoading ? (
+            <p>Loading friends...</p>
+          ) : validFriends.length === 0 ? (
+            <p>You are already talking to everyone!</p>
+          ) : (
+            validFriends.map((friend) => {
+              const friendId = getId(friend);
+              return (
+                <button
+                  key={friendId}
+                  onClick={() => createRoom(friendId)}
+                  disabled={isCreatingRoom}
+                >
+                  Start a new chat with {friend.username ?? 'Unknown user'}
+                </button>
+              );
+            })
+          )}
+        </div>
+      )}
+    </div>
+  );
 }
-
-
-
-// {!roomId && (
-// 			<button onClick={createRoom} disabled={roomCreated}>
-// 			{roomCreated ? 'Creating...' :'Create Room'}
-// 			</button>
-//		<h1>Create new chat!</h1>
-//	<button onClick={createRoom} disabled={roomCreated}> {roomCreated ? 'Creating...' :'Create Room'} </button>
-// 		)}
