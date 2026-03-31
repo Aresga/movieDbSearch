@@ -23,7 +23,7 @@ export function ModeToggle() {
                 {/* The Button uses 'relative' to stack the Sun and Moon icons on top of each other.
                   'sr-only' provides a label for screen readers without showing text in the UI.
                 */}
-                <Button variant="ghost" size="icon" className="relative size-8 shrink-0 text-muted-foreground hover:text-foreground">
+                <Button variant="ghost" size="icon-sm" className="relative shrink-0 text-muted-foreground hover:text-foreground">
                     {/* Sun Icon: Visible in Light mode (scale-100), shrinks and rotates away in Dark mode */}
                     <Sun className="size-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
                     {/* Moon Icon: Hidden by default (scale-0), rotates into view in Dark mode */}
