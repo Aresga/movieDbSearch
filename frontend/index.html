@@ -1,9 +1,9 @@
 <!doctype html>
 <!--
 * en - tells screen readers and search engines the page is in English.
-* Note: The "dark" class was removed from here because the <ThemeProvider> 
-* in main.tsx accurately detects the user's OS "System" preference 
-* and injects the correct class instantly!
+* A small inline script is located in the head block to run before CSS paints, 
+* applying the dark theme instantly to prevent Flash of Unstyled Content (FOUC)
+* before React's <ThemeProvider> takes over.
 -->
 <html lang="en">
 
@@ -17,26 +17,43 @@
     <!-- what shows up in the browser tab -->
     <title>MovieDb - Semantic search engine</title>
     <!-- meta tags for SEO -->
-<meta name="description"
-    content="Search millions of movies, build your ultimate watchlist, and connect with friends who share your cinematic taste.">
-<meta name="theme-color" content="#09090b" />
-<meta name="robots" content="index, follow" />
+    <meta name="description"
+        content="Search millions of movies, build your ultimate watchlist, and connect with friends who share your cinematic taste.">
+    <meta name="theme-color" content="#09090b" />
+    <meta name="robots" content="index, follow" />
 
-<!-- Open Graph / Facebook / Discord (Link Previews) -->
-<meta property="og:type" content="website" />
-<meta property="og:title" content="MovieDb - Semantic Search Engine" />
-<meta property="og:description"
-    content="Search millions of movies, build your ultimate watchlist, and connect with friends who share your cinematic taste." />
-<!-- Uncomment these when deploy to a real domain: -->
-<!-- <meta property="og:url" content="https://ourwebsite.com/" /> -->
-<!-- <meta property="og:image" content="https://ourwebsite.com/og-image.jpg" /> -->
+    <!-- Open Graph / Facebook / Discord (Link Previews) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="MovieDb - Semantic Search Engine" />
+    <meta property="og:description"
+        content="Search millions of movies, build your ultimate watchlist, and connect with friends who share your cinematic taste." />
+    <!-- Uncomment these when deploy to a real domain: -->
+    <!-- <meta property="og:url" content="https://ourwebsite.com/" /> -->
+    <!-- <meta property="og:image" content="https://ourwebsite.com/og-image.jpg" /> -->
 
-<!-- Twitter / X -->
-<meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="MovieDb - Semantic Search Engine" />
-<meta name="twitter:description"
-    content="Search millions of movies, build your ultimate watchlist, and connect with friends who share your cinematic taste." />
-<!-- <meta name="twitter:image" content="https://ourwebsite.com/og-image.jpg" /> -->
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="MovieDb - Semantic Search Engine" />
+    <meta name="twitter:description"
+        content="Search millions of movies, build your ultimate watchlist, and connect with friends who share your cinematic taste." />
+    <!-- <meta name="twitter:image" content="https://ourwebsite.com/og-image.jpg" /> -->
+
+    <!-- Inline script to prevent FOUC for dark mode before React renders -->
+    <script>
+        (function () {
+            try {
+                let theme = localStorage.getItem("theme");
+                let prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+                if (theme === "dark" || ((theme === "system" || !theme) && prefersDark)) {
+                    document.documentElement.classList.add("dark");
+                }
+            } catch (e) {
+                if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+                    document.documentElement.classList.add("dark");
+                }
+            }
+        })();
+    </script>
 </head>
 
 <body>
@@ -48,7 +65,7 @@
         * grab  main.tsx, compile it, run it, 
         * and let React take complete control of the <div id="root"> 
         -->
-<script type="module" src="/src/main.tsx"></script>
+    <script type="module" src="/src/main.tsx"></script>
 </body>
 
 </html>

@@ -63,7 +63,8 @@
 /* --- 4. GLOBAL DESIGN TOKENS (LIGHT MODE) --- */
 :root {
   /* [BRAND] */
-  --brand: #E50914; /* Netflix Red */
+  --brand: #E50914;
+  /* Netflix Red */
   --brand-foreground: #ffffff;
   --radius: 0.625rem;
 
@@ -149,6 +150,14 @@
 /* --- 6. BASE LAYER --- */
 /* Global resets and component defaults */
 @layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  .dark {
+    color-scheme: dark;
+  }
+
   * {
     @apply border-border outline-ring/50;
   }
@@ -160,7 +169,8 @@
 
 /* --- 7. UTILITY LAYER --- */
 @layer utilities {
-    /* Hides scrollbars but maintains scroll functionality */
+
+  /* Hides scrollbars but maintains scroll functionality */
   .scrollbar-hide {
     -ms-overflow-style: none;
     /* IE/Edge */
