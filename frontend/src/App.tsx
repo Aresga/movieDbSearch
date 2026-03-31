@@ -15,6 +15,8 @@ import { UserPage } from '@/pages/UserPage'
 import { FriendsPage } from '@/pages/FriendsPage'
 import { useAuthStore } from '@/store/authStore'
 import { MyProfilePage } from './pages/MyProfilePage'
+import { PrivacyPolicyPage } from '@/pages/PrivacyPolicyPage'
+import { CookiePolicyPage } from '@/pages/CookiePolicyPage'
 
 function RootRedirect() {
   return <Navigate to={'/home'} replace />
@@ -42,9 +44,12 @@ function App() {
 
         {/* Protected */}
         <Route element={<AppLayout />}>
-            
+
           <Route path="/home" element={<HomePage />} />
           <Route path="/movie/:id" element={<MoviePage />} />
+
+          <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+          <Route path="/cookie-policy" element={<CookiePolicyPage />} />
 
           <Route element={<ProtectedRoute />}>
 
