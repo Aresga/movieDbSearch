@@ -11,7 +11,7 @@ export function Footer() {
                 </div>
 
                 <p className="text-center text-sm leading-loose text-muted-foreground md:text-left flex-1 md:ml-8">
-                    © {new Date().getFullYear()} MovieDb. All rights reserved. Built for cinema lovers.
+                    © {new Date().getFullYear()} moviesearchdb. All rights reserved. Built for cinema lovers.
                 </p>
 
                 <div className="flex gap-6 items-center">

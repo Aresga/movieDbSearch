@@ -5,6 +5,7 @@ import { AppSidebar } from './AppSidebar'
 import { useSocket } from '@/hooks/useSocket'
 import { NotificationBell } from '../ui/NotificationBell'
 import { ModeToggle } from '../ui/mode-toggle'
+import { Footer } from './Footer'
 
 export function AppLayout() {
   useSocket()
@@ -19,8 +20,11 @@ export function AppLayout() {
           <ModeToggle />
           <NotificationBell />
         </header>
-        <main className="flex-1 overflow-auto">
-          <Outlet />
+        <main className="flex-1 overflow-auto flex flex-col">
+          <div className="flex-1">
+            <Outlet />
+          </div>
+          <Footer />
         </main>
       </SidebarInset>
     </SidebarProvider>
