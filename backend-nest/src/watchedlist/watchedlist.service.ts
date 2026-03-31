@@ -1,63 +1,41 @@
 import { 
-  BadRequestException, 
-  Injectable, 
-  NotFoundException, 
-  InternalServerErrorException 
-} from '@nestjs/common';
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException
+ } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { TmdbService } from 'src/tmdb/tmdb.service';
 
 @Injectable()
-export class WishListService {
+export class WatchedListService {
   constructor(private prisma: PrismaService,
-    private tmdbService: TmdbService,
+    private tmdbService:TmdbService,
   ) {}
 
-  async getWishList(userId: string) {
-    return this.prisma.wishList.findMany({
+  async getWatchedList(userId: string) {
+    return this.prisma.watchedList.findMany({
       where: { userId },
       include: { movie: true },
-      orderBy: { addedAt: 'desc'},
-    });
+      orderBy: { watchedAt: 'desc'}
+    })
   }
 
-  async isInWishList(userId: string, tmdbId: number): Promise<boolean> {
-    const count = await this.prisma.wishList.count({
-      where: { 
+  async isInWatchedList(userId: string, tmdbId: number): Promise<boolean> {
+    const count = await this.prisma.watchedList.count({
+      where: {
         userId,
         movie: { tmdb_id: tmdbId },
-      }
+      },
     });
     return count > 0;
   }
-/*
-  async isInWishList(userId: string, tmdbId: number): Promise<boolean> {
-    const movie = await this.prisma.movies.findUnique({
-      where: { tmdb_id: tmdbId },
-    });
-    if (!movie)
-      return false;
-    const wish = await this.prisma.wishList.findUnique({
-      where: {
-        userId_movieId: {
-          userId, 
-          movieId: movie.id,
-        }
-      },
-    });
-    if (!wish)
-      return false;
-    return true;
-  }
-*/
 
-  async addToWishList(userId: string, tmdbId: number) {
+  async addToWatchedList(userId: string, tmdbId: number) {
     try {
       let movie = await this.prisma.movies.findUnique({
         where: {tmdb_id: tmdbId},
       });
-      // when the movies not exists in our database,
-      // fetch from TMDB and save it to ours
       if (!movie)
       {
         const tmdbMovie = await this.tmdbService.getMovieFull(tmdbId);
@@ -79,55 +57,56 @@ export class WishListService {
             runtime: tmdbMovie.runtime,
             popularity: tmdbMovie.popularity,
             poster_path: tmdbMovie.poster_path,
-            backdrop_path: tmdbMovie.backdrop_path,
+            backdrop_path: tmdbMovie.backdrop_path,                  
           },
         });
       }
-      const entry = await this.prisma.wishList.create({
+      const entry = await this.prisma.watchedList.create({
         data: {
           userId,
-          movieId: movie.id,
+          movieId: movie.id
         }
-      }); 
+      });
       return {
-        message: 'WishList added successfully',
+        message: 'WatchedList added successfully',
         data: entry
-      };
+      }
     } catch(error) {
       if (error instanceof NotFoundException)
         throw error;
       if (error.code === 'P2002')
-        throw new BadRequestException('This movie is already in your wishList');
+        throw new BadRequestException('This movie is already in your watchedList');
       console.error(error);
-      throw new InternalServerErrorException('An unexpected error occurred while adding to wishList');
-    } 
+      throw new InternalServerErrorException('An unexpected error occurred while adding to watchedList');
+    }
   }
-  
-  async removeFromWishList(userId: string, tmdbId: number){
+  async removeFromWatchedList(userId: string, tmdbId: number)
+  {
     try {
       const movie = await this.prisma.movies.findUnique({
         where: { tmdb_id: tmdbId },
       });
       if (!movie)
         throw new NotFoundException('Movie not found in our database');
-      await this.prisma.wishList.delete({
+      await this.prisma.watchedList.delete({
         where: {
-          userId_movieId : {
+          userId_movieId: {
             userId,
             movieId: movie.id,
           }
         }
       });
       return {
-        message: 'Movie removed from wishList successfully',
+        message: 'Movie removed from watchedList successfully',
       };
     } catch(error) {
       if (error instanceof NotFoundException)
         throw error;
       if (error.code === 'P2025')
-        throw new BadRequestException('This movie is not in your wishList');
+        throw new BadRequestException('This movie is not in your watchedList');
       console.error(error);
-      throw new InternalServerErrorException('An unexpected error occurred while removing from wishList');
+      throw new InternalServerErrorException('An unexpected error occurred while removing from watchedList');
     }
+
   }
 }

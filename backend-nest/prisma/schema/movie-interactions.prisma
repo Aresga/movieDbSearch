@@ -22,7 +22,7 @@ model Review {
   @@index([movieId])
 }
 
-model Wishlist {
+model WishList {
   id     Int    @id @default(autoincrement())
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -37,5 +37,17 @@ model Wishlist {
   @@index([movieId])
 }
 
+model WatchedList {
+  id     Int    @id @default(autoincrement())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-// watchlist 
+  movieId Int
+  movie   movies @relation(fields: [movieId], references: [id], onDelete: Cascade)
+
+  watchedAt DateTime @default(now())
+
+  @@unique([userId, movieId])
+  @@index([userId])
+  @@index([movieId])  
+} 

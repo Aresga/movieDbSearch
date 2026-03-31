@@ -1,9 +1,9 @@
 import { Controller, Delete, Get, Param, ParseIntPipe, Post, Request, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
-import { WishlistService } from './wishlist.service';
+import { WishListService } from './wishlist.service';
 
-/* db schema for wishlist
-model Wishlist {
+/* db schema for wishList
+model WishList {
   id     Int    @id @default(autoincrement())
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -20,46 +20,46 @@ model Wishlist {
 */
 
 @UseGuards(JwtAuthGuard)
-@Controller('wishlist')
-export class WishlistController {
-  constructor(private readonly wishlistService: WishlistService) {}
+@Controller('wish')
+export class WishListController {
+  constructor(private readonly wishListService: WishListService) {}
 
-// Read the user's wishlist
+// Read the user's wishList
   @Get()
-  getMyWishlist(@Request() req) {
-  return this.wishlistService.getWishlist(req.user.id);
+  getMyWishList(@Request() req) {
+    return this.wishListService.getWishList(req.user.id);
   }
 
-// Read a specific user's wishlist (for friends or any users?)
+// Read a specific user's wishList (for friends or any users?)
   @Get('user/:userId')
-  getUserWishlist(@Param('userId') userId: string) {
-  return this.wishlistService.getWishlist(userId);
+  getUserWishList(@Param('userId') userId: string) {
+    return this.wishListService.getWishList(userId);
   }
 
-// Check if a movie is in the user's wishlist (for heart icon?)
+// Check if a movie is in the user's wishList (for heart icon?)
   @Get('status/:movieId')
-  isInWishlist(
+  isInWishList(
     @Request() req, 
-    @Param('movieId', ParseIntPipe) movieId: number
+    @Param('movieId', ParseIntPipe) tmdbId: number
   ) {
-    return this.wishlistService.isInWishlist(req.user.id, movieId);
+    return this.wishListService.isInWishList(req.user.id, tmdbId);
   }
 
-// Add a movie to the user's wishlist
+// Add a movie to the user's wishList
   @Post(':movieId')
-  addToWishlist(
+  addToWishList(
     @Request() req, 
-    @Param('movieId', ParseIntPipe) movieId: number
+    @Param('movieId', ParseIntPipe) tmdbId: number
   ) {
-    return this.wishlistService.addToWishlist(req.user.id, movieId);
+    return this.wishListService.addToWishList(req.user.id, tmdbId);
   }
 
-// Remove a movie from the user's wishlist
+// Remove a movie from the user's wishList
   @Delete(':movieId')
-  removeFromWishlist(
+  removeFromWishList(
     @Request() req, 
-    @Param('movieId', ParseIntPipe) movieId: number
+    @Param('movieId', ParseIntPipe) tmdbId: number
   ) {
-    return this.wishlistService.removeFromWishlist(req.user.id, movieId);
+    return this.wishListService.removeFromWishList(req.user.id, tmdbId);
   } 
 }
