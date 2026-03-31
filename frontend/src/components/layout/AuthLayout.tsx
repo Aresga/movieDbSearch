@@ -19,7 +19,7 @@ export function AuthLayout() {
     <div className="min-h-screen bg-background flex">
       {/* Decorative left panel */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-black flex-col justify-end">
-      <div
+        <div
           className="absolute inset-0 bg-cover bg-center opacity-30"
           style={{
             backgroundImage: `url(https://picsum.photos/seed/${word}/900/1200)`,
@@ -45,7 +45,7 @@ export function AuthLayout() {
           {/* Mobile logo */}
           <div className="flex items-center gap-2 mb-8 lg:hidden">
             <div className="bg-transparent rounded-md p-1.5">
-              <Film className="text-white size-4" />
+              <Film className="text-foreground size-4" />
             </div>
             <span className="text-xl font-black text-foreground">moviesearchdb</span>
           </div>
