@@ -4,6 +4,11 @@ import { Model } from 'mongoose';
 import { Message } from './message.schema';
 import { ChatRoom } from './chat-room.schema';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { User } from '@prisma/client';
+
+export interface MenuRoom extends Omit<ChatRoom, 'participants'> {
+	participants: User[];
+}
 
 @Injectable()
 export class MessageService {
@@ -89,10 +94,24 @@ export class MessageService {
 
 	async getMenuRooms(userId: string)
 	{
-		return await this.chatRoomModel.find({participants: userId })
+		const rooms = await this.chatRoomModel.find({participants: userId })
 		.populate('lastMessage')
-		.populate('participants')
-		.sort({ updatedAt: -1 });
+		.sort({ updatedAt: -1 })
+		.lean()
+		.exec()
+
+		const roomsWithParticipants = await Promise.all(
+			rooms.map(async (room) => {
+				const participants = await this.prisma.user.findMany({
+					where: {
+						id: {
+							in: room.participants,
+						},
+					},
+				});
+				return {...room, participants};
+			}));
+			return roomsWithParticipants as unknown as MenuRoom[];
 	}
 
 	

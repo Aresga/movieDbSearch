@@ -1,13 +1,12 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { io } from 'socket.io-client';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useFriends } from '@/hooks/useFriends';
+import type { User } from '@/types'
+import { apiClient } from '@/api/client';
+import { getSocket } from '@/lib/socket';
 
 type IdLike = { id?: string; _id?: string };
-
-type User = IdLike & {
-  username?: string;
-};
 
 type Room = {
   _id: string;
@@ -40,22 +39,29 @@ export function ChatMenuPage({ token, userId }: { token: string; userId: string 
 
   useEffect(() => {
     const loadRooms = async () => {
-      const response = await fetch('/api/menu/rooms', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data: Room[] = await response.json();
-      data.sort(
-        (a, b) =>
-          new Date(b.updatedAt ?? 0).getTime() - new Date(a.updatedAt ?? 0).getTime()
-      );
-      setRooms(data);
+      try {
+      const response = await apiClient.get('/message/menu/rooms');
+      const data: Room[] = response.data;
+      if (Array.isArray(data)) {
+        data.sort(
+          (a, b) =>
+            new Date(b.updatedAt ?? 0).getTime() - new Date(a.updatedAt ?? 0).getTime()
+        );
+        setRooms(data);
+      } else {
+        setRooms([]);
+      }
+    } catch (error) {
+      console.error("Failed to load rooms", error);
+      setRooms([]);
+    }
     };
 
     loadRooms();
   }, [token]);
 
   useEffect(() => {
-    const socket = io('http://localhost:3000', { auth: { token } });
+    const socket = getSocket();
 
     socket.on('receiveMessage', (message: Message) => {
       setRooms((prev) => {
@@ -95,10 +101,7 @@ export function ChatMenuPage({ token, userId }: { token: string; userId: string 
   const createRoom = async (friendId: string) => {
     setIsCreatingRoom(true);
     try {
-      const response = await fetch(`/api/message/rooms/create/${friendId}`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await apiClient.post(`/message/rooms/create/${friendId}`)
 
       const room: Room = await response.json();
 
@@ -146,6 +149,21 @@ export function ChatMenuPage({ token, userId }: { token: string; userId: string 
           )}
         </div>
       )}
+      <menu style={{ listStyle: 'none', padding: 0 }}>
+    {rooms.map((room) => {
+      const otherParticipant = room.participants.find((p) => getId(p) !== userId);
+      const friendName = otherParticipant?.username ?? 'Unknown user';
+      
+      return (
+        <li key={room._id}>
+          <Link to={`/rooms/${room._id}`}>
+            {friendName}
+            {room.lastMessage && <span> - {room.lastMessage.content}</span>}
+          </Link>
+        </li>
+      );
+    })}
+  </menu>
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Delete, Body, Param, UseGuards, Request, Query, Req } from '@nestjs/common';
-import { MessageService } from './message.service'
+import { MessageService, MenuRoom } from './message.service'
 import { CreateMessageDto } from './dto'
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
@@ -36,7 +36,7 @@ export class MessageController {
 
 	@UseGuards(JwtAuthGuard)
 	@Get('menu/rooms')
-	async getMenuRooms(@Request() req) {
+	async getMenuRooms(@Request() req): Promise<MenuRoom[]> {
   		return this.messageService.getMenuRooms(req.user.id);
 	}
 
