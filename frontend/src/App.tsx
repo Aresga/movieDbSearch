@@ -57,8 +57,8 @@ function App() {
             <Route path="/user/:id" element={<UserPage />} />
             <Route path="/friends" element={<FriendsPage />} />
             <Route path="/2fa/setup" element={<TwoFactorSetupPage />} />
-            <Route path="/menu/rooms" element={<ChatMenuPage token={useAuthStore().token} userId={useAuthStore().userId} />} />
-            <Route path="/rooms/:roomId" element={<ChatPage token={useAuthStore().token} userId={useAuthStore().userId} />} />
+            <Route path="/menu/rooms" element={<ChatMenuPage />} />
+            <Route path="/rooms/:roomId" element={<ChatPage />} />
           </Route>
         </Route>
 
