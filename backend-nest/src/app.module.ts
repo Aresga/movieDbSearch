@@ -15,6 +15,7 @@ import { TwofactorauthService } from './twofactorauth/twofactorauth.service';
 import { TwofactorauthModule } from './twofactorauth/twofactorauth.module';
 import { TmdbModule } from './tmdb/tmdb.module';
 import { WishlistModule } from './wishlist/wishlist.module';
+import { EmailModule } from './email/email.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { WishlistModule } from './wishlist/wishlist.module';
     TmdbModule,
     MessageModule,
     WishlistModule,
+    EmailModule,
   ],
   controllers: [AppController],
   providers: [AppService, TwofactorauthService],
