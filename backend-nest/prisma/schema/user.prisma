@@ -16,7 +16,8 @@ model User {
 
   // Social Relations
   reviews  Review[]
-  wishlist Wishlist[]
+  wishList WishList[]
+  watchedList WatchedList[]
 
   // self-ref MAny to many for friends
   friends  User[] @relation("UserFriends")
