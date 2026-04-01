@@ -2,9 +2,9 @@ name: Auth Integration Test
 
 on:
   push:
-    branches: ["UserManagement", "frontend", "2FA"]
+    branches: ["main", "frontend"]
   pull_request:
-    branches: ["main", "frontend", "2FA"]
+    branches: ["main", "frontend"]
 
 jobs:
   test-auth-endpoints:
