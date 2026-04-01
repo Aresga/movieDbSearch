@@ -33,34 +33,11 @@ export class WatchedListService {
 
   async addToWatchedList(userId: string, tmdbId: number) {
     try {
-      let movie = await this.prisma.movies.findUnique({
+      const movie = await this.prisma.movies.findUnique({
         where: {tmdb_id: tmdbId},
       });
       if (!movie)
-      {
-        const tmdbMovie = await this.tmdbService.getMovieFull(tmdbId);
-        if (!tmdbMovie)
           throw new NotFoundException('Movie information not found on TMDB');
-        movie = await this.prisma.movies.upsert({
-          where: { tmdb_id: tmdbId},
-          update: {},
-          create: {
-            tmdb_id: tmdbId,
-            title: tmdbMovie.title,
-            overview: tmdbMovie.overview,
-            genres: tmdbMovie.genres?.map((g:any) => g.name) || [],
-            tagline: tmdbMovie.tagline,
-            release_year: tmdbMovie.release_date
-              ? new Date(tmdbMovie.release_date).getFullYear(): null,
-            vote_average: tmdbMovie.vote_average,
-            vote_count: tmdbMovie.vote_count,
-            runtime: tmdbMovie.runtime,
-            popularity: tmdbMovie.popularity,
-            poster_path: tmdbMovie.poster_path,
-            backdrop_path: tmdbMovie.backdrop_path,                  
-          },
-        });
-      }
       const entry = await this.prisma.watchedList.create({
         data: {
           userId,
@@ -80,6 +57,7 @@ export class WatchedListService {
       throw new InternalServerErrorException('An unexpected error occurred while adding to watchedList');
     }
   }
+  
   async removeFromWatchedList(userId: string, tmdbId: number)
   {
     try {

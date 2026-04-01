@@ -53,36 +53,11 @@ export class WishListService {
 
   async addToWishList(userId: string, tmdbId: number) {
     try {
-      let movie = await this.prisma.movies.findUnique({
+      const movie = await this.prisma.movies.findUnique({
         where: {tmdb_id: tmdbId},
       });
-      // when the movies not exists in our database,
-      // fetch from TMDB and save it to ours
       if (!movie)
-      {
-        const tmdbMovie = await this.tmdbService.getMovieFull(tmdbId);
-        if (!tmdbMovie)
           throw new NotFoundException('Movie information not found on TMDB');
-        movie = await this.prisma.movies.upsert({
-          where: { tmdb_id: tmdbId},
-          update: {},
-          create: {
-            tmdb_id: tmdbId,
-            title: tmdbMovie.title,
-            overview: tmdbMovie.overview,
-            genres: tmdbMovie.genres?.map((g:any) => g.name) || [],
-            tagline: tmdbMovie.tagline,
-            release_year: tmdbMovie.release_date
-              ? new Date(tmdbMovie.release_date).getFullYear(): null,
-            vote_average: tmdbMovie.vote_average,
-            vote_count: tmdbMovie.vote_count,
-            runtime: tmdbMovie.runtime,
-            popularity: tmdbMovie.popularity,
-            poster_path: tmdbMovie.poster_path,
-            backdrop_path: tmdbMovie.backdrop_path,
-          },
-        });
-      }
       const entry = await this.prisma.wishList.create({
         data: {
           userId,
