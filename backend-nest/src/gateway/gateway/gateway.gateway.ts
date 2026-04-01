@@ -17,9 +17,8 @@ export class GatewayGateway implements OnGatewayConnection, OnGatewayDisconnect 
   private userRooms = new Map();
   @OnEvent('message.create')
   handleMessageCreateEvent(payload: any) {
-	this.server.emit('onMessage', payload);
+	this.server.emit('receiveMessage', payload);
   }
-  // map to track userId
   private connectedUsers = new Map<string, string>();
 
   constructor(
@@ -96,15 +95,10 @@ export class GatewayGateway implements OnGatewayConnection, OnGatewayDisconnect 
   }
 
   @SubscribeMessage('joinRoom')
-  async handleRoomJoin(client: Socket)
+  async handleRoomJoin(client: Socket, roomId: string)
   {
-    const userId = client.data.userId;
-    const rooms = await this.messageService.getChatRooms(userId);
-    for (const room of rooms)
-    {
-      client.join(room._id.toString());
-    }
-    return { success: true, rooms: rooms.map(r => r._id.toString()) };
+      client.join(roomId);
+      return { success: true, room: roomId }
   }
 
   sendToUser(userId: string, event: string, payload: any) {
@@ -123,23 +117,30 @@ export class GatewayGateway implements OnGatewayConnection, OnGatewayDisconnect 
   {
     try {
       const senderId = client.data.userId;
-      const { roomId, content } = data;
+      const roomId = data.roomId;
+      const content = data.content?.trim();
+
+      if (!senderId || !roomId || !content) {
+        return ;
+      }
 
       const message = await this.messageService.storeMessage(
-        roomId, senderId, content,
+        roomId,
+        senderId,
+        content,
       );
 
-      this.server.to(roomId).emit('receiveMessage', {
-        id: message._id,
+      const payload = {
+        _id: String(message._id),
         roomId,
         senderId,
         content: message.content,
-        timestamp: message.createdAt,
-      });
-
-      return { success: true, messageId: message._id };
+        createdAt: new Date(message.createdAt).toISOString(),
+      };
+      console.log(`Message from ${senderId} in room ${roomId}: "${content}"`);
+      this.server.to(roomId).emit('receiveMessage', payload)
     } catch (error) {
-      return { success: false, error: error.message };
+        console.error('Failed to send message:', error);
     }
   }
 }

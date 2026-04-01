@@ -3,12 +3,14 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Message } from './message.schema';
 import { ChatRoom } from './chat-room.schema';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class MessageService {
 	constructor(
 		@InjectModel(Message.name) private messageModel: Model<Message>,
-		@InjectModel(ChatRoom.name) private chatRoomModel: Model<ChatRoom>
+		@InjectModel(ChatRoom.name) private chatRoomModel: Model<ChatRoom>,
+		private prisma: PrismaService,
 	) {}
 
 	async getCreateRoom(userId1: string, userId2: string)
@@ -48,6 +50,29 @@ export class MessageService {
 		.limit(limit)
 	}
 
+	async getRoomParticipants(roomId: string)
+	{
+		const room = await this.chatRoomModel.findById(roomId);
+		if (!room)
+		{
+			return null;
+		}
+		const users = await this.prisma.user.findMany({
+			where: {
+				id: {
+					in: room.participants,
+				},
+			},
+		});
+		return users;
+	}
+
+    async findAllForUser(userId: string) {
+        const rooms = await this.chatRoomModel.find({ participants: userId }).select('_id').exec();
+        const roomIds = rooms.map(room => room._id);
+        return this.messageModel.find({ roomId: { $in: roomIds } }).sort({ createdAt: -1 }).exec();
+    }
+
 	async getChatRooms(userId: string)
 	{
 		return await this.chatRoomModel.find({participants: userId })
@@ -69,5 +94,7 @@ export class MessageService {
 		.populate('participants')
 		.sort({ updatedAt: -1 });
 	}
+
+	
 
 }

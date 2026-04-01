@@ -46,4 +46,12 @@ export class MessageController {
 	{
 		return await this.messageService.getRoomMessages(roomId);
 	}
+
+	@UseGuards(JwtAuthGuard)
+	@Get('/rooms/:roomId/info')
+	async getRoomInfo(@Request() Req, @Param('roomId') roomId: string)
+	{
+		const participants = await this.messageService.getRoomParticipants(roomId);
+		return { participants };
+	}
 }
