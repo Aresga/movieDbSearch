@@ -43,18 +43,18 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible='icon'>
-    <SidebarHeader className="border-b border-border/1">
-      <div className="flex items-center gap-2.5 px-2 py-3">
-        <div className="bg-transparent rounded-md p-0 shrink-0">
-          <Film className="text-white size-4" />
+      <SidebarHeader className="border-b border-border/1">
+        <div className="flex items-center gap-2.5 px-2 py-3">
+          <div className="bg-transparent rounded-md p-0 shrink-0">
+            <Film className="text-foreground size-4" />
+          </div>
+          {!collapsed && (
+            <span className="font-black text-lg tracking-tight">
+              moviesearchdb
+            </span>
+          )}
         </div>
-        {!collapsed && (
-          <span className="font-black text-lg tracking-tight">
-            moviesearchdb
-          </span>
-        )}
-      </div>
-    </SidebarHeader>
+      </SidebarHeader>
 
 
       <SidebarContent>
@@ -105,7 +105,7 @@ export function AppSidebar() {
               <p className="text-sm font-semibold truncate">{user.username}</p>
               <p className="text-xs text-muted-foreground truncate">{user.email}</p>
             </div>
-            
+
             <Button
               variant="ghost"
               size="icon"
@@ -113,10 +113,10 @@ export function AppSidebar() {
               onClick={logout}
               title="Log out"
             >
-            {!collapsed && (
-              <LogOut className="size-4" />
-              
-            )}  
+              {!collapsed && (
+                <LogOut className="size-4" />
+
+              )}
             </Button>
           </div>
         ) : (
