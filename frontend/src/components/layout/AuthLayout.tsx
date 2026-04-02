@@ -1,23 +1,21 @@
-import { Navigate, Outlet, useLocation } from 'react-router-dom'
-import { Film } from 'lucide-react'
-import { useAuthStore } from '@/store/authStore'
-import { generateSlug } from 'random-word-slugs'
-import { Footer } from './Footer'
-
-
+import { Navigate, Outlet, useLocation } from "react-router-dom";
+import { Film } from "lucide-react";
+import { useAuthStore } from "@/store/authStore";
+import { generateSlug } from "random-word-slugs";
+import { Footer } from "./Footer";
 
 export function AuthLayout() {
-  const token = useAuthStore((s) => s.token)
-  const location = useLocation()
+  const token = useAuthStore((s) => s.token);
+  const location = useLocation();
 
-  if (token) return <Navigate to="/home" replace />
+  if (token) return <Navigate to="/home" replace />;
 
-  const isLoginPage = location.pathname === '/login'
+  const isLoginPage = location.pathname === "/login";
 
   const word = generateSlug(1, {
-    partsOfSpeech: ['noun'],
+    partsOfSpeech: ["noun"],
     categories: {
-      noun: ['media'],
+      noun: ["media"],
     },
   });
 
@@ -38,7 +36,9 @@ export function AuthLayout() {
               <div className="bg-transparent rounded-md p-2">
                 <Film className="text-white size-4" />
               </div>
-              <span className="text-3xl font-black tracking-tight text-white">moviesearchdb</span>
+              <span className="text-3xl font-black tracking-tight text-white">
+                moviesearchdb
+              </span>
             </div>
             <p className="text-xl text-white/80 leading-relaxed max-w-sm">
               Track, discover, and share your favourite movies with friends.
@@ -54,7 +54,9 @@ export function AuthLayout() {
               <div className="bg-transparent rounded-md p-1.5">
                 <Film className="text-foreground size-4" />
               </div>
-              <span className="text-xl font-black text-foreground">moviesearchdb</span>
+              <span className="text-xl font-black text-foreground">
+                moviesearchdb
+              </span>
             </div>
             <Outlet />
           </div>
@@ -62,5 +64,5 @@ export function AuthLayout() {
       </div>
       {!isLoginPage && <Footer />}
     </div>
-  )
+  );
 }
