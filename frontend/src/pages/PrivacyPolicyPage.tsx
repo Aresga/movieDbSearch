@@ -69,7 +69,7 @@ export function PrivacyPolicyPage() {
                     <p className="mt-2"><strong>Data retention:</strong> We retain your personal data for the period necessary to fulfil the purposes outlined in this Privacy Policy, unless a longer period is required by law. Note that if you ask us to remove your personal data, we will retain your data as necessary to comply with our legal obligations or defend our rights.</p>
                 </section>
 
-                <p className="text-sm mt-12 bg-muted p-4 rounded-lg border border-border">Last updated: {new Date().toLocaleDateString()}</p>
+                <p className="text-sm mt-12 bg-muted p-4 rounded-lg border border-border">Last updated: April 2, 2026</p>
             </div>
         </div>
     )
