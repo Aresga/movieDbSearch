@@ -86,9 +86,9 @@ jobs:
           http --check-status --ignore-stdin --verify=no PATCH https://localhost:3000/user/me "Cookie:access_token=${{ env.ACCESS_TOKEN }}" \
             username="citestuser_updated"
 
-      - name: Test GET /user/:id (public profile, no auth needed)
+      - name: Test GET /user/:id (public profile, auth actually required)
         run: |
-          http --check-status --ignore-stdin --verify=no GET https://localhost:3000/user/${{ env.USER_ID }}
+          http --check-status --ignore-stdin --verify=no GET https://localhost:3000/user/${{ env.USER_ID }} "Cookie:access_token=${{ env.ACCESS_TOKEN }}"
 
       - name: Test DELETE /user/me (unauthenticated, expect 401)
         run: |
