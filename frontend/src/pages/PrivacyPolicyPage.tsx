@@ -12,7 +12,7 @@ export function PrivacyPolicyPage() {
 
             <div className="space-y-8 text-muted-foreground leading-relaxed">
                 <p>This Privacy Policy describes the ways we collect personal data about you and why we do so, how we use your personal data, and the choices you have about your personal data.</p>
-                <p>This Privacy Policy applies to MovieSearchDb users when using our services. We may periodically update this Privacy Policy by posting a new version online.</p>
+                <p>This Privacy Policy applies to moviesearchdb users when using our services. We may periodically update this Privacy Policy by posting a new version online.</p>
 
                 <section>
                     <h2 className="text-2xl font-semibold text-foreground mb-4">The data we collect</h2>
@@ -54,7 +54,7 @@ export function PrivacyPolicyPage() {
 
                 <section>
                     <h2 className="text-2xl font-semibold text-foreground mb-4">International data transfers</h2>
-                    <p>MovieSearchDb has partners to perform services for us. These partners process your data according to our instructions to provide the Service, such as hosting, technical support, analytics and fraud prevention. Because different countries may have different data protection laws than your own country, we take steps to ensure adequate safeguards are in place to protect your data as explained in this Policy.</p>
+                    <p>moviesearchdb has partners to perform services for us. These partners process your data according to our instructions to provide the Service, such as hosting, technical support, analytics and fraud prevention. Because different countries may have different data protection laws than your own country, we take steps to ensure adequate safeguards are in place to protect your data as explained in this Policy.</p>
                 </section>
 
                 <section>
