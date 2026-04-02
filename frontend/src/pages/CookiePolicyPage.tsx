@@ -13,10 +13,10 @@ export function CookiePolicyPage() {
             <div className="space-y-8 text-muted-foreground leading-relaxed">
                 <section>
                     <h2 className="text-2xl font-semibold text-foreground mb-4">Cookies and similar technologies</h2>
-                    <p>Like most online services, we and our partners use cookies and similar technologies to provide and personalize the Service, analyse use, and prevent fraud. You can disable cookies in your browser settings or the cookie consent banner found in the lower left corner, but some parts of the Service may then not function properly.</p>
+                    <p>Like most online services, we and our partners use cookies and similar technologies to provide and personalize the Service, analyse use, and prevent fraud. You can disable cookies in your browser settings, but some parts of the Service may then not function properly.</p>
                 </section>
 
-                <p className="text-sm mt-12 bg-muted p-4 rounded-lg border border-border">Last updated: {new Date().toLocaleDateString()}</p>
+                <p className="text-sm mt-12 bg-muted p-4 rounded-lg border border-border">Last updated: April 2, 2026</p>
             </div>
         </div>
     )
