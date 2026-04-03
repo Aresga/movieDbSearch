@@ -26,47 +26,51 @@ export interface LoginPayload {
 
 /**
  * Authentication API Service
- * Handles user lifecycle, session management, and OAuth routing.
+ * Handles user registration, login, token refreshing, and OAuth flows.
  */
 export const authApi = {
-    /**
-   * Create a new account and receive user data + tokens
+  /**
+   * Registers a new user.
+   * @param data - The registration payload (username, email, password).
+   * @returns A promise resolving to the AuthResponse.
    */
-    register: async (data: RegisterPayload): Promise<AuthResponse> => {
+  register: async (data: RegisterPayload): Promise<AuthResponse> => {
     const res = await apiClient.post<AuthResponse>('/auth/register', data)
     return res.data
   },
 
   /**
-   * Authenticate existing user and start a session
+   * Logs an existing user in.
+   * @param data - The login payload (email, password).
+   * @returns A promise resolving to the AuthResponse.
    */
-    login: async (data: LoginPayload): Promise<AuthResponse> => {
+  login: async (data: LoginPayload): Promise<AuthResponse> => {
     const res = await apiClient.post<AuthResponse>('/auth/login', data)
     return res.data
   },
 
   /**
-   * Extends the user's session by rotating the refresh token/cookie
+   * Refreshes the HTTP-only access token cookie using the refresh token cookie.
    */
-    refresh: async (): Promise<void> => {
+  refresh: async (): Promise<void> => {
     await apiClient.post('/auth/refresh')
   },
 
   /**
-   * Invalidates the current session and clears authentication cookies/tokens
+   * Logs the current user out, clearing backend cookies.
    */
-    logout: async (): Promise<void> => {
+  logout: async (): Promise<void> => {
     await apiClient.post('/auth/logout')
   },
   /**
-   * Returns the absolute URL for Google OAuth initiation.
+   * Retrieves the URL for Google OAuth backend redirection.
    * Use this to redirect the window (window.location.href).
    */
-    getGoogleUrl: () => `${BASE_URL}/auth/google`,
+  getGoogleUrl: () => `${BASE_URL}/auth/google`,
 
-    /**
-   * Returns the absolute URL for GitHub OAuth initiation.
+  /**
+   * Retrieves the URL for GitHub OAuth backend redirection.
    * Use this to redirect the window (window.location.href).
    */
-    getGithubUrl: () => `${BASE_URL}/auth/github`,
+  getGithubUrl: () => `${BASE_URL}/auth/github`,
 }
