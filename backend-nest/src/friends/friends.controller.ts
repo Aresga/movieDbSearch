@@ -4,7 +4,7 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
 @Controller('friends')
 export class FriendsController {
-  constructor(private readonly friendsService: FriendsService) {}
+  constructor(private readonly friendsService: FriendsService) { }
 
   @UseGuards(JwtAuthGuard)
   @Post(':id')
@@ -24,7 +24,7 @@ export class FriendsController {
     return this.friendsService.getFriends(req.user.id);
   }
 
-  @Get(':id')
+  @Get(':id/count')
   getFriendscount(@Request() req, @Param('id') userId: string) {
     return this.friendsService.getFriendsCount(userId);
   }
