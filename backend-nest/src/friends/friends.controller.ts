@@ -24,6 +24,7 @@ export class FriendsController {
     return this.friendsService.getFriends(req.user.id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get(':id/count')
   getFriendsCount(@Param('id') userId: string) {
     return this.friendsService.getFriendsCount(userId);
