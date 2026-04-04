@@ -18,12 +18,18 @@ const emailSchema = z.object({
 })
 
 const passwordSchema = z.object({
-  currentPassword: z.string().min(1, 'Required'),
-  newPassword: z.string().min(8, 'Minimum 8 characters'),
+  currentPassword: z.string()
+    .min(8, 'Minimum 8 characters')
+    .max(64, 'Maximum 64 characters'),
+  newPassword: z.string()
+    .min(8, 'Minimum 8 characters')
+    .max(64, 'Maximum 64 characters'),
 })
 
 const setPasswordSchema = z.object({
-  password: z.string().min(8, 'Minimum 8 characters'),
+  password: z.string()
+    .min(8, 'Minimum 8 characters')
+    .max(64, 'Maximum 64 characters'),
 })
 
 type EmailForm = z.infer<typeof emailSchema>
