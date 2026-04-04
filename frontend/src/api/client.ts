@@ -58,24 +58,26 @@ apiClient.interceptors.response.use(
 
     /**
      * Logic for handling 401 Unauthorized errors
-     */ 
+     */
     if (
       error.response?.status === 401 &&
       !originalRequest?._retry &&   // Don't retry more than once per request
       !isRefreshEndpoint &&         // Don't try to refresh if the refresh call itself failed
       !isLogoutEndpoint             // Don't try to refresh if the user is logging out
     ) {
-        // If a refresh is already in progress, add this request to the queue
-        if (isRefreshing) {
-            return new Promise((resolve, reject) => {
-            failedQueue.push({ resolve, reject } )
-            })
-            .then(() => apiClient(originalRequest)) // Retry after success
-            .catch((err) => Promise.reject(err))
-        }
-        // Mark this request so we don't loop indefinitely
-        originalRequest._retry = true
-        isRefreshing = true
+      // Mark this request immediately so we don't loop indefinitely on retries
+      originalRequest._retry = true
+
+      // If a refresh is already in progress, add this request to the queue
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject })
+        })
+          .then(() => apiClient(originalRequest)) // Retry after success
+          .catch((err) => Promise.reject(err))
+      }
+
+      isRefreshing = true
 
       try {
         /**
@@ -101,5 +103,5 @@ apiClient.interceptors.response.use(
     }
     // If it's a different error (404, 500, etc.), just pass it through
     return Promise.reject(error)
-  } 
+  }
 )
