@@ -66,6 +66,9 @@ apiClient.interceptors.response.use(
       !isLogoutEndpoint             // Don't try to refresh if the user is logging out
     ) {
       // Mark this request immediately so we don't loop indefinitely on retries
+      if (!originalRequest) {
+        return Promise.reject(error)
+      }
       originalRequest._retry = true
 
       // If a refresh is already in progress, add this request to the queue
