@@ -10,7 +10,7 @@ export interface User {
   createdAt: string          // ISO date string
   isTwoFactorEnabled: boolean
   isOnline?: boolean
-  hasPassword: boolean       // Useful for users who signed up via OAuth (Google/Github)
+  hasPassword: boolean       // Useful for users who signed up via OAuth (Google/GitHub)
 }
 
 /**
