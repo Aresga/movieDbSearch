@@ -59,7 +59,7 @@ export function useSocket() {
     })
 
     socket.on('friendRequest', (data) => {
-      addNotification({ message: `${data.from} added you as friend!`, type: 'friend_request' })
+      addNotification({ message: `${data.from} added you as a friend!`, type: 'friend_request' })
       toast.info(`${data.from} added you as a friend!`)
     })
 
