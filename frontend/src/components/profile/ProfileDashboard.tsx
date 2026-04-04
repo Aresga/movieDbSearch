@@ -44,7 +44,8 @@ function AddFriendButton({ userId }: { userId: string }) {
   return (
     <Button
       size='sm'
-      className='gap-2 w-full text-destructive hover:bg-destructive hover:text-black border-destructive/40'
+      variant='outline'
+      className='gap-2 w-full text-primary hover:bg-primary hover:text-primary-foreground border-primary/40'
       onClick={() => addFriend(userId)}
       disabled={isPending}
     >
