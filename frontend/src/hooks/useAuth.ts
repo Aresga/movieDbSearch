@@ -30,7 +30,7 @@ export function useLogin() {
 }
 
 /**
- * Custom hook for testing and handling new user registration.
+ * Custom hook for handling new user registration.
  */
 export function useRegister() {
   const navigate = useNavigate()
