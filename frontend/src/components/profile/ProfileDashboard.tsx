@@ -1,14 +1,13 @@
 import { Link } from 'react-router-dom'
-import { Calendar, Settings, Shield, Star, Trash2, Users, VariableIcon } from 'lucide-react'
+import { Calendar, Settings, Shield, Star, Trash2, Users } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import type { User, Review } from '@/types'
 import { useFriends, useAddFriend, useRemoveFriend } from '@/hooks/useFriends'
 import { UserPlus, UserMinus } from 'lucide-react'
-import { size } from 'zod'
 
-type ProfileDashboardProps = {
+export interface ProfileDashboardProps {
   user: User
   reviews: Review[]
   friendsCount: number
@@ -17,24 +16,27 @@ type ProfileDashboardProps = {
   onDeleteReview?: (movieId: number) => void
 }
 
+/**
+ * AddFriendButton Component
+ * Internal stateful component that manages the "Add/Remove Friend" toggle logic for the profile.
+ */
 function AddFriendButton({ userId }: { userId: string }) {
-  const { data: friends = [] }  = useFriends()
+  const { data: friends = [] } = useFriends()
   const { mutate: addFriend, isPending: isAdding } = useAddFriend()
   const { mutate: removeFriend, isPending: isRemoving } = useRemoveFriend()
 
-  const isFriend = friends.some((f) => f.id === userId )
+  const isFriend = friends.some((f) => f.id === userId)
   const isPending = isAdding || isRemoving
 
   if (isFriend) return (
-
     <Button
       size='sm'
       variant='outline'
-      className='gap-2 w-full text-destructive hover:gb-destructive hover:text-white border-destructive/40'
+      className='gap-2 w-full text-destructive hover:bg-destructive hover:text-white border-destructive/40'
       onClick={() => removeFriend(userId)}
       disabled={isPending}
     >
-      <UserMinus className='size-4'/>
+      <UserMinus className='size-4' />
       {isRemoving ? 'Removing...' : 'Remove Friend'}
     </Button>
   )
@@ -42,18 +44,21 @@ function AddFriendButton({ userId }: { userId: string }) {
   return (
     <Button
       size='sm'
-      className='gap-2 w-full text-destructive hover:gb-destructive hover:text-black border-destructive/40'
+      className='gap-2 w-full text-destructive hover:bg-destructive hover:text-black border-destructive/40'
       onClick={() => addFriend(userId)}
       disabled={isPending}
     >
-      <UserPlus className='size-4'/>
+      <UserPlus className='size-4' />
       {isPending ? 'Sending...' : 'Add friend'}
     </Button>
   )
-
 }
 
-
+/**
+ * ProfileDashboard Component
+ * Renders the main dashboard for a user profile. It handles both private (self) and public 
+ * (other user) rendering contexts based on the isPrivate prop.
+ */
 export function ProfileDashboard({
   user,
   reviews,
@@ -121,7 +126,7 @@ export function ProfileDashboard({
                 {user.isTwoFactorEnabled ? '2FA Enabled' : '2FA Disabled'}
               </Badge>
             )}
-            {!isPrivate && <AddFriendButton userId={user.id}/>}
+            {!isPrivate && <AddFriendButton userId={user.id} />}
           </div>
 
           <div className="border-t border-border/50" />
