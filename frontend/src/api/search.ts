@@ -82,7 +82,7 @@ export const searchApi = {
 
     // 6. Absolute Fallback
     return {
-      results: Array.isArray(payload.results) ? payload.results.map(normalizeMovieData) : [],
+      results: [],
       total_results: typeof payload.total_results === 'number' ? payload.total_results : undefined,
       page: payload.page,
       total_pages: payload.total_pages,
