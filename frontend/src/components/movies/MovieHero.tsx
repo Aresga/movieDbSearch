@@ -63,7 +63,7 @@ export function MovieHero({ data }: MovieHeroProps) {
           <img
             src={poster}
             alt={data.title}
-            className={`w-full md:w-72 rounded-lg shadow-2xl flex-shrink-0 ${backdrop ? 'md:mb-8' : ''}`}
+            className={`w-full md:w-72 rounded-lg shadow-2xl shrink-0 ${backdrop ? 'md:mb-8' : ''}`}
           />
 
           <div className="flex-1 pt-15">
