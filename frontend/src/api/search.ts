@@ -7,8 +7,12 @@ import { apiClient } from './client'
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const normalizeMovieData = (m: any): Movie => {
+  const id = m.id ?? m.tmdb_id ?? m.tmdbId
+  if (id == null) {
+    console.warn('normalizeMovieData: item has missing ID, data may be incomplete', m)
+  }
   return {
-    id: m.id ?? m.tmdb_id ?? m.tmdbId,
+    id,
     title: m.title ?? m.name,
     name: m.name ?? m.title,
     overview: m.overview,
