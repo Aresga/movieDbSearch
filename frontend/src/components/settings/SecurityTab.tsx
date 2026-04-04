@@ -30,6 +30,12 @@ type EmailForm = z.infer<typeof emailSchema>
 type PasswordForm = z.infer<typeof passwordSchema>
 type SetPasswordForm = z.infer<typeof setPasswordSchema>
 
+/**
+ * SecurityTab Component
+ * The foundational dashboard for managing private user credentials.
+ * Operates sub-forms for email updates, password resets, and initial password setting for OAuth.
+ * Delegates 2FA enablement to a dedicated visual route block.
+ */
 export function SecurityTab({ user }: { user: User }) {
   const { mutate: updateEmail, isPending: updatingEmail } = useUpdateEmail()
   const { mutate: updatePassword, isPending: updatingPassword } = useUpdatePassword()
@@ -86,37 +92,37 @@ export function SecurityTab({ user }: { user: User }) {
     <div className="flex flex-col gap-4">
 
       {/* 2FA — unchanged */}
-    <div className="rounded-xl border border-border/50 bg-card p-4 flex items-center justify-between">
-    <div className="flex items-center gap-3">
-        {user.isTwoFactorEnabled ? (
-        <ShieldCheck className="size-5 text-green-500" />
-        ) : (
-        <Shield className="size-5 text-muted-foreground" />
-        )}
-        <div>
-        <p className="text-sm font-semibold">Two-Factor Authentication</p>
-        <p className="text-xs text-muted-foreground">
-            {user.isTwoFactorEnabled ? 'Enabled — your account is protected' : 'Not enabled'}
-        </p>
+      <div className="rounded-xl border border-border/50 bg-card p-4 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          {user.isTwoFactorEnabled ? (
+            <ShieldCheck className="size-5 text-green-500" />
+          ) : (
+            <Shield className="size-5 text-muted-foreground" />
+          )}
+          <div>
+            <p className="text-sm font-semibold">Two-Factor Authentication</p>
+            <p className="text-xs text-muted-foreground">
+              {user.isTwoFactorEnabled ? 'Enabled — your account is protected' : 'Not enabled'}
+            </p>
+          </div>
         </div>
-    </div>
 
-    {user.isTwoFactorEnabled ? (
-        <Button
-        variant="outline"
-        size="sm"
-        className="text-destructive border-destructive/30 hover:bg-destructive/10"
-        onClick={() => disable2FA()}
-        disabled={disabling}
-        >
-        {disabling ? 'Disabling…' : 'Disable'}
-        </Button>
-    ) : (
-        <Button variant="outline" size="sm" asChild>
-        <Link to="/2fa/setup">Enable</Link>
-        </Button>
-    )}
-    </div>
+        {user.isTwoFactorEnabled ? (
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-destructive border-destructive/30 hover:bg-destructive/10"
+            onClick={() => disable2FA()}
+            disabled={disabling}
+          >
+            {disabling ? 'Disabling…' : 'Disable'}
+          </Button>
+        ) : (
+          <Button variant="outline" size="sm" asChild>
+            <Link to="/2fa/setup">Enable</Link>
+          </Button>
+        )}
+      </div>
 
 
       {/* Email */}
