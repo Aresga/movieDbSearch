@@ -31,7 +31,7 @@ const formatRuntime = (min?: number) => {
 /**
  * MovieHero Component
  * The visual centerpiece of the Movie details page, rendering the large background
- * backdrop, the main poster, title, tagging, and overview.
+ * backdrop, the main poster, title, tagline, and overview.
  */
 export function MovieHero({ data }: MovieHeroProps) {
   const poster = data.poster_path
