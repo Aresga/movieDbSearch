@@ -3,6 +3,10 @@ import { toast } from 'sonner'
 import { friendsApi } from '@/api/friends'
 import { getApiErrorMessage } from '@/lib/apiError'
 
+/**
+ * Hook to retrieve the authenticated user's complete friends list.
+ * Caches data and refetches every 5 seconds.
+ */
 export function useFriends() {
   return useQuery({
     queryKey: ['friends'],
@@ -13,8 +17,9 @@ export function useFriends() {
   })
 }
 
-
-
+/**
+ * Hook to send a friend request or add a user as a friend.
+ */
 export function useAddFriend() {
   const queryClient = useQueryClient()
 
@@ -28,6 +33,9 @@ export function useAddFriend() {
   })
 }
 
+/**
+ * Hook to remove a user from the friends list.
+ */
 export function useRemoveFriend() {
   const queryClient = useQueryClient()
 
@@ -41,7 +49,10 @@ export function useRemoveFriend() {
   })
 }
 
-
+/**
+ * Hook to fetch the total friend count for a specific user.
+ * @param userId - The ID of the user whose friend count should be fetched.
+ */
 export function useFriendsCount(userId: string) {
   return useQuery({
     queryKey: ['friends-count', userId],
@@ -49,4 +60,3 @@ export function useFriendsCount(userId: string) {
     enabled: !!userId,
   })
 }
-
