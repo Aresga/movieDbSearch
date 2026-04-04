@@ -18,14 +18,16 @@ import { useLogin } from '@/hooks/useAuth'
  */
 const schema = z.object({
   email: z.string().email(),
-  password: z.string().min(1),
+  password: z.string()
+    .min(8, 'Password must be at least 8 characters')
+    .max(64, 'Password must not exceed 64 characters'),
 })
 
 type FormData = z.infer<typeof schema>
 
 /**
  * LoginForm Component
- * Renders a secure login form that integrates with React Hook Form, zod validation,
+ * Renders a login form that integrates with React Hook Form, zod validation,
  * and the custom React Query useLogin hook.
  */
 export function LoginForm() {
