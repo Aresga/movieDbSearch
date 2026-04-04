@@ -2,16 +2,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '@/api/client'
 import type { Review } from '@/types'
 
-// export interface Review {
-//   id: number
-//   rating: number
-//   comment: string
-//   movieId: number
-//   userId: string
-//   createdAt: string
-//   user: { username: string; avatarUrl?: string }
-// }
-
+/**
+ * Fetches all reviews written by a specific user.
+ * @param userId - The unique identifier of the user.
+ */
 export function useUserReviews(userId: string | undefined) {
   return useQuery<Review[]>({
     queryKey: ['reviews', userId],
@@ -23,7 +17,10 @@ export function useUserReviews(userId: string | undefined) {
   })
 }
 
-
+/**
+ * Fetches all reviews associated with a specific movie.
+ * @param movieId - The ID of the movie.
+ */
 export function useReviews(movieId: string | undefined) {
   return useQuery<Review[]>({
     queryKey: ['reviews', movieId],
@@ -35,6 +32,10 @@ export function useReviews(movieId: string | undefined) {
   })
 }
 
+/**
+ * Submits a new review for a given movie.
+ * @param movieId - The ID of the movie to review.
+ */
 export function usePostReview(movieId: string | undefined) {
   const queryClient = useQueryClient()
   return useMutation({
@@ -44,6 +45,10 @@ export function usePostReview(movieId: string | undefined) {
   })
 }
 
+/**
+ * Deletes an existing review.
+ * @param movieId - The ID of the movie the review belongs to, used to invalidate cache.
+ */
 export function useDeleteReview(movieId: string | undefined) {
   const queryClient = useQueryClient()
   return useMutation({
@@ -53,6 +58,10 @@ export function useDeleteReview(movieId: string | undefined) {
   })
 }
 
+/**
+ * Edits an existing review for a given movie.
+ * @param movieId - The ID of the movie the review belongs to.
+ */
 export function useEditReview(movieId: string | undefined) {
   const queryClient = useQueryClient()
   return useMutation({
