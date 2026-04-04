@@ -61,7 +61,7 @@ apiClient.interceptors.response.use(
      */ 
     if (
       error.response?.status === 401 &&
-      !originalRequest._retry &&    // Don't retry more than once per request
+      !originalRequest?._retry &&   // Don't retry more than once per request
       !isRefreshEndpoint &&         // Don't try to refresh if the refresh call itself failed
       !isLogoutEndpoint             // Don't try to refresh if the user is logging out
     ) {
