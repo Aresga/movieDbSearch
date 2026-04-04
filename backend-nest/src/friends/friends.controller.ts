@@ -25,7 +25,7 @@ export class FriendsController {
   }
 
   @Get(':id/count')
-  getFriendscount(@Request() req, @Param('id') userId: string) {
+  getFriendsCount(@Param('id') userId: string) {
     return this.friendsService.getFriendsCount(userId);
   }
 
