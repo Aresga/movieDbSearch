@@ -13,6 +13,10 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { useRegister } from '@/hooks/useAuth'
 
+/**
+ * Validation schema for the registration form.
+ * Ensures strict checks on password pairing during account setup.
+ */
 const schema = z
   .object({
     username: z.string().min(3),
@@ -27,6 +31,10 @@ const schema = z
 
 type FormData = z.infer<typeof schema>
 
+/**
+ * RegisterForm Component
+ * Fully encapsulates user registration via hook-form, integrating with the useRegister query hook.
+ */
 export function RegisterForm() {
   const { mutate: register, isPending } = useRegister()
 
