@@ -30,8 +30,7 @@ const emailSchema = z.object({
 
 const passwordSchema = z.object({
   currentPassword: z.string()
-    .min(8, 'Minimum 8 characters')
-    .max(64, 'Maximum 64 characters'),
+    .min(1, 'Current password is required'),
   newPassword: z.string()
     .min(8, 'Minimum 8 characters')
     .max(64, 'Maximum 64 characters'),
