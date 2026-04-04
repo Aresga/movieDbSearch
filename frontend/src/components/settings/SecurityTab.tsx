@@ -9,6 +9,17 @@ import { Input } from '@/components/ui/input'
 import {
   Form, FormControl, FormField, FormItem, FormLabel, FormMessage,
 } from '@/components/ui/form'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 import { useUpdateEmail, useUpdatePassword, useSetPassword } from '@/hooks/useUser'
 import type { User } from '@/types'
 import { useDisable2FA } from '@/hooks/useTwoFa'
@@ -114,15 +125,35 @@ export function SecurityTab({ user }: { user: User }) {
         </div>
 
         {user.isTwoFactorEnabled ? (
-          <Button
-            variant="outline"
-            size="sm"
-            className="text-destructive border-destructive/30 hover:bg-destructive/10"
-            onClick={() => disable2FA()}
-            disabled={disabling}
-          >
-            {disabling ? 'Disabling…' : 'Disable'}
-          </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-destructive border-destructive/30 hover:bg-destructive/10"
+                disabled={disabling}
+              >
+                {disabling ? 'Disabling…' : 'Disable'}
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Disable Two-Factor Authentication?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will remove an extra layer of security from your account. You will no longer need a verification code to sign in.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  onClick={() => disable2FA()}
+                >
+                  Yes, disable 2FA
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         ) : (
           <Button variant="outline" size="sm" asChild>
             <Link to="/2fa/setup">Enable</Link>
