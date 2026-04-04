@@ -18,7 +18,7 @@ export function useFriends() {
 }
 
 /**
- * Hook to send a friend request or add a user as a friend.
+ * Hook to send a friend request to a user.
  */
 export function useAddFriend() {
   const queryClient = useQueryClient()
