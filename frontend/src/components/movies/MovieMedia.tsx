@@ -71,7 +71,7 @@ export function MovieMedia({ videos }: MovieMediaProps) {
           <button
             key={v.id}
             onClick={() => setActiveVideo(v.key)}
-            className="flex-shrink-0 w-56 rounded-lg hover:opacity-80 transition-opacity group overflow-hidden text-left"
+            className="shrink-0 w-56 rounded-lg hover:opacity-80 transition-opacity group overflow-hidden text-left"
           >
             <div className="relative w-full aspect-video">
               <img

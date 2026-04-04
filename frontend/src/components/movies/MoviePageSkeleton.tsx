@@ -15,7 +15,7 @@ export function MoviePageSkeleton() {
       <div className="px-6 max-w-5xl mx-auto relative">
         <div className="flex flex-col md:flex-row gap-6 -mt-110">
           {/* Poster skeleton */}
-          <Skeleton className="w-full md:w-72 aspect-[2/3] rounded-lg flex-shrink-0" />
+          <Skeleton className="w-full md:w-72 aspect-2/3 rounded-lg shrink-0" />
 
           <div className="flex-1 pt-15 space-y-3">
             {/* Title */}
@@ -51,8 +51,8 @@ export function MoviePageSkeleton() {
         <Skeleton className="h-5 w-36 mb-3" />
         <div className="flex gap-4 overflow-hidden">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="flex-shrink-0 w-28 rounded-lg border bg-card overflow-hidden">
-              <Skeleton className="w-full aspect-[2/3]" />
+            <div key={i} className="shrink-0 w-28 rounded-lg border bg-card overflow-hidden">
+              <Skeleton className="w-full aspect-2/3" />
               <div className="p-2 space-y-1">
                 <Skeleton className="h-3 w-full" />
                 <Skeleton className="h-3 w-2/3" />
@@ -67,7 +67,7 @@ export function MoviePageSkeleton() {
         <Skeleton className="h-5 w-24 mb-3" />
         <div className="flex gap-3 overflow-hidden">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="flex-shrink-0 w-56">
+            <div key={i} className="shrink-0 w-56">
               <Skeleton className="w-full aspect-video rounded-lg" />
               <div className="p-2 space-y-1">
                 <Skeleton className="h-3 w-3/4" />
