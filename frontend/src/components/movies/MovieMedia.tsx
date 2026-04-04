@@ -1,6 +1,9 @@
 import { useState } from 'react'
 
-interface Video {
+/**
+ * Standard YouTube video parameters retrieved from TMDB mapping.
+ */
+export interface Video {
   id: string
   key: string
   name: string
@@ -8,10 +11,16 @@ interface Video {
   type: string
 }
 
-interface MovieMediaProps {
+export interface MovieMediaProps {
   videos: Video[]
 }
 
+/**
+ * MovieMedia Component
+ * Manages the display and integrated playback of Trailers and Teasers.
+ * Renders a scrollable thumbnail gallery and loads an actively selected trailer
+ * directly via YouTube iframe in a full-screen theater mode.
+ */
 export function MovieMedia({ videos }: MovieMediaProps) {
   const [activeVideo, setActiveVideo] = useState<string | null>(null)
 

@@ -7,6 +7,10 @@ interface MovieCardProps {
   movie: Movie
 }
 
+/**
+ * Resolves the poster URL from the TMDB image path.
+ * Falls back to a randomly seeded placeholder if no poster is available.
+ */
 function getPosterUrl(movie: Movie): string {
   if (!movie.poster_path) {
     return `https://picsum.photos/seed/movie-${movie.id}/300/450`
@@ -15,15 +19,25 @@ function getPosterUrl(movie: Movie): string {
   return `https://image.tmdb.org/t/p/w500${movie.poster_path}`
 }
 
+/**
+ * Extracts the 4-digit release year from various TMDB date formats.
+ */
 function getYear(movie: Movie): string {
   const date = movie.release_date ?? movie.first_air_date ?? ''
   return date ? date.slice(0, 4) : ''
 }
 
+/**
+ * Extracts the primary title regardless of whether it was categorized as a TV Show or Movie.
+ */
 function getTitle(movie: Movie): string {
   return movie.title ?? movie.name ?? 'Untitled'
 }
 
+/**
+ * MovieCard Component
+ * Displays a poster visual card for a movie, rendering hover states, scores, and routing integration.
+ */
 export function MovieCard({ movie }: MovieCardProps) {
   const title = getTitle(movie)
   const year = getYear(movie)

@@ -1,5 +1,11 @@
 import { Skeleton } from '@/components/ui/skeleton'
 
+/**
+ * MoviePageSkeleton Component
+ * Provides a comprehensive layout-matching fallback UI constructed using generic Skeleton elements.
+ * Accurately mimics the structure of the MovieHero, Cast, and Media sections to prevent 
+ * Cumulative Layout Shift (CLS) during network fetching on the Movie Detail page.
+ */
 export function MoviePageSkeleton() {
   return (
     <div className="w-full">

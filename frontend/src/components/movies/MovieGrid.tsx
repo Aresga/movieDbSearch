@@ -3,12 +3,15 @@ import type { Movie } from '@/types'
 import { MovieCard } from './MovieCard'
 import { Skeleton } from '@/components/ui/skeleton'
 
-interface MovieGridProps {
+export interface MovieGridProps {
   movies: Movie[]
   isLoading?: boolean
   query?: string
 }
 
+/**
+ * Local loading skeleton for the movie grid card.
+ */
 function MovieSkeleton() {
   return (
     <div className="rounded-lg overflow-hidden border border-border/50">
@@ -21,6 +24,11 @@ function MovieSkeleton() {
   )
 }
 
+/**
+ * MovieGrid Component
+ * Takes an array of Movie objects and elegantly lays them out in a responsive grid.
+ * Handles the loading skeleton array generation and empty states seamlessly.
+ */
 export function MovieGrid({ movies, isLoading, query }: MovieGridProps) {
   if (isLoading) {
     return (
