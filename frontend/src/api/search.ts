@@ -6,10 +6,11 @@ import { apiClient } from './client'
  * Handles inconsistencies in ID fields, title vs name, and date formatting.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const normalizeMovieData = (m: any): Movie => {
+const normalizeMovieData = (m: any): Movie | null => {
   const id = m.id ?? m.tmdb_id ?? m.tmdbId
   if (id == null) {
-    console.warn('normalizeMovieData: item has missing ID, data may be incomplete', m)
+    console.warn('normalizeMovieData: item has missing ID, discarding', m)
+    return null
   }
   return {
     id,
@@ -25,6 +26,15 @@ const normalizeMovieData = (m: any): Movie => {
     genre_ids: Array.isArray(m.genre_ids) ? m.genre_ids : undefined,
     media_type: m.media_type ?? 'movie', // Default to movie if omitted
   }
+}
+
+/**
+ * Utility to map an array of raw payload items and strip out any malformed entries.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const filterAndNormalizeMovies = (arr: any[] | undefined | null): Movie[] => {
+  if (!Array.isArray(arr)) return []
+  return arr.map(normalizeMovieData).filter((m): m is Movie => m !== null)
 }
 
 /**
@@ -49,7 +59,7 @@ export const searchApi = {
 
     // 1. Raw array payload
     if (Array.isArray(payload)) {
-      return { results: payload.map(normalizeMovieData), total_results: payload.length }
+      return { results: filterAndNormalizeMovies(payload), total_results: payload.length }
     }
 
     if (payload == null) {
@@ -58,26 +68,26 @@ export const searchApi = {
 
     // 2. Standard '{ results: [...] }' payload
     if (Array.isArray(payload.results)) {
-      return { ...payload, results: payload.results.map(normalizeMovieData) }
+      return { ...payload, results: filterAndNormalizeMovies(payload.results) }
     }
 
     // 3. Nested '{ data: [...] }' payload
     if (Array.isArray(payload.data)) {
-      return { results: payload.data.map(normalizeMovieData), total_results: payload.data.length }
+      return { results: filterAndNormalizeMovies(payload.data), total_results: payload.data.length }
     }
 
     // 4. Nested '{ data: { results: [...] } }'
     if (payload.data && Array.isArray(payload.data.results)) {
-      return { ...payload.data, results: payload.data.results.map(normalizeMovieData) }
+      return { ...payload.data, results: filterAndNormalizeMovies(payload.data.results) }
     }
 
     // 5. Item/Movies variations '{ items: [...] }' or '{ movies: [...] }'
     if (Array.isArray(payload.items)) {
-      return { results: payload.items.map(normalizeMovieData), total_results: payload.items.length }
+      return { results: filterAndNormalizeMovies(payload.items), total_results: payload.items.length }
     }
 
     if (Array.isArray(payload.movies)) {
-      return { results: payload.movies.map(normalizeMovieData), total_results: payload.movies.length }
+      return { results: filterAndNormalizeMovies(payload.movies), total_results: payload.movies.length }
     }
 
     // 6. Absolute Fallback
@@ -99,7 +109,7 @@ export const searchApi = {
     const res = await apiClient.get<{ movies: any[] }>('/trending', { params: { limit } })
 
     // Leverage the standard utility mapper
-    const movies: Movie[] = (res.data.movies ?? []).map(normalizeMovieData)
+    const movies: Movie[] = filterAndNormalizeMovies(res.data.movies)
 
     return { results: movies, total_results: movies.length }
   },
