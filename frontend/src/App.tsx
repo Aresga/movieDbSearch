@@ -37,8 +37,9 @@ function RootRedirect() {
 // Fallback shown while the specific page code is downloading
 function PageFallback() {
   return (
-    <div className="flex h-screen w-full items-center justify-center bg-background">
-      <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary"></div>
+    <div className="flex h-screen w-full items-center justify-center bg-background" role="status" aria-label="Loading page">
+      <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary" aria-hidden="true"></div>
+      <span className="sr-only">Loading...</span>
     </div>
   )
 }
