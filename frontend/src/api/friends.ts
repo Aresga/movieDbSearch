@@ -37,7 +37,7 @@ export const friendsApi = {
    * Retrieves the friend count for a specific user.
    */
     getFriendsCount: async (id: string): Promise<number> => {
-        const res = await apiClient.get(`/friends/${id}/count`)
+        const res = await apiClient.get<number>(`/friends/${id}/count`)
         return res.data
     },
 }
