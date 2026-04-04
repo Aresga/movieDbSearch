@@ -1,5 +1,6 @@
 import { lazy, Suspense } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
 
 // Layouts & Guards
 import { AuthLayout } from '@/components/layout/AuthLayout'
@@ -45,46 +46,49 @@ function PageFallback() {
 function App() {
   return (
     <BrowserRouter>
-    {/* Suspense handles the "waiting" state while lazy components load */}
-      <Suspense fallback={<PageFallback />}>
-        <Routes>
+      {/* ErrorBoundary catches chunk loading failures from React.lazy */}
+      <ErrorBoundary>
+        {/* Suspense handles the "waiting" state while lazy components load */}
+        <Suspense fallback={<PageFallback />}>
+          <Routes>
             {/* Index Redirect */}
-          <Route path="/" element={<RootRedirect />} />
+            <Route path="/" element={<RootRedirect />} />
 
-          {/* AUTHENTICATION FLOW (Public/Guest Only) */}
-          <Route element={<AuthLayout />}>
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-          </Route>
-
-          {/* AUTH CALLBACKS & 2FA VERIFICATION 
-              Note: 2FA verify usually requires a temporary session token, not a full login 
-          */}
-          <Route path="/auth/callback" element={<OAuthCallbackPage />} />
-          <Route path="/2fa/verify" element={<TwoFactorVerifyPage />} />
-
-          {/* MAIN APPLICATION AREA (Shared Navigation/Footer) */}
-          <Route element={<AppLayout />}>
-            {/* PUBLIC CONTENT: Accessible to everyone */}
-            <Route path="/home" element={<HomePage />} />
-            <Route path="/movie/:id" element={<MoviePage />} />
-            <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
-            <Route path="/cookie-policy" element={<CookiePolicyPage />} />
-
-            {/* PRIVATE CONTENT: Require authentication via ProtectedRoute wrapper */}
-            <Route element={<ProtectedRoute />}>
-              <Route path="/user/me" element={<MyProfilePage />} />
-              <Route path="/user/:id" element={<UserPage />} />
-              <Route path="/settings" element={<SettingsPage />} />
-              <Route path="/friends" element={<FriendsPage />} />
-              <Route path="/2fa/setup" element={<TwoFactorSetupPage />} />
+            {/* AUTHENTICATION FLOW (Public/Guest Only) */}
+            <Route element={<AuthLayout />}>
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
             </Route>
 
-          </Route>
+            {/* AUTH CALLBACKS & 2FA VERIFICATION 
+                Note: 2FA verify usually requires a temporary session token, not a full login 
+            */}
+            <Route path="/auth/callback" element={<OAuthCallbackPage />} />
+            <Route path="/2fa/verify" element={<TwoFactorVerifyPage />} />
+
+            {/* MAIN APPLICATION AREA (Shared Navigation/Footer) */}
+            <Route element={<AppLayout />}>
+              {/* PUBLIC CONTENT: Accessible to everyone */}
+              <Route path="/home" element={<HomePage />} />
+              <Route path="/movie/:id" element={<MoviePage />} />
+              <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+              <Route path="/cookie-policy" element={<CookiePolicyPage />} />
+
+              {/* PRIVATE CONTENT: Require authentication via ProtectedRoute wrapper */}
+              <Route element={<ProtectedRoute />}>
+                <Route path="/user/me" element={<MyProfilePage />} />
+                <Route path="/user/:id" element={<UserPage />} />
+                <Route path="/settings" element={<SettingsPage />} />
+                <Route path="/friends" element={<FriendsPage />} />
+                <Route path="/2fa/setup" element={<TwoFactorSetupPage />} />
+              </Route>
+
+            </Route>
             {/* 404 / CATCH-ALL */}
-          <Route path="*" element={<RootRedirect />} />
-        </Routes>
-      </Suspense>
+            <Route path="*" element={<RootRedirect />} />
+          </Routes>
+        </Suspense>
+      </ErrorBoundary>
     </BrowserRouter>
   )
 }
