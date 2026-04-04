@@ -42,7 +42,7 @@ export class ErrorBoundary extends Component<Props, State> {
      * stack trace to an external logging service or developer console.
      */
     public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-        console.error('Uncaught component error (Lazy Load Failure):', error, errorInfo)
+        console.error('Uncaught component error:', error, errorInfo)
     }
 
     public render() {
