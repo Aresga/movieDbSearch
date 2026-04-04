@@ -11,7 +11,7 @@ import { formatDistanceToNow } from 'date-fns'
 
 /**
  * NotificationBell Component
- * Placed in the global AppLayout header. It polls the global Zustand notification 
+ * Placed in the global AppLayout header. It subscribes to the global Zustand notification 
  * store to display an unread badge. Opens a popover menu standardizing notification 
  * chronologies and mark-as-read dispatches.
  */
