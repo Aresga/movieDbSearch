@@ -17,8 +17,6 @@ export function QRCodeDisplay({ url, secret }: QRCodeDisplayProps) {
     <div className="flex flex-col items-center gap-4">
       <div className="p-4 bg-white rounded-xl shadow-inner">
         {url.startsWith('data:image') ? (
-          // backend returned an image (base64); render directly
-          // eslint-disable-next-line @next/next/no-img-element
           <img src={url} alt="2FA QR Code" className="w-[180px] h-[180px]" />
         ) : (
           <QRCodeSVG value={url} size={180} />

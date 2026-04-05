@@ -3,6 +3,12 @@ import { apiClient } from './client'
 
 const BASE_URL = '/api'
 
+export interface RegisterSuccessResponse {
+  message: string
+  id: string
+  username: string
+}
+
 export interface RegisterPayload {
   username: string
   email: string
@@ -15,8 +21,8 @@ export interface LoginPayload {
 }
 
 export const authApi = {
-  register: async (data: RegisterPayload): Promise<AuthResponse> => {
-    const res = await apiClient.post<AuthResponse>('/auth/register', data)
+  register: async (data: RegisterPayload): Promise<RegisterSuccessResponse> => {
+    const res = await apiClient.post<RegisterSuccessResponse>('/auth/register', data)
     return res.data
   },
   login: async (data: LoginPayload): Promise<AuthResponse> => {

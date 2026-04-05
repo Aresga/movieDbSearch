@@ -7,6 +7,15 @@ import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp'
+import {
   Form, FormControl, FormField, FormItem, FormLabel, FormMessage,
 } from '@/components/ui/form'
 import { useUpdateEmail, useUpdatePassword, useSetPassword } from '@/hooks/useUser'
@@ -38,6 +47,8 @@ export function SecurityTab({ user }: { user: User }) {
 
   const [editingEmail, setEditingEmail] = useState(false)
   const [editingPassword, setEditingPassword] = useState(false)
+  const [disable2faOpen, setDisable2faOpen] = useState(false)
+  const [disable2faCode, setDisable2faCode] = useState('')
 
   const emailForm = useForm<EmailForm>({
     resolver: zodResolver(emailSchema),
@@ -82,10 +93,22 @@ export function SecurityTab({ user }: { user: User }) {
     })
   }
 
+  const handleDisable2faOpenChange = (open: boolean) => {
+    setDisable2faOpen(open)
+    if (!open) setDisable2faCode('')
+  }
+
+  const handleConfirmDisable2fa = () => {
+    if (disable2faCode.length !== 6) return
+    disable2FA(disable2faCode, {
+      onSuccess: () => handleDisable2faOpenChange(false),
+    })
+  }
+
   return (
     <div className="flex flex-col gap-4">
 
-      {/* 2FA — unchanged */}
+      {/* 2FA */}
     <div className="rounded-xl border border-border/50 bg-card p-4 flex items-center justify-between">
     <div className="flex items-center gap-3">
         {user.isTwoFactorEnabled ? (
@@ -102,15 +125,52 @@ export function SecurityTab({ user }: { user: User }) {
     </div>
 
     {user.isTwoFactorEnabled ? (
+        <>
         <Button
         variant="outline"
         size="sm"
         className="text-destructive border-destructive/30 hover:bg-destructive/10"
-        onClick={() => disable2FA()}
+        onClick={() => setDisable2faOpen(true)}
         disabled={disabling}
         >
-        {disabling ? 'Disabling…' : 'Disable'}
+        Disable
         </Button>
+        <Dialog open={disable2faOpen} onOpenChange={handleDisable2faOpenChange}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Disable two-factor authentication</DialogTitle>
+              <DialogDescription>
+                Enter the 6-digit code from your authenticator app to confirm. This helps make sure only you can turn off 2FA.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex flex-col items-center gap-4 py-2">
+              <InputOTP maxLength={6} value={disable2faCode} onChange={setDisable2faCode}>
+                <InputOTPGroup>
+                  <InputOTPSlot index={0} />
+                  <InputOTPSlot index={1} />
+                  <InputOTPSlot index={2} />
+                  <InputOTPSlot index={3} />
+                  <InputOTPSlot index={4} />
+                  <InputOTPSlot index={5} />
+                </InputOTPGroup>
+              </InputOTP>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => handleDisable2faOpenChange(false)}>
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                variant="destructive"
+                disabled={disable2faCode.length < 6 || disabling}
+                onClick={handleConfirmDisable2fa}
+              >
+                {disabling ? 'Disabling…' : 'Disable 2FA'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+        </>
     ) : (
         <Button variant="outline" size="sm" asChild>
         <Link to="/2fa/setup">Enable</Link>

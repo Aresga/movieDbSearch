@@ -24,11 +24,13 @@ export function useSocket() {
     socket.connect()
 
     socket.on('connect', () => {
-      console.log('[socket] connected', socket.id)
+      queryClient.invalidateQueries({ queryKey: ['user', 'me'] })
     })
 
-    socket.on('disconnect', (reason) => {
-      console.log('[socket] disconnected', reason)
+    socket.on('disconnect', () => {
+      if (useAuthStore.getState().user) {
+        queryClient.invalidateQueries({ queryKey: ['user', 'me'] })
+      }
     })
 
     socket.on('connect_error', (err) => {
@@ -67,7 +69,7 @@ export function useSocket() {
       socket.off('friendRequest')
 
     }
-  }, [user, queryClient])
+  }, [user, queryClient, addNotification])
 
   // Disconnect on logout 
   useEffect(() => {

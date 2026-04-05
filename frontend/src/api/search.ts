@@ -1,16 +1,19 @@
 import type { Movie, SearchResponse } from '@/types'
 import { apiClient } from './client'
-import { promise } from 'zod'
+
+type RawMovie = Record<string, unknown>
+
+function isRecord(v: unknown): v is Record<string, unknown> {
+  return v != null && typeof v === 'object' && !Array.isArray(v)
+}
 
 export const searchApi = {
   search: async (q: string, limit = 10): Promise<SearchResponse> => {
-    const res = await apiClient.get<any>('/search', {
+    const res = await apiClient.get<unknown>('/search', {
       params: { q, limit },
     })
 
     const payload = res.data
-
-    console.debug('[searchApi] q="' + q + '" raw payload:', payload)
 
     if (Array.isArray(payload)) {
       return { results: payload, total_results: payload.length }
@@ -20,73 +23,85 @@ export const searchApi = {
       return { results: [], total_results: 0 }
     }
 
-    // helper > map the movie data 
-    const mapMovie = (m: any) => {
+    if (!isRecord(payload)) {
+      return { results: [], total_results: 0 }
+    }
+
+    const mapMovie = (m: RawMovie): Movie => {
+      const movieId = (m.tmdb_id ?? m.tmdbId ?? m.id) as Movie['id']
+      const releaseYear = m.release_year
       return {
-        id: m.id ?? m.tmdb_id ?? m.tmdbId ?? m.tmdbId ?? m.tmdb_id,
-        title: m.title ?? m.name,
-        name: m.name ?? m.title,
-        overview: m.overview,
-        poster_path: m.poster_path,
-        backdrop_path: m.backdrop_path,
-        release_date: m.release_date ?? (m.release_year ? String(m.release_year) + '-01-01' : undefined),
-        first_air_date: m.first_air_date,
-        vote_average: m.vote_average,
-        vote_count: m.vote_count,
-        genre_ids: Array.isArray(m.genre_ids) ? m.genre_ids : undefined,
-        media_type: m.media_type,
+        id: movieId,
+        title: (m.title ?? m.name) as string | undefined,
+        name: (m.name ?? m.title) as string | undefined,
+        overview: m.overview as string | undefined,
+        poster_path: m.poster_path as string | undefined,
+        backdrop_path: m.backdrop_path as string | undefined,
+        release_date:
+          (m.release_date as string | undefined) ??
+          (typeof releaseYear === 'number' ? `${releaseYear}-01-01` : undefined),
+        first_air_date: m.first_air_date as string | undefined,
+        vote_average: m.vote_average as number | undefined,
+        vote_count: m.vote_count as number | undefined,
+        genre_ids: Array.isArray(m.genre_ids) ? (m.genre_ids as number[]) : undefined,
+        media_type: m.media_type as Movie['media_type'],
       }
     }
 
-    // payload.results (SearchResponse)
     if (Array.isArray(payload.results)) {
-      return payload as SearchResponse
+      return payload as unknown as SearchResponse
     }
 
-
-    // payload.data might be an array or wrapped response
     if (Array.isArray(payload.data)) {
-      return { results: payload.data.map(mapMovie), total_results: payload.data.length }
+      const rows = payload.data as RawMovie[]
+      return { results: rows.map(mapMovie), total_results: rows.length }
     }
 
-    if (payload.data && Array.isArray(payload.data.results)) {
-      return { ...payload.data, results: payload.data.results.map(mapMovie) }
+    const data = payload.data
+    if (isRecord(data) && Array.isArray(data.results)) {
+      return {
+        ...(data as unknown as SearchResponse),
+        results: (data.results as RawMovie[]).map(mapMovie),
+      }
     }
 
-    // some APIs use items
     if (Array.isArray(payload.items)) {
-      return { results: payload.items.map(mapMovie), total_results: payload.items.length }
+      const rows = payload.items as RawMovie[]
+      return { results: rows.map(mapMovie), total_results: rows.length }
     }
 
     if (Array.isArray(payload.movies)) {
-      return { results: payload.movies.map(mapMovie), total_results: payload.movies.length }
+      const rows = payload.movies as RawMovie[]
+      return { results: rows.map(mapMovie), total_results: rows.length }
     }
 
-    // fallback: try to return payload if it matches SearchResponse-ish
     return {
-      results: Array.isArray(payload.results) ? payload.results.map(mapMovie) : [],
+      results: Array.isArray(payload.results)
+        ? (payload.results as RawMovie[]).map(mapMovie)
+        : [],
       total_results: typeof payload.total_results === 'number' ? payload.total_results : undefined,
-      page: payload.page,
-      total_pages: payload.total_pages,
+      page: typeof payload.page === 'number' ? payload.page : undefined,
+      total_pages: typeof payload.total_pages === 'number' ? payload.total_pages : undefined,
     }
   },
 
   trending: async (limit = 20): Promise<SearchResponse> => {
-    const res = await apiClient.get<{ movies: any[] }>('/trending', { params: { limit } })
-    const movies: Movie[] = (res.data.movies ?? []).map((m: any) => ({
-      id: m.tmdb_id ?? m.id,
-      title: m.title,
-      name: m.title,
-      overview: m.overview,
-      poster_path: m.poster_path,
-      backdrop_path: m.backdrop_path,
-      release_date: m.release_year ? `${m.release_year}-01-01` : undefined,
-      vote_average: m.vote_average,
-      vote_count: m.vote_count,
+    const res = await apiClient.get<{ movies?: RawMovie[] }>('/trending', { params: { limit } })
+    const movies: Movie[] = (res.data.movies ?? []).map((m) => ({
+      id: (m.tmdb_id ?? m.id) as Movie['id'],
+      title: m.title as string | undefined,
+      name: m.title as string | undefined,
+      overview: m.overview as string | undefined,
+      poster_path: m.poster_path as string | undefined,
+      backdrop_path: m.backdrop_path as string | undefined,
+      release_date:
+        typeof m.release_year === 'number' ? `${m.release_year}-01-01` : undefined,
+      vote_average: m.vote_average as number | undefined,
+      vote_count: m.vote_count as number | undefined,
       genre_ids: undefined,
       media_type: 'movie' as const,
     }))
     return { results: movies, total_results: movies.length }
-  }, 
+  },
 
 }

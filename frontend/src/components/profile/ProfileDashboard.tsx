@@ -1,12 +1,10 @@
 import { Link } from 'react-router-dom'
-import { Calendar, Settings, Shield, Star, Trash2, Users, VariableIcon } from 'lucide-react'
+import { Calendar, Settings, Shield, Star, Trash2, Users, UserPlus, UserMinus } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import type { User, Review } from '@/types'
 import { useFriends, useAddFriend, useRemoveFriend } from '@/hooks/useFriends'
-import { UserPlus, UserMinus } from 'lucide-react'
-import { size } from 'zod'
 
 type ProfileDashboardProps = {
   user: User
@@ -18,7 +16,7 @@ type ProfileDashboardProps = {
 }
 
 function AddFriendButton({ userId }: { userId: string }) {
-  const { data: friends = [] }  = useFriends()
+  const { data: friends = [] } = useFriends()
   const { mutate: addFriend, isPending: isAdding } = useAddFriend()
   const { mutate: removeFriend, isPending: isRemoving } = useRemoveFriend()
 

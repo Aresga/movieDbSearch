@@ -1,4 +1,4 @@
-import { Home, Users, User, Shield, Film, LogOut, LogIn, Settings } from 'lucide-react'
+import { Home, Users, User, Film, LogOut, LogIn, Settings } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 import {
   Sidebar,
@@ -11,7 +11,6 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarProvider,
   useSidebar,
 
   // SidebarSeparator,
