@@ -10,8 +10,11 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger'
 import { loadVaultSecrets } from './common/vault.loader';
 
 async function bootstrap() {
-const envPath = path.resolve(process.cwd(), '..', '.env');
-dotenv.config({ path: envPath });
+  const envPath = path.resolve(process.cwd(), '.env');
+  if (fs.existsSync(envPath)) {
+    dotenv.config({ path: envPath });
+  }
+
   try {
 
     // Fetch secrets from Vault before app initialization
@@ -20,27 +23,14 @@ dotenv.config({ path: envPath });
     // Inject fetched secrets into process.env
     Object.assign(process.env, secrets);
 
-/* [확인용 로그] Vault에 저장한 이름과 똑같이 적어야 합니다.
-    console.log('--- Vault 데이터 로드 확인 ---');
-    console.log('DB User:', process.env.POSTGRES_USER);
-    //console.log('Google ID:', process.env.GOOGLE_CLIENT_ID); // 이 줄을 꼭 추가해보세요!
-    console.log('Google Secret:', process.env.GOOGLE_CLIENT_SECRET ? 'Loaded ✅' : 'Not Found ❌');
-    console.log('---------------------------');
-    console.log('✅ MONGO_ROOT_PASSWORD:', process.env.MONGO_ROOT_PASSWORD);
-    console.log('TMDB Key:', process.env.TMDB_KEY ? 'Loaded ✅' : 'Not Found ❌');
-    console.log('JWT Secret:', process.env.JWT_SECRET ? 'Loaded ✅' : 'Not Found ❌');
-    console.log('---------------------------');
-*/
-
-
     // Setup HTTPS options (Reading from local files)
-    const httpsOptions = {
-    key : fs.readFileSync('./key.pem'),
-    cert: fs.readFileSync('./cert.pem'),
-    };
+    // const httpsOptions = {
+    // key : fs.readFileSync('./key.pem'),
+    // cert: fs.readFileSync('./cert.pem'),
+    // };
 
     // Create NestJS application with HTTPS
-    const app = await NestFactory.create(AppModule, { httpsOptions });
+    const app = await NestFactory.create(AppModule);
     
     // Middleware and Security
     app.use(cookieParser());
@@ -49,8 +39,9 @@ dotenv.config({ path: envPath });
       origin: [
         'http://localhost:5173',
         'https://localhost:5173',
-        'http://backend-nest:5173',
-        'https://backend-nest:5173'
+        'http://localhost',
+        'https://localhost',
+        'http://backend-nest:3000'
       ],
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],

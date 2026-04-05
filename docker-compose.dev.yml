@@ -1,4 +1,37 @@
 services:
+# Web Application Firewall (ModSecurity + Nginx)
+  waf:
+    build:
+      context: ./waf-nginx
+      dockerfile: Dockerfile
+    container_name: Movie_waf_nginx
+    ports:
+      - "80:80"                                   # Public entry point for all traffic
+      - "443:443"
+    environment:
+      - PROTOCOL=https
+      - NDN_VALIDATE_CERT=0
+      - PARANOIA=3                                # Security detection level (3: High/Strict)
+      - DETECTION_ONLY=0                          # Block mode for active WAF protection
+      - MODSEC_RULE_ENGINE=On                     # Ensure ModSecurity rule engine is enabled
+      - BACKEND=http://frontend:5173              # Default destination for frontend assets
+      - LOCATION=/api                             # Route pattern for backend redirection
+      - PROXY_BACKEND=http://backend-nest:3000    # Forward /api requests to NestJS API
+      - SSL_CERT=/etc/nginx/conf/server.crt
+      - SSL_KEY=/etc/nginx/conf/server.key
+      - TERMINATED_ENV_VARS=proxy_http_version 1.1; proxy_set_header Upgrade $$http_upgrade; proxy_set_header Connection "upgrade";
+    depends_on:
+      frontend:
+        condition: service_started
+      backend-nest:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - moviedb-network
 
   vault:
     image: hashicorp/vault:1.15
@@ -6,8 +39,8 @@ services:
     ports:
       - "8200:8200"
     environment:
-      VAULT_DEV_ROOT_TOKEN_ID: "root-token"
-      VAULT_ADDR: "http://0.0.0.0:8200"
+      - VAULT_DEV_ROOT_TOKEN_ID=root-token
+      - VAULT_ADDR=http://0.0.0.0:8200
     cap_add:
       - IPC_LOCK
     volumes:
@@ -29,8 +62,8 @@ services:
     volumes:
       - ./backend-python/init_db:/docker-entrypoint-initdb.d
       - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
+#    ports:
+#      - "5432:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
@@ -52,8 +85,8 @@ services:
     volumes:
       - ./backend-python:/app
       - ./backend-python/dbCSV:/dbCSV
-    ports:
-      - "8000:8000"
+#    ports:
+#      - "8000:8000"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 10s
@@ -80,8 +113,8 @@ services:
     volumes:
       - mongodb_data:/data/db
       - mongodb_config:/data/configdb
-    ports:
-      - "27017:27017"
+#    ports:
+#      - "27017:27017"
     healthcheck:
       test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
       interval: 10s
@@ -98,10 +131,13 @@ services:
     build: 
       context: ./backend-nest
       dockerfile: Dockerfile
-    ports:
-      - "3000:3000"
+#    ports:
+#      - "3000:3000"
     env_file:
       - ./.env
+    environment:
+      - VAULT_TOKEN=root-token
+      - VAULT_ADDR=http://vault:8200
     volumes:
       - ./backend-nest:/app
       - /app/node_modules
@@ -124,8 +160,8 @@ services:
     container_name: Movie_frontend
     env_file:
       - ./.env
-    ports:
-      - "5173:5173"
+#    ports:
+#      - "5173:5173"
     volumes:
       - ./frontend:/app
       - /app/node_modules
