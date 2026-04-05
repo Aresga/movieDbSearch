@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { io } from 'socket.io-client';
 import { useNavigate, Link } from 'react-router-dom';
 import { useFriends } from '@/hooks/useFriends';
 import type { User } from '@/types'
@@ -79,7 +78,6 @@ export function ChatMenuPage({ token, userId }: { token: string; userId: string 
       });
     });
 
-    return () => socket.disconnect();
   }, [token]);
 
   const existingChatFriendIds = useMemo(() => {
@@ -102,8 +100,7 @@ export function ChatMenuPage({ token, userId }: { token: string; userId: string 
     setIsCreatingRoom(true);
     try {
       const response = await apiClient.post(`/message/rooms/create/${friendId}`)
-
-      const room: Room = await response.json();
+      const room: Room = response.data;
 
       setRooms((prev) => {
         const exists = prev.some((r) => r._id === room._id);
@@ -122,48 +119,74 @@ export function ChatMenuPage({ token, userId }: { token: string; userId: string 
   };
 
   return (
-    <div>
-      <button onClick={() => setShowFriends((v) => !v)} disabled={isCreatingRoom}>
-        Create a new chat!
-      </button>
-
-      {showFriends && (
-        <div>
-          {isFriendsLoading ? (
-            <p>Loading friends...</p>
-          ) : validFriends.length === 0 ? (
-            <p>You are already talking to everyone!</p>
-          ) : (
-            validFriends.map((friend) => {
-              const friendId = getId(friend);
-              return (
-                <button
-                  key={friendId}
-                  onClick={() => createRoom(friendId)}
-                  disabled={isCreatingRoom}
-                >
-                  Start a new chat with {friend.username ?? 'Unknown user'}
-                </button>
-              );
-            })
-          )}
+    <div className="mx-auto w-full max-w-2xl px-4 py-6 space-y-6">
+      <section className="rounded-xl border border-border bg-card p-4 shadow-sm">
+        <div className="flex items-center justify-between gap-3">
+          <h1 className="text-lg font-semibold text-card-foreground">Chats</h1>
+          <button
+            onClick={() => setShowFriends((v) => !v)}
+            disabled={isCreatingRoom}
+            className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {showFriends ? 'Close' : 'Create a new chat'}
+          </button>
         </div>
-      )}
-      <menu style={{ listStyle: 'none', padding: 0 }}>
-    {rooms.map((room) => {
-      const otherParticipant = room.participants.find((p) => getId(p) !== userId);
-      const friendName = otherParticipant?.username ?? 'Unknown user';
-      
-      return (
-        <li key={room._id}>
-          <Link to={`/rooms/${room._id}`}>
-            {friendName}
-            {room.lastMessage && <span> - {room.lastMessage.content}</span>}
-          </Link>
-        </li>
-      );
-    })}
-  </menu>
+
+        {showFriends && (
+          <div className="mt-4 rounded-lg border border-border bg-muted/40 p-3">
+            {isFriendsLoading ? (
+              <p className="text-sm text-muted-foreground">Loading friends...</p>
+            ) : validFriends.length === 0 ? (
+              <p className="text-sm text-muted-foreground">You are already talking to everyone!</p>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {validFriends.map((friend) => {
+                  const friendId = getId(friend);
+                  return (
+                    <button
+                      key={friendId}
+                      onClick={() => createRoom(friendId)}
+                      disabled={isCreatingRoom}
+                      className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground transition hover:bg-accent hover:text-accent-foreground disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      Start chat with {friend.username ?? 'Unknown user'}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+      </section>
+
+      <section className="rounded-xl border border-border bg-card p-4 shadow-sm">
+        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">Your conversations</h2>
+
+        {rooms.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No chats yet.</p>
+        ) : (
+          <ul className="divide-y divide-border">
+            {rooms.map((room) => {
+              const otherParticipant = room.participants.find((p) => getId(p) !== userId);
+              const friendName = otherParticipant?.username ?? 'Unknown user';
+
+              return (
+                <li key={room._id}>
+                  <Link
+                    to={`/rooms/${room._id}`}
+                    className="block py-3 text-foreground transition hover:text-primary"
+                  >
+                    <span className="font-medium">{friendName}</span>
+                    {room.lastMessage && (
+                      <span className="ml-2 text-sm text-muted-foreground">- {room.lastMessage.content}</span>
+                    )}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </section>
     </div>
   );
 }
