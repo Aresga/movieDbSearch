@@ -6,6 +6,10 @@
 # local database volume 
 .postgres_data/
 
+# vault data volume
+vault_data/
+vault/data/
+
 # User-specific files
 *.rsuser
 *.suo

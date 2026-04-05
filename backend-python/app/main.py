@@ -1,6 +1,6 @@
 import logging
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, status
 from sentence_transformers import SentenceTransformer
 from .config.settings import settings
 from .database.connection import DatabaseConnection
@@ -42,6 +42,10 @@ async def lifespan(app: FastAPI):
     logger.info("Shutting down...")
 
 app = FastAPI(lifespan=lifespan)
+
+@app.get("/health", status_code=status.HTTP_200_OK)
+async def health_check():
+    return {"status": "ok"}
 
 app.include_router(router)
 
