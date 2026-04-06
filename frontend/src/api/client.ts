@@ -1,12 +1,31 @@
-import axios from 'axios'
+import axios, { AxiosHeaders } from 'axios'
 import { useAuthStore } from '@/store/authStore'
 
 const BASE_URL = '/api'
 
 export const apiClient = axios.create({
   baseURL: BASE_URL,
-  headers: { 'Content-Type': 'application/json' },
   withCredentials: true, // sends cookies, ON every request
+})
+
+// Default JSON for object bodies; omit Content-Type for FormData so the boundary is set correctly.
+apiClient.interceptors.request.use((config) => {
+  const { data } = config
+  const headers = AxiosHeaders.from(config.headers)
+  if (data instanceof FormData) {
+    headers.delete('Content-Type')
+  } else if (
+    data != null &&
+    typeof data === 'object' &&
+    !(data instanceof Blob) &&
+    !(data instanceof ArrayBuffer)
+  ) {
+    if (headers.get('Content-Type') == null) {
+      headers.set('Content-Type', 'application/json')
+    }
+  }
+  config.headers = headers
+  return config
 })
 
 

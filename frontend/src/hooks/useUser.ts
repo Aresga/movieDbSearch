@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 import { userApi } from '@/api/user'
 import type { SetPasswordPayload, UpdateEmailPayload, UpdatePasswordPayload } from '@/api/user'
 import { useAuthStore } from '@/store/authStore'
+import type { User } from '@/types'
 import { getApiErrorMessage } from '@/lib/apiError'
 
 export function useMe() {
@@ -24,7 +25,9 @@ export function useUpdateMe() {
       bio: string;
     }>) => userApi.updateMe(data),
     onSuccess: (data) => {
-      queryClient.setQueryData(['user', 'me'], data)
+      queryClient.setQueryData<User | undefined>(['user', 'me'], (prev) =>
+        prev ? { ...prev, ...data } : undefined,
+      )
       updateUser(data)
       toast.success('Profile updated')
     },
