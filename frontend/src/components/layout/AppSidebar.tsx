@@ -1,4 +1,4 @@
-import { Home, Users, User, Shield, Film, LogOut, LogIn, Settings } from 'lucide-react'
+import { Home, Users, User, Shield, Film, LogOut, LogIn, Settings, MessageCircle } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 import {
   Sidebar,
@@ -29,7 +29,7 @@ const authNavItems = [
   { title: 'My profile', url: '/user/me', icon: User },
   { title: 'Friends', url: '/friends', icon: Users },
   { title: 'Settings', url: '/settings', icon: Settings },
-  { title: 'Chats', url: '/menu/rooms', icon: Users }
+  { title: 'Chats', url: '/menu/rooms', icon: MessageCircle }
   // { title: '2FA Security', url: '/2fa/setup', icon: Shield },
 ]
 

@@ -31,12 +31,13 @@ export class MessageService {
 		return room;
 	}
 
-	async storeMessage(roomId: string, senderId: string, content: string)
+	async storeMessage(roomId: string, senderId: string, content: string, read: boolean)
 	{
 		const message = new this.messageModel({
 			roomId,
 			senderId,
 			content,
+			read,
 		});
 		const savedMessage = await message.save();
 		await this.chatRoomModel.findByIdAndUpdate(roomId, {
@@ -85,11 +86,18 @@ export class MessageService {
 		.sort({ updatedAt: -1 });
 	}
 
-	async markAsRead(messageId: string)
+	async markAsRead(roomId: string, userId: string)
 	{
-		await this.messageModel.findByIdAndUpdate(messageId, {
-			read: true,
-		});
+		return await this.messageModel.updateMany(
+			{
+				roomId,
+				senderId: { $ne: userId },
+				read: { $ne: true },
+			},
+			{
+				$set: { read: true },
+			}
+		);
 	}
 
 	async getMenuRooms(userId: string)
@@ -113,7 +121,5 @@ export class MessageService {
 			}));
 			return roomsWithParticipants as unknown as MenuRoom[];
 	}
-
-	
 
 }

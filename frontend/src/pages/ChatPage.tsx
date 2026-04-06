@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { apiClient } from '@/api/client';
 import { getSocket } from '@/lib/socket';
+import { Check, CheckCheck } from 'lucide-react';
 
 type Message = {
   _id: string;
@@ -10,6 +11,7 @@ type Message = {
   senderId: string;
   content: string;
   createdAt: string;
+  read: boolean;
 };
 
 type Participant = {
@@ -70,6 +72,7 @@ export function ChatPage() {
     const fetchData = async () => {
       await getRoomInfo();
       await loadMessages();
+      await markRoomAsRead();
     }
 
     fetchData();
@@ -80,17 +83,26 @@ export function ChatPage() {
 
     const handleReceiveMessage = (msg: Message) => {
       if (msg.roomId !== roomId) return;
-
       setMessages((prev) => {
         if (prev.some((m) => m._id === msg._id)) return prev;
         return [...prev, msg];
       });
     };
+    const markMessageAsRead = (data: { readBy: string }) => {
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.senderId !== data.readBy ? { ...msg, read: true } : msg
+        )
+      );
+    };
     socket.on('receiveMessage', handleReceiveMessage);
+    socket.on('markAsRead', markMessageAsRead);
     socket.emit('joinRoom', roomId);
+
     return () => {
       socket.emit('leaveRoom', roomId);
       socket.off('receiveMessage', handleReceiveMessage);
+      socket.off('markAsRead', markMessageAsRead);
     };
   }, [roomId, socket]);
 
@@ -127,6 +139,22 @@ export function ChatPage() {
     scrollToBottom();
   }, [messages]);
 
+    const markRoomAsRead = async () => {
+  if (!roomId) return;
+
+  try {
+    await apiClient.post(`/message/rooms/${roomId}/messages`);
+    socket.emit('markRoomAsRead', roomId);
+    setMessages((prev) =>
+      prev.map((message) =>
+        message.senderId !== userId ? { ...message, read: true } : message
+      )
+    );
+  } catch (error) {
+    console.error('Failed to mark room as read', error);
+  }
+};
+
   return (
     <div className="flex h-screen flex-col bg-background">
       <div className="border-b border-border/50 bg-card px-4 py-3">
@@ -160,9 +188,17 @@ export function ChatPage() {
                 )}
                 <p className="break-words">{m.content}</p>
               </div>
-              <small className="mt-1 text-xs text-muted-foreground">
-                {new Date(m.createdAt).toLocaleTimeString()}
-              </small>
+              <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+                <small>{new Date(m.createdAt).toLocaleTimeString()}</small>
+
+                {isOwnMessage && (
+                  m.read ? (
+                    <CheckCheck className="h-3.5 w-3.5 text-sky-400" aria-label="Read" />
+                  ) : (
+                    <Check className="h-3.5 w-3.5 opacity-70" aria-label="Sent" />
+                  )
+                )}
+              </div>
             </div>
           );
         })}

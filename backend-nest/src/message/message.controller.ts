@@ -47,4 +47,10 @@ export class MessageController {
 		const participants = await this.messageService.getRoomParticipants(roomId);
 		return { participants };
 	}
+
+	@Post('/rooms/:roomId/messages')
+	async markAsRead(@Request() Req, @Param('roomId') roomId: string)
+	{
+		return await this.messageService.markAsRead(roomId, Req.user.id);
+	}
 }

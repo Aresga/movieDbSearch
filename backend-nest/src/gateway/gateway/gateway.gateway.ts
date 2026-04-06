@@ -108,6 +108,13 @@ export class GatewayGateway implements OnGatewayConnection, OnGatewayDisconnect 
     }
   }
 
+  @SubscribeMessage('leaveRoom')
+  async handleLeaveRoom(client: Socket, roomId: string)
+  {
+    client.leave(roomId);
+    return { success: true, room: roomId }
+  }
+
 
   @SubscribeMessage('sendMessage')
   async handleMessage(
@@ -124,10 +131,13 @@ export class GatewayGateway implements OnGatewayConnection, OnGatewayDisconnect 
         return ;
       }
 
+      const roomSockets = await this.server.in(roomId).fetchSockets();
+      const checkForUser = roomSockets.some((socket) => socket.data.userId && socket.data.userId !== senderId);
       const message = await this.messageService.storeMessage(
         roomId,
         senderId,
         content,
+        checkForUser,
       );
 
       const payload = {
@@ -136,11 +146,23 @@ export class GatewayGateway implements OnGatewayConnection, OnGatewayDisconnect 
         senderId,
         content: message.content,
         createdAt: new Date(message.createdAt).toISOString(),
+        read: checkForUser,
       };
       console.log(`Message from ${senderId} in room ${roomId}: "${content}"`);
       this.server.to(roomId).emit('receiveMessage', payload)
     } catch (error) {
         console.error('Failed to send message:', error);
     }
+  }
+
+  @SubscribeMessage('markRoomAsRead')
+  async handleMarkRoomAsRead(client: Socket, roomId: string)
+  {
+    const userId = client.data.userId;
+    await this.messageService.markAsRead(roomId, userId);
+    this.server.to(roomId).emit('markAsRead', {
+      roomId,
+      readBy: userId,
+    });
   }
 }

@@ -4,6 +4,8 @@ import { useFriends } from '@/hooks/useFriends';
 import type { User } from '@/types'
 import { apiClient } from '@/api/client';
 import { getSocket } from '@/lib/socket';
+import { useAuthStore } from '@/store/authStore';
+import { BellRing } from 'lucide-react';
 
 type IdLike = { id?: string; _id?: string };
 
@@ -12,21 +14,25 @@ type Room = {
   participants: User[];
   lastMessage?: Message | null;
   updatedAt?: string;
+  isUnRead: boolean;
 };
 
 type Message = {
   _id: string;
   roomId: string;
-  senderId: string;
+  senderId: string | IdLike;
   content: string;
   createdAt: string;
+  read: boolean;
 };
 
 type Friend = IdLike & {
   username?: string;
 };
 
-export function ChatMenuPage({ token, userId }: { token: string; userId: string }) {
+export function ChatMenuPage() {
+  const { token, user } = useAuthStore();
+  const userId = user?.id ?? '';
   const [rooms, setRooms] = useState<Room[]>([]);
   const [showFriends, setShowFriends] = useState(false);
   const [isCreatingRoom, setIsCreatingRoom] = useState(false);
@@ -35,18 +41,54 @@ export function ChatMenuPage({ token, userId }: { token: string; userId: string 
   const { data: friends = [], isLoading: isFriendsLoading } = useFriends();
 
   const getId = (value: IdLike | undefined) => value?.id ?? value?._id ?? '';
+  const toComparableId = (value: unknown): string => {
+    if (value == null) return '';
+    if (typeof value === 'string') return value;
+    if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+
+    if (typeof value === 'object') {
+      const candidate = value as Record<string, unknown>;
+      const nestedId = candidate.id ?? candidate._id;
+      if (nestedId != null && nestedId !== value) {
+        return toComparableId(nestedId);
+      }
+      const hex = candidate.$oid;
+      if (typeof hex === 'string') {
+        return hex;
+      }
+      const toHexString = (candidate as { toHexString?: () => string }).toHexString;
+      if (typeof toHexString === 'function') {
+        return toHexString.call(candidate);
+      }
+      if (typeof (candidate as { toString?: () => string }).toString === 'function') {
+        const stringified = String((candidate as { toString: () => string }).toString());
+        if (stringified !== '[object Object]') {
+          return stringified;
+        }
+      }
+      return '';
+    }
+
+    return String(value);
+  };
+
+  const normalizeId = (value: string | IdLike | undefined) => {
+    if (!value) return '';
+    return toComparableId(value);
+  };
 
   useEffect(() => {
     const loadRooms = async () => {
       try {
       const response = await apiClient.get('/message/menu/rooms');
-      const data: Room[] = response.data;
+      const data = response.data as Omit<Room, 'isUnRead'>[];
       if (Array.isArray(data)) {
-        data.sort(
+        const marked = data.map(markAsUnread);
+        marked.sort(
           (a, b) =>
             new Date(b.updatedAt ?? 0).getTime() - new Date(a.updatedAt ?? 0).getTime()
         );
-        setRooms(data);
+        setRooms(marked);
       } else {
         setRooms([]);
       }
@@ -57,17 +99,25 @@ export function ChatMenuPage({ token, userId }: { token: string; userId: string 
     };
 
     loadRooms();
-  }, [token]);
+  }, [token, userId]);
 
   useEffect(() => {
     const socket = getSocket();
 
-    socket.on('receiveMessage', (message: Message) => {
+    const handleReceiveMessage = (message: Message) => {
       setRooms((prev) => {
         const next = prev.map((room) =>
           room._id !== message.roomId
             ? room
-            : { ...room, lastMessage: message, updatedAt: message.createdAt }
+            : {
+                ...room,
+                lastMessage: message,
+                updatedAt: message.createdAt,
+                isUnRead:
+                  !!userId &&
+                  message.senderId !== userId &&
+                  message.read === false,
+              }
         );
 
         next.sort(
@@ -76,9 +126,35 @@ export function ChatMenuPage({ token, userId }: { token: string; userId: string 
         );
         return next;
       });
-    });
+    };
 
-  }, [token]);
+    const handleMarkAsRead = (data: { roomId: string; readBy: string }) => {
+      if (normalizeId(data.readBy) !== normalizeId(userId)) return;
+
+      setRooms((prev) =>
+        prev.map((room) =>
+          room._id === data.roomId
+            ? {
+                ...room,
+                isUnRead: false,
+                lastMessage: room.lastMessage
+                  ? { ...room.lastMessage, read: true }
+                  : room.lastMessage,
+              }
+            : room,
+        ),
+      );
+    };
+
+    socket.on('receiveMessage', handleReceiveMessage);
+    socket.on('markAsRead', handleMarkAsRead);
+
+    return () => {
+      socket.off('receiveMessage', handleReceiveMessage);
+      socket.off('markAsRead', handleMarkAsRead);
+    };
+
+  }, [token, userId]);
 
   const existingChatFriendIds = useMemo(() => {
     return new Set(
@@ -100,7 +176,7 @@ export function ChatMenuPage({ token, userId }: { token: string; userId: string 
     setIsCreatingRoom(true);
     try {
       const response = await apiClient.post(`/message/rooms/create/${friendId}`)
-      const room: Room = response.data;
+      const room = markAsUnread(response.data as Omit<Room, 'isUnRead'>);
 
       setRooms((prev) => {
         const exists = prev.some((r) => r._id === room._id);
@@ -115,6 +191,21 @@ export function ChatMenuPage({ token, userId }: { token: string; userId: string 
       navigate(`/rooms/${room._id}`);
     } finally {
       setIsCreatingRoom(false);
+    }
+  };
+
+  const markAsUnread = (room: Omit<Room, 'isUnRead'>): Room => {
+    const senderId = room.lastMessage ? room.lastMessage.senderId : '';
+    const hasUnread =
+      !!room.lastMessage &&
+      !!userId &&
+      !!senderId &&
+      senderId !== userId &&
+      room.lastMessage.read === false;
+
+    return {
+      ...room,
+      isUnRead: hasUnread,
     }
   };
 
@@ -174,9 +265,23 @@ export function ChatMenuPage({ token, userId }: { token: string; userId: string 
                 <li key={room._id}>
                   <Link
                     to={`/rooms/${room._id}`}
+                    onClick={() => {
+                      setRooms((prev) =>
+                        prev.map((r) =>
+                          r._id === room._id ? { ...r, isUnRead: false } : r,
+                        ),
+                      );
+                    }}
                     className="block py-3 text-foreground transition hover:text-primary"
                   >
                     <span className="font-medium">{friendName}</span>
+                    {room.isUnRead && (
+                      <BellRing
+                        className="ml-2 inline-block h-4 w-4 text-amber-500 align-middle"
+                        aria-label="Unread message"
+                        title="Unread message"
+                      />
+                    )}
                     {room.lastMessage && (
                       <span className="ml-2 text-sm text-muted-foreground">- {room.lastMessage.content}</span>
                     )}
