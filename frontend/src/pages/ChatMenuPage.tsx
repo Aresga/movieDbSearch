@@ -41,41 +41,6 @@ export function ChatMenuPage() {
   const { data: friends = [], isLoading: isFriendsLoading } = useFriends();
 
   const getId = (value: IdLike | undefined) => value?.id ?? value?._id ?? '';
-  const toComparableId = (value: unknown): string => {
-    if (value == null) return '';
-    if (typeof value === 'string') return value;
-    if (typeof value === 'number' || typeof value === 'boolean') return String(value);
-
-    if (typeof value === 'object') {
-      const candidate = value as Record<string, unknown>;
-      const nestedId = candidate.id ?? candidate._id;
-      if (nestedId != null && nestedId !== value) {
-        return toComparableId(nestedId);
-      }
-      const hex = candidate.$oid;
-      if (typeof hex === 'string') {
-        return hex;
-      }
-      const toHexString = (candidate as { toHexString?: () => string }).toHexString;
-      if (typeof toHexString === 'function') {
-        return toHexString.call(candidate);
-      }
-      if (typeof (candidate as { toString?: () => string }).toString === 'function') {
-        const stringified = String((candidate as { toString: () => string }).toString());
-        if (stringified !== '[object Object]') {
-          return stringified;
-        }
-      }
-      return '';
-    }
-
-    return String(value);
-  };
-
-  const normalizeId = (value: string | IdLike | undefined) => {
-    if (!value) return '';
-    return toComparableId(value);
-  };
 
   useEffect(() => {
     const loadRooms = async () => {
@@ -129,7 +94,7 @@ export function ChatMenuPage() {
     };
 
     const handleMarkAsRead = (data: { roomId: string; readBy: string }) => {
-      if (normalizeId(data.readBy) !== normalizeId(userId)) return;
+      if (data.readBy !== userId) return;
 
       setRooms((prev) =>
         prev.map((room) =>
