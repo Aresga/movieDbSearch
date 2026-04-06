@@ -2,9 +2,9 @@ name: Auth Integration Test
 
 on:
   push:
-    branches: ["UserManagement", "frontend", "2FA"]
+    branches: ["main", "frontend"]
   pull_request:
-    branches: ["main", "frontend", "2FA"]
+    branches: ["main", "frontend"]
 
 jobs:
   test-auth-endpoints:
@@ -42,12 +42,20 @@ jobs:
 
       - name: Test User Login
         run: |
-          http --check-status --ignore-stdin --print=b --verify=no POST https://localhost:3000/auth/login \
+          http --check-status --headers --ignore-stdin --verify=no POST https://localhost:3000/auth/login \
             email="citest@example.com" \
-            password="TestPass123!" > response.json
+            password="TestPass123!" > login_headers.txt
+          
+          TOKEN=$(grep -i 'set-cookie: access_token=' login_headers.txt | sed 's/.*access_token=\([^;]*\).*/\1/' | head -n 1)
+          if [ -z "$TOKEN" ]; then echo "❌ Failed to extract access_token from login response" && exit 1; fi
+          echo "::add-mask::$TOKEN"
+          echo "ACCESS_TOKEN=$TOKEN" >> $GITHUB_ENV
 
-            TOKEN=$(python3 -c "import json; print(json.load(open('response.json'))['access_token'])")
-            echo "TOKEN=$TOKEN" >> $GITHUB_ENV
+      - name: Get Main User ID
+        run: |
+          USER_ID=$(http --check-status --ignore-stdin --print=b --verify=no GET https://localhost:3000/user/me "Cookie:access_token=${{ env.ACCESS_TOKEN }}" \
+            | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('id') or d.get('user', {}).get('id'))")
+          echo "USER_ID=$USER_ID" >> $GITHUB_ENV
 
       - name: Test Invalid Credentials
         run: |
@@ -66,8 +74,7 @@ jobs:
 
       - name: Test GET /user/me (authenticated)
         run: |
-          http --check-status --ignore-stdin --verify=no GET https://localhost:3000/user/me \
-            "Authorization:Bearer ${{ env.TOKEN }}"
+          http --check-status --ignore-stdin --verify=no GET https://localhost:3000/user/me "Cookie:access_token=${{ env.ACCESS_TOKEN }}"
 
       - name: Test GET /user/me (unauthenticated, expect 401)
         run: |
@@ -76,15 +83,12 @@ jobs:
 
       - name: Test PATCH /user/me (update profile)
         run: |
-          http --check-status --ignore-stdin --verify=no PATCH https://localhost:3000/user/me \
-            "Authorization:Bearer ${{ env.TOKEN }}" \
+          http --check-status --ignore-stdin --verify=no PATCH https://localhost:3000/user/me "Cookie:access_token=${{ env.ACCESS_TOKEN }}" \
             username="citestuser_updated"
 
-      - name: Test GET /user/:id (public profile, no auth needed)
+      - name: Test GET /user/:id (public profile, auth actually required)
         run: |
-          USER_ID=$(cat response.json | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['access_token']['id'])")
-          http --check-status --ignore-stdin --verify=no GET https://localhost:3000/user/$USER_ID \
-            "Authorization:Bearer ${{ env.TOKEN }}"
+          http --check-status --ignore-stdin --verify=no GET https://localhost:3000/user/${{ env.USER_ID }} "Cookie:access_token=${{ env.ACCESS_TOKEN }}"
 
       - name: Test DELETE /user/me (unauthenticated, expect 401)
         run: |
@@ -102,34 +106,34 @@ jobs:
 
       - name: Get Friend User ID
         run: |
-          http --check-status --ignore-stdin --print=b --verify=no POST https://localhost:3000/auth/login \
+          http --check-status --headers --ignore-stdin --verify=no POST https://localhost:3000/auth/login \
             email="cifriend@example.com" \
-            password="TestPass123!" > friend_response.json
+            password="TestPass123!" > friend_login_headers.txt
 
-          FRIEND_ID=$(cat friend_response.json | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['access_token']['id'])")
+          FRIEND_TOKEN=$(grep -i 'set-cookie: access_token=' friend_login_headers.txt | sed 's/.*access_token=\([^;]*\).*/\1/' | head -n 1)
+          if [ -z "$FRIEND_TOKEN" ]; then echo "❌ Failed to extract access_token from friend login response" && exit 1; fi
+          
+          FRIEND_ID=$(http --check-status --ignore-stdin --print=b --verify=no GET https://localhost:3000/user/me "Cookie:access_token=$FRIEND_TOKEN" \
+            | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('id') or d.get('user', {}).get('id'))")
           echo "FRIEND_ID=$FRIEND_ID" >> $GITHUB_ENV
 
       - name: Test Add Friend
         run: |
-          http --check-status --ignore-stdin --verify=no POST https://localhost:3000/friends/${{ env.FRIEND_ID }} \
-            "Authorization:Bearer ${{ env.TOKEN }}"
+          http --check-status --ignore-stdin --verify=no POST https://localhost:3000/friends/${{ env.FRIEND_ID }} "Cookie:access_token=${{ env.ACCESS_TOKEN }}"
 
       - name: Test Get Friends List (expect 1 friend)
         run: |
-          RESPONSE=$(http --check-status --ignore-stdin --print=b --verify=no GET https://localhost:3000/friends \
-            "Authorization:Bearer ${{ env.TOKEN }}")
+          RESPONSE=$(http --check-status --ignore-stdin --print=b --verify=no GET https://localhost:3000/friends "Cookie:access_token=${{ env.ACCESS_TOKEN }}")
           echo "$RESPONSE"
           echo "$RESPONSE" | grep -q "cifrienduser" && echo "✅ Friend found in list" || (echo "❌ Friend not in list" && exit 1)
 
       - name: Test Remove Friend
         run: |
-          http --check-status --ignore-stdin --verify=no DELETE https://localhost:3000/friends/${{ env.FRIEND_ID }} \
-            "Authorization:Bearer ${{ env.TOKEN }}"
+          http --check-status --ignore-stdin --verify=no DELETE https://localhost:3000/friends/${{ env.FRIEND_ID }} "Cookie:access_token=${{ env.ACCESS_TOKEN }}"
 
       - name: Test Get Friends List (expect empty)
         run: |
-          RESPONSE=$(http --check-status --ignore-stdin --print=b --verify=no GET https://localhost:3000/friends \
-            "Authorization:Bearer ${{ env.TOKEN }}")
+          RESPONSE=$(http --check-status --ignore-stdin --print=b --verify=no GET https://localhost:3000/friends "Cookie:access_token=${{ env.ACCESS_TOKEN }}")
           echo "$RESPONSE"
           echo "$RESPONSE" | grep -qv "cifrienduser" && echo "✅ Friend list is empty after removal" || (echo "❌ Friend still in list" && exit 1)
 
