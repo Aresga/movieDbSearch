@@ -103,10 +103,47 @@ services:
       - moviedb-network
     restart: unless-stopped
 
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    container_name: Movie_prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.enable-lifecycle'
+    volumes:
+      - ./observability/prometheus:/etc/prometheus:ro
+    ports:
+      - "9090:9090"
+    depends_on:
+      - backend-nest
+      - backend-python
+    networks:
+      - moviedb-network
+
+  grafana:
+    image: grafana/grafana:11.5.2
+    container_name: Movie_grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_SERVER_ROOT_URL: http://localhost:3001
+    volumes:
+      - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./observability/grafana/dashboards:/etc/grafana/dashboards:ro
+      - grafana_data:/var/lib/grafana
+    ports:
+      - "3001:3000"
+    depends_on:
+      - prometheus
+    networks:
+      - moviedb-network
+
 volumes:
   postgres_data:
   mongodb_data:
   mongodb_config:
+  grafana_data:
 
 networks:
   moviedb-network:
