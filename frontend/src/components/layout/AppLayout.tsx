@@ -4,6 +4,7 @@ import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/s
 import { AppSidebar } from './AppSidebar'
 import { useSocket } from '@/hooks/useSocket'
 import { NotificationBell } from '../ui/NotificationBell'
+import { ModeToggle } from '../ui/mode-toggle'
 
 export function AppLayout() {
   useSocket()
@@ -15,7 +16,8 @@ export function AppLayout() {
           <SidebarTrigger className="-ml-1" />
           {/* <Separator orientation="vertical" className="h-4 mr-2" /> */}
           <div className="flex-1" />
-           <NotificationBell />
+          <ModeToggle />
+          <NotificationBell />
         </header>
         <main className="flex-1 overflow-auto">
           <Outlet />
