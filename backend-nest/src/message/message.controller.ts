@@ -21,7 +21,7 @@ export class MessageController {
 	@Post('rooms/:roomId/chat')
 	async sendMessage( @Request() Req, @Param('roomId') roomId: string, @Body() dto: CreateMessageDto,)
 	{
-		const message = await this.messageService.storeMessage(roomId, Req.user.id, dto.content);
+		const message = await this.messageService.storeMessage(roomId, Req.user.id, dto.content, false);
 		return (message);
 	}
 
