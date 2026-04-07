@@ -1,4 +1,4 @@
-import { Home, Users, User, Shield, Film, LogOut, LogIn, Settings } from 'lucide-react'
+import { Home, Users, User, Shield, Film, LogOut, LogIn, Settings, MessageCircle } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 import {
   Sidebar,
@@ -29,6 +29,7 @@ const authNavItems = [
   { title: 'My profile', url: '/user/me', icon: User },
   { title: 'Friends', url: '/friends', icon: Users },
   { title: 'Settings', url: '/settings', icon: Settings },
+  { title: 'Chats', url: '/menu/rooms', icon: MessageCircle }
   // { title: '2FA Security', url: '/2fa/setup', icon: Shield },
 ]
 
@@ -77,7 +78,7 @@ export function AppSidebar() {
               {/* Auth-only nav — only visible when logged in */}
               {user && authNavItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild isActive={location.pathname === item.url}>
+                  <SidebarMenuButton asChild isActive={location.pathname.startsWith(item.url)}>
                     <Link to={item.url}>
                       <item.icon />
                       <span>{item.title}</span>

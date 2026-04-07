@@ -15,6 +15,8 @@ import { UserPage } from '@/pages/UserPage'
 import { FriendsPage } from '@/pages/FriendsPage'
 import { useAuthStore } from '@/store/authStore'
 import { MyProfilePage } from './pages/MyProfilePage'
+import { ChatMenuPage } from './pages/ChatMenuPage'
+import { ChatPage } from './pages/ChatPage'
 import { PrivacyPolicyPage } from '@/pages/PrivacyPolicyPage'
 import { CookiePolicyPage } from '@/pages/CookiePolicyPage'
 
@@ -60,6 +62,8 @@ function App() {
             <Route path="/user/:id" element={<UserPage />} />
             <Route path="/friends" element={<FriendsPage />} />
             <Route path="/2fa/setup" element={<TwoFactorSetupPage />} />
+            <Route path="/menu/rooms" element={<ChatMenuPage />} />
+            <Route path="/rooms/:roomId" element={<ChatPage />} />
           </Route>
         </Route>
 
