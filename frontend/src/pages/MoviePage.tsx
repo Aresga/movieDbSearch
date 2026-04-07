@@ -8,9 +8,6 @@ import { MovieHero } from '@/components/movies/MovieHero'
 import { MovieCast } from '@/components/movies/MovieCast'
 import { MovieMedia } from '@/components/movies/MovieMedia'
 
-// TODO: remove fake delay 
-// const fakeDelay = (ms: number) => new Promise((r) => setTimeout(r, ms))
-
 export function MoviePage() {
   const { id } = useParams()
 
@@ -21,7 +18,6 @@ export function MoviePage() {
   const { data, isLoading, isError } = useQuery({
     queryKey: ['movie', id],
     queryFn: async (): Promise<any> => {
-      // await fakeDelay(3000) // TODO: remove
       const res = await apiClient.get(`/movie/${id}`)
       const raw = res.data
 
@@ -48,7 +44,6 @@ export function MoviePage() {
   const { data: extras } = useQuery({
     queryKey: ['movieExtras', id],
     queryFn: async () => {
-      // await fakeDelay(3000) // TODO: remove
       const res = await apiClient.get(`/movie/${id}/full`)
       console.log('[extras raw]', res.data)
       return res.data
