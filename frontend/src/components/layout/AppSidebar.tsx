@@ -1,4 +1,4 @@
-import { Home, Users, User, Shield, Film, LogOut, LogIn, Settings } from 'lucide-react'
+import { Home, Users, User, Shield, Film, LogOut, LogIn, Settings, MessageCircle } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 import {
   Sidebar,
@@ -29,6 +29,7 @@ const authNavItems = [
   { title: 'My profile', url: '/user/me', icon: User },
   { title: 'Friends', url: '/friends', icon: Users },
   { title: 'Settings', url: '/settings', icon: Settings },
+  { title: 'Chats', url: '/menu/rooms', icon: MessageCircle }
   // { title: '2FA Security', url: '/2fa/setup', icon: Shield },
 ]
 
@@ -43,18 +44,18 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible='icon'>
-    <SidebarHeader className="border-b border-border/1">
-      <div className="flex items-center gap-2.5 px-2 py-3">
-        <div className="bg-transparent rounded-md p-0 shrink-0">
-          <Film className="text-white size-4" />
+      <SidebarHeader className="border-b border-border/1">
+        <div className="flex items-center gap-2.5 px-2 py-3">
+          <div className="bg-transparent rounded-md p-0 shrink-0">
+            <Film className="text-foreground size-4" />
+          </div>
+          {!collapsed && (
+            <span className="font-black text-lg tracking-tight">
+              moviesearchdb
+            </span>
+          )}
         </div>
-        {!collapsed && (
-          <span className="font-black text-lg tracking-tight">
-            moviesearchdb
-          </span>
-        )}
-      </div>
-    </SidebarHeader>
+      </SidebarHeader>
 
 
       <SidebarContent>
@@ -77,7 +78,7 @@ export function AppSidebar() {
               {/* Auth-only nav — only visible when logged in */}
               {user && authNavItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild isActive={location.pathname === item.url}>
+                  <SidebarMenuButton asChild isActive={location.pathname.startsWith(item.url)}>
                     <Link to={item.url}>
                       <item.icon />
                       <span>{item.title}</span>
@@ -105,7 +106,7 @@ export function AppSidebar() {
               <p className="text-sm font-semibold truncate">{user.username}</p>
               <p className="text-xs text-muted-foreground truncate">{user.email}</p>
             </div>
-            
+
             <Button
               variant="ghost"
               size="icon"
@@ -113,10 +114,10 @@ export function AppSidebar() {
               onClick={logout}
               title="Log out"
             >
-            {!collapsed && (
-              <LogOut className="size-4" />
-              
-            )}  
+              {!collapsed && (
+                <LogOut className="size-4" />
+
+              )}
             </Button>
           </div>
         ) : (

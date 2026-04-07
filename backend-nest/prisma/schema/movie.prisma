@@ -15,5 +15,6 @@ model movies {
   embedding     Unsupported("vector(384)")?
 
   reviews  Review[]
-  wishlist Wishlist[]
+  wishList WishList[]
+  watchedList WatchedList[]
 }
