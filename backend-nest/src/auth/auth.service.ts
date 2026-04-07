@@ -7,6 +7,7 @@ import { randomBytes } from 'crypto';
 import { ConfigService } from '@nestjs/config';
 import type { StringValue } from 'ms';
 import ms from 'ms';
+import { EmailService } from 'src/email/email.service';
 
 export type LoginResult = 
     |   { requiresTwoFactor: true; access_token: string }
@@ -29,6 +30,7 @@ export class AuthService {
         private prisma: PrismaService,
         private jwtService: JwtService,
         private configService: ConfigService,
+        private emailService: EmailService,
     ) {}
 
 
@@ -189,6 +191,9 @@ export class AuthService {
         });
 
         const { password: _, ...userWithoutPassword } = user;
+
+        await this.emailService.sendAccountCreationConfirmation(user.email, user.username);
+
         return userWithoutPassword;
     }
 

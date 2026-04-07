@@ -4,6 +4,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { UpdatePasswordDto } from './dto/update.password.dto';
 import * as bcrypt from 'bcrypt'
 import { SetPasswordDto } from './dto/set-password.dto';
+import { EmailService } from 'src/email/email.service';
 
 const safeUserSelect = {
   id: true,
@@ -41,7 +42,10 @@ const exportMyData = {
 
 @Injectable()
 export class UserService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly emailService: EmailService,
+  ) {}
 
   async findByIdPublicProfile(id: string) {
     const user = await this.prisma.user.findUnique({
@@ -90,9 +94,11 @@ export class UserService {
 
   async deleteUser(id: string) {
     const user = await this.prisma.user.delete({
-      where: { id }
+      where: { id },
+      select: { email: true },
     });
-    if (!user) throw new NotFoundException('User not found');
+
+    await this.emailService.sendDeletionConfirmation(user.email);
   }
 
 
@@ -182,7 +188,7 @@ export class UserService {
   }
 
   async exportData(userId: string) {
-    const user = this.prisma.user.findUnique({
+    const user = await this.prisma.user.findUnique({
       where: { id: userId },
       select:  {
         ...exportMyData,
@@ -198,6 +204,10 @@ export class UserService {
       },
     });
     if (!user) throw new NotFoundException('User not found');
+
+    console.log('Exporting data for user:', user.email);
+    await this.emailService.sendExportConfirmation(user.email);
+    console.log('Export confirmation email sent to:', user.email);
     return user;
   }
 
