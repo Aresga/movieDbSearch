@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { apiClient } from '@/api/client'
@@ -12,6 +13,10 @@ import { MovieMedia } from '@/components/movies/MovieMedia'
 
 export function MoviePage() {
   const { id } = useParams()
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
+  }, [id])
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['movie', id],

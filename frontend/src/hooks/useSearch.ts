@@ -1,19 +1,27 @@
-import { useQuery } from '@tanstack/react-query'
+import { useInfiniteQuery } from '@tanstack/react-query'
 import { searchApi } from '@/api/search'
 
-export function useSearch(query: string) {
-  return useQuery({
-    queryKey: ['search', query],
-    queryFn: () => searchApi.search(query),
+export function useSearch(query: string, size = 10) {
+  return useInfiniteQuery({
+    queryKey: ['search', query, size],
+    queryFn: ({ pageParam = 1 }) => searchApi.search(query, pageParam, size),
     enabled: !!query,
     staleTime: 1000 * 60 * 5,
+    getNextPageParam: (lastPage) => {
+      const nextPage = (lastPage.page ?? 1) + 1
+      return lastPage.results.length === size ? nextPage : undefined
+    },
   })
 }
 
-export function useTrending(limit = 20) {
-  return useQuery({
-    queryKey: ['trending', limit],
-    queryFn: () => searchApi.trending(limit),
+export function useTrending(size = 20) {
+  return useInfiniteQuery({
+    queryKey: ['trending', size],
+    queryFn: ({ pageParam = 1 }) => searchApi.trending(pageParam, size),
     staleTime: 1000 * 60 * 10, // cache for 10min, its enough since it doesnt change that much or never for our backend 
+    getNextPageParam: (lastPage) => {
+      const nextPage = (lastPage.page ?? 1) + 1
+      return lastPage.results.length === size ? nextPage : undefined
+    },
   })
 }
