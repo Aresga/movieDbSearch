@@ -39,7 +39,7 @@ const exportMyData = {
   isOnline: true,
   bio: true,
   createdAt: true,
-  messages: true,
+  // messages: true,
 };
 
 @Injectable()
@@ -210,8 +210,12 @@ export class UserService {
     const messages = this.messageService.findAllForUser(userId);
     if (!user) throw new NotFoundException('User not found');
 
-    await this.emailService.sendExportConfirmation(user.email);
-    
+    try {
+      await this.emailService.sendExportConfirmation(user.email);
+    } catch (error) {
+      console.error('Failed to send export confirmation email:', error);
+    }
+
     return {
       ...user,
       messages: messages,
