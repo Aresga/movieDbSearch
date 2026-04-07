@@ -38,7 +38,7 @@ import { WatchedListModule } from './watchedlist/watchedlist.module';
     TwofactorauthModule,
     TmdbModule,
     MessageModule,
-    WishlistModule,
+    WishListModule,
     EmailModule,
     WatchedListModule,
   ],
