@@ -110,6 +110,12 @@ export class AuthController {
         const result = await this.authService.login(user);
 
         if (result.requiresTwoFactor) {
+            res.cookie('access_token', result.access_token, {
+                httpOnly: true,
+                secure: false,
+                sameSite: 'lax',
+                maxAge: 5 * 60 * 1000,
+            });
             return res.redirect('http://localhost:5173/auth/callback?error=2fa_required')
         }
 
@@ -125,6 +131,12 @@ export class AuthController {
         const result = await this.authService.login(user);
 
         if (result.requiresTwoFactor) {
+            res.cookie('access_token', result.access_token, {
+                httpOnly: true,
+                secure: false,
+                sameSite: 'lax',
+                maxAge: 5 * 60 * 1000,
+            });
             return res.redirect('http://localhost:5173/auth/callback?error=2fa_required')
         }
 
