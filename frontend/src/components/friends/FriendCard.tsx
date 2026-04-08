@@ -23,7 +23,7 @@ export function FriendCard({ friend }: FriendCardProps) {
     <div className="flex items-center gap-3 p-3 rounded-lg border border-border/50 bg-card hover:border-border transition-colors">
       <Link to={`/user/${friend.id}`} className="shrink-0 relative">
         <Avatar className="size-10">
-          <AvatarImage src={friend.avatar_url ?? `https://i.pravatar.cc/40?u=${friend.id}`} />
+          <AvatarImage src={friend.avatarUrl ?? `https://i.pravatar.cc/40?u=${friend.id}`} />
           <AvatarFallback className="bg-brand/20 text-brand text-sm font-semibold">
             {initials}
           </AvatarFallback>
