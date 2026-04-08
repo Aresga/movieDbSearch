@@ -13,7 +13,7 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       devOptions: {
-        enabled: true,
+        enabled: false,
       },
       includeAssets: ['favicon.ico', 'icon-192-dark.png', 'icon-512-dark.png'],
       manifest: {
@@ -39,7 +39,9 @@ export default defineConfig({
     },
   },
   server: {
-    hmr: false,
+    hmr: {
+      clientPort: 5173,
+    },
     host: '0.0.0.0',
     port: 5173,
     watch: {

@@ -27,9 +27,8 @@ const publicNavItems = [
 const authNavItems = [
   { title: 'My profile', url: '/user/me', icon: User },
   { title: 'Friends', url: '/friends', icon: Users },
+  { title: 'Chats', url: '/menu/rooms', icon: MessageCircle },
   { title: 'Settings', url: '/settings', icon: Settings },
-  { title: 'Chats', url: '/menu/rooms', icon: MessageCircle }
-  // { title: '2FA Security', url: '/2fa/setup', icon: Shield },
 ]
 
 /**
@@ -127,7 +126,7 @@ export function AppSidebar() {
           </div>
         ) : (
           /* Guest footer — sign in CTA */
-          <div className="px-2 py-3">
+          <div className="px-2 py-2">
             <Button asChild className="w-full" size="sm">
               <Link to="/login">
                 <LogIn className="size-4 mr-2" />

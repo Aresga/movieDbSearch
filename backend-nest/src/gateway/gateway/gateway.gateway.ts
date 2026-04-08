@@ -104,6 +104,7 @@ export class GatewayGateway implements OnGatewayConnection, OnGatewayDisconnect 
   sendToUser(userId: string, event: string, payload: any) {
     const socketId = this.connectedUsers.get(userId);
     if (socketId) {
+      console.log(`Sending event "${event}" to user ${userId} (socket ${socketId}) with payload:`, payload);
       this.server.to(socketId).emit(event, payload);
     }
   }

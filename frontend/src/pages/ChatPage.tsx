@@ -1,87 +1,41 @@
 import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
-import { apiClient } from '@/api/client';
 import { getSocket } from '@/lib/socket';
+import { useChatRoomInfo, useChatRoomMessages, useMarkRoomAsRead } from '@/hooks/useChat';
+import type { ChatMessage } from '@/api/chat';
+import type { User } from '@/types';
 import { Check, CheckCheck } from 'lucide-react';
-
-type Message = {
-  _id: string;
-  roomId: string;
-  senderId: string;
-  content: string;
-  createdAt: string;
-  read: boolean;
-};
-
-type Participant = {
-  id: string;
-  username: string;
-};
 
 export function ChatPage() {
   const { user } = useAuthStore();
   const userId = user?.id ?? '';
   const { roomId } = useParams<{ roomId: string }>();
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
-  const [loading, setLoading] = useState(true);
   const socket = getSocket();
-  const [participants, setParticipants] = useState<Participant[]>([]);
+  const { data: roomInfo } = useChatRoomInfo(roomId ?? '');
+  const { data: roomMessages = [], isLoading: isMessagesLoading } = useChatRoomMessages(roomId ?? '');
+  const { mutate: markRoomAsRead } = useMarkRoomAsRead();
+  const participants = (roomInfo?.participants ?? []) as User[];
 
   const participantsMap = useMemo(() => {
     return new Map(participants.map((p) => [p.id, p]));
   }, [participants]);
 
   useEffect(() => {
-    console.log(participantsMap);
-  }, [participantsMap]);
-
-  useEffect(() => {
-    if (!roomId) return;
-
-    const getRoomInfo = async () => {
-      try {
-        const res = await apiClient.get(`/message/rooms/${roomId}/info`);
-        setParticipants(res.data.participants);
-      } catch (error) {
-        console.error("Failed to fetch room info", error);
-      }
-    };
-
-    const loadMessages = async () => {
-      setLoading(true);
-      try {
-        const res = await apiClient.get<Message[]>(`/message/rooms/${roomId}/messages`);
-        const data = res.data;
-        if (Array.isArray(data)) {
-          setMessages(data.reverse());
-        }
-        else
-          setMessages([]);
-        } 
-      catch (error)
-      {
-        console.error("Failed to load messages", error);
-        setMessages([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    const fetchData = async () => {
-      await getRoomInfo();
-      await loadMessages();
-      await markRoomAsRead();
+    if (!roomMessages) {
+      setMessages([]);
+      return;
     }
-
-    fetchData();
-  }, [roomId]);
+    const ordered = [...roomMessages].reverse();
+    setMessages(ordered);
+  }, [roomMessages]);
 
   useEffect(() => {
     if (!roomId || !socket) return;
 
-    const handleReceiveMessage = (msg: Message) => {
+    const handleReceiveMessage = (msg: ChatMessage) => {
       if (msg.roomId !== roomId) return;
       setMessages((prev) => {
         if (prev.some((m) => m._id === msg._id)) return prev;
@@ -139,31 +93,30 @@ export function ChatPage() {
     scrollToBottom();
   }, [messages]);
 
-    const markRoomAsRead = async () => {
-  if (!roomId) return;
+  useEffect(() => {
+    if (!roomId) return;
 
-  try {
-    await apiClient.post(`/message/rooms/${roomId}/messages`);
-    socket.emit('markRoomAsRead', roomId);
-    setMessages((prev) =>
-      prev.map((message) =>
-        message.senderId !== userId ? { ...message, read: true } : message
-      )
-    );
-  } catch (error) {
-    console.error('Failed to mark room as read', error);
-  }
-};
+    markRoomAsRead(roomId, {
+      onSuccess: () => {
+        socket.emit('markRoomAsRead', roomId);
+        setMessages((prev) =>
+          prev.map((message) =>
+            message.senderId !== userId ? { ...message, read: true } : message
+          )
+        );
+      },
+    });
+  }, [markRoomAsRead, roomId, socket, userId]);
 
   return (
     <div className="flex h-screen flex-col bg-background">
       <div className="border-b border-border/50 bg-card px-4 py-3">
-        <h2 className="text-lg font-semibold text-card-foreground">Chat</h2>
+        <h2 className="text-lg font-semibold text-card-foreground">Chat with {roomInfo?.participants.find((p) => p.id !== userId)?.username ?? 'Unknown User'}</h2>
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 py-4">
-        {loading && <p className="text-center text-muted-foreground">Loading messages...</p>}
-        {!loading && messages.length === 0 && (
+        {isMessagesLoading && <p className="text-center text-muted-foreground">Loading messages...</p>}
+        {!isMessagesLoading && messages.length === 0 && (
           <p className="text-center text-muted-foreground">Start a conversation!</p>
         )}
 
