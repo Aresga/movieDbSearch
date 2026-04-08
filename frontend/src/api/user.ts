@@ -17,7 +17,7 @@ export interface UpdatePasswordPayload {
 }
 
 export interface SetPasswordPayload {
-  password: string
+  newPassword: string
 }
 
 export const userApi = {

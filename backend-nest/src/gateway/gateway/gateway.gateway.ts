@@ -47,7 +47,7 @@ export class GatewayGateway implements OnGatewayConnection, OnGatewayDisconnect 
       this.connectedUsers.set(userId, client.id);
       client.data.userId = userId;
 
-      await this.prisma.user.update({
+      await this.prisma.user.updateMany({
         where: { id: userId },
         data: { isOnline: true },
       });
@@ -64,7 +64,7 @@ export class GatewayGateway implements OnGatewayConnection, OnGatewayDisconnect 
     this.userRooms.delete(userId);
     this.connectedUsers.delete(userId);
 
-    await this.prisma.user.update({
+    await this.prisma.user.updateMany({
       where: { id: userId },
       data: { isOnline: false },
     });

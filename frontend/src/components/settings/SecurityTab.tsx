@@ -23,7 +23,7 @@ const passwordSchema = z.object({
 })
 
 const setPasswordSchema = z.object({
-  password: z.string().min(8, 'Minimum 8 characters'),
+  newPassword: z.string().min(8, 'Minimum 8 characters'),
 })
 
 type EmailForm = z.infer<typeof emailSchema>
@@ -51,7 +51,7 @@ export function SecurityTab({ user }: { user: User }) {
 
   const setPasswordForm = useForm<SetPasswordForm>({
     resolver: zodResolver(setPasswordSchema),
-    defaultValues: { password: '' },
+    defaultValues: { newPassword: '' },
   })
 
   useEffect(() => {
@@ -258,7 +258,7 @@ export function SecurityTab({ user }: { user: User }) {
               </p>
               <FormField
                 control={setPasswordForm.control}
-                name="password"
+                name="newPassword"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>New Password</FormLabel>
