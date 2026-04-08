@@ -19,13 +19,14 @@ def health_check():
 @router.get("/search")
 async def search_movies(
     q: str = Query(..., min_l=1),
-    limit: int = Query(5, ge=1, le=100),
+    page: int = Query(1, ge=1),
+    size: int = Query(5, ge=1, le=100),
     service: SearchService = Depends(get_search_service)
 ):
     """
     Search for movies endpoint.
     """
-    return service.search_movies(q, limit)
+    return service.search_movies(q, page, size)
 
 @router.post("/sentiment")
 def analyze_sentiment(
