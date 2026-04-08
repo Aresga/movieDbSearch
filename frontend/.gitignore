@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+frontend/dev-dist
+frontend/dev-dist/*
