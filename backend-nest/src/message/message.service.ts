@@ -10,6 +10,13 @@ export interface MenuRoom extends Omit<ChatRoom, 'participants'> {
 	participants: User[];
 }
 
+const chatUserSelect = {
+	id: true,
+	username: true,
+	avatarUrl: true,
+	isOnline: true,
+};
+
 @Injectable()
 export class MessageService {
 	constructor(
@@ -69,6 +76,7 @@ export class MessageService {
 					in: room.participants,
 				},
 			},
+			select: chatUserSelect,
 		});
 		return users;
 	}
@@ -116,6 +124,7 @@ export class MessageService {
 							in: room.participants,
 						},
 					},
+					select: chatUserSelect,
 				});
 				return {...room, participants};
 			}));
