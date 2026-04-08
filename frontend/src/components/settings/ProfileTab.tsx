@@ -11,14 +11,22 @@ import { Textarea } from '@/components/ui/textarea'
 import { useUpdateMe } from '@/hooks/useUser'
 import type { User } from '@/types'
 
+/**
+ * Schema validating public user profile data fields.
+ */
 const profileSchema = z.object({
   username: z.string().min(3),
   avatarUrl: z.string().optional(),
   bio: z.string().optional(),
 })
 
-type ProfileForm = z.infer<typeof profileSchema>
+export type ProfileForm = z.infer<typeof profileSchema>
 
+/**
+ * ProfileTab Component
+ * Renders a reactive form to update public-facing user profile information.
+ * Uses React Hook Form's dirtyFields tracking to optimally patch only modified fields.
+ */
 export function ProfileTab({ user }: { user: User }) {
   const { mutate: updateMe, isPending: updating } = useUpdateMe()
 

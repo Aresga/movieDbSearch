@@ -15,6 +15,9 @@ export class Message extends Document {
   @Prop({ default: Date.now })
   createdAt: Date;
 
+  @Prop({ default: false })
+  read: boolean;
+
 }
 
 export const MessageSchema = SchemaFactory.createForClass(Message);

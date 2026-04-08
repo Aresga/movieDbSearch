@@ -1,5 +1,9 @@
 import { userApi } from '@/api/user'
 
+/**
+ * Custom hook for exporting user GDPR data.
+ * Automates creating a downloadable JSON blob dynamically in the browser.
+ */
 export function useExportData() {
   const exportData = async () => {
     const data = await userApi.exportMe()

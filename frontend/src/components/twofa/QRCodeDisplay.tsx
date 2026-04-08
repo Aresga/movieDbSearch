@@ -3,11 +3,16 @@ import { Copy } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 
-interface QRCodeDisplayProps {
+export interface QRCodeDisplayProps {
   url: string
   secret: string
 }
 
+/**
+ * QRCodeDisplay Component
+ * An isolated visual renderer that securely handles rendering the TOTP URL into
+ * a scannable QR Code element, along with a clipboard copy utility for manual app entry.
+ */
 export function QRCodeDisplay({ url, secret }: QRCodeDisplayProps) {
   const copySecret = () => {
     navigator.clipboard.writeText(secret).then(() => toast.success('Secret copied!'))

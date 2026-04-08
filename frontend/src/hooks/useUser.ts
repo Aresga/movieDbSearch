@@ -6,6 +6,9 @@ import type { SetPasswordPayload, UpdateEmailPayload, UpdatePasswordPayload } fr
 import { useAuthStore } from '@/store/authStore'
 import { getApiErrorMessage } from '@/lib/apiError'
 
+/**
+ * Hook to fetch the currently authenticated user's profile.
+ */
 export function useMe() {
   return useQuery({
     queryKey: ['user', 'me'],
@@ -13,6 +16,9 @@ export function useMe() {
   })
 }
 
+/**
+ * Hook to partially update the authenticated user's profile info.
+ */
 export function useUpdateMe() {
   const queryClient = useQueryClient()
   const { updateUser } = useAuthStore()
@@ -32,6 +38,9 @@ export function useUpdateMe() {
   })
 }
 
+/**
+ * Hook for a user to permanently delete their own account.
+ */
 export function useDeleteMe() {
   const navigate = useNavigate()
   const { clearAuth } = useAuthStore()
@@ -47,6 +56,10 @@ export function useDeleteMe() {
   })
 }
 
+/**
+ * Hook to fetch any public user profile by their ID.
+ * @param id - The unique ID of the user.
+ */
 export function useUserById(id: string) {
   return useQuery({
     queryKey: ['user', id],
@@ -55,6 +68,9 @@ export function useUserById(id: string) {
   })
 }
 
+/**
+ * Hook to update the user's email address.
+ */
 export function useUpdateEmail() {
   const queryClient = useQueryClient()
 
@@ -68,6 +84,9 @@ export function useUpdateEmail() {
   })
 }
 
+/**
+ * Hook to change the user's password.
+ */
 export function useUpdatePassword() {
   return useMutation({
     mutationFn: (data: UpdatePasswordPayload) => userApi.updatePassword(data),
@@ -78,6 +97,9 @@ export function useUpdatePassword() {
   })
 }
 
+/**
+ * Hook to set an initial password, commonly used for OAuth-registered users.
+ */
 export function useSetPassword() {
   const queryClient = useQueryClient()
 

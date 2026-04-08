@@ -14,6 +14,10 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useAddFriend } from '@/hooks/useFriends'
 
+/**
+ * AddFriendDialog Component
+ * A modal window providing the UI to add someone via their exact username or email.
+ */
 export function AddFriendDialog() {
   const [open, setOpen] = useState(false)
   const [userId, setUserId] = useState('')
@@ -45,8 +49,8 @@ export function AddFriendDialog() {
         <div className="flex flex-col gap-2">
           <Label htmlFor="user-id">Username or email</Label>
           <Input
-            id="Username, email"
-            placeholder="e.g. John doe"
+            id="user-id"
+            placeholder="e.g. johndoe"
             value={userId}
             onChange={(e) => setUserId(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}

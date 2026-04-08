@@ -15,6 +15,11 @@ import { useDeleteMe } from '@/hooks/useUser'
 import { useExportData } from '@/hooks/useExport'
 import type { User } from '@/types'
 
+/**
+ * DangerTab Component
+ * Houses highly sensitive profile actions. Currently controls data export 
+ * and irrevocable account deletion functionalities.
+ */
 export function DangerTab({ user }: { user: User }) {
   const { mutate: deleteMe, isPending: deleting } = useDeleteMe()
   const { exportData } = useExportData()

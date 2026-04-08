@@ -192,7 +192,11 @@ export class AuthService {
 
         const { password: _, ...userWithoutPassword } = user;
 
-        await this.emailService.sendAccountCreationConfirmation(user.email, user.username);
+        try {
+            await this.emailService.sendAccountCreationConfirmation(user.email, user.username);
+        } catch (error) {
+            console.error('Failed to send account creation email:', error);
+        }
 
         return userWithoutPassword;
     }

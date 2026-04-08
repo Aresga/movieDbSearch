@@ -9,6 +9,17 @@ import { Input } from '@/components/ui/input'
 import {
   Form, FormControl, FormField, FormItem, FormLabel, FormMessage,
 } from '@/components/ui/form'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 import { useUpdateEmail, useUpdatePassword, useSetPassword } from '@/hooks/useUser'
 import type { User } from '@/types'
 import { useDisable2FA } from '@/hooks/useTwoFa'
@@ -18,18 +29,29 @@ const emailSchema = z.object({
 })
 
 const passwordSchema = z.object({
-  currentPassword: z.string().min(1, 'Required'),
-  newPassword: z.string().min(8, 'Minimum 8 characters'),
+  currentPassword: z.string()
+    .min(1, 'Current password is required'),
+  newPassword: z.string()
+    .min(8, 'Minimum 8 characters')
+    .max(64, 'Maximum 64 characters'),
 })
 
 const setPasswordSchema = z.object({
-  newPassword: z.string().min(8, 'Minimum 8 characters'),
+  newPassword: z.string()
+    .min(8, 'Minimum 8 characters')
+    .max(64, 'Maximum 64 characters'),
 })
 
 type EmailForm = z.infer<typeof emailSchema>
 type PasswordForm = z.infer<typeof passwordSchema>
 type SetPasswordForm = z.infer<typeof setPasswordSchema>
 
+/**
+ * SecurityTab Component
+ * The foundational dashboard for managing private user credentials.
+ * Operates sub-forms for email updates, password resets, and initial password setting for OAuth.
+ * Delegates 2FA enablement to a dedicated visual route block.
+ */
 export function SecurityTab({ user }: { user: User }) {
   const { mutate: updateEmail, isPending: updatingEmail } = useUpdateEmail()
   const { mutate: updatePassword, isPending: updatingPassword } = useUpdatePassword()
@@ -86,37 +108,57 @@ export function SecurityTab({ user }: { user: User }) {
     <div className="flex flex-col gap-4">
 
       {/* 2FA — unchanged */}
-    <div className="rounded-xl border border-border/50 bg-card p-4 flex items-center justify-between">
-    <div className="flex items-center gap-3">
-        {user.isTwoFactorEnabled ? (
-        <ShieldCheck className="size-5 text-green-500" />
-        ) : (
-        <Shield className="size-5 text-muted-foreground" />
-        )}
-        <div>
-        <p className="text-sm font-semibold">Two-Factor Authentication</p>
-        <p className="text-xs text-muted-foreground">
-            {user.isTwoFactorEnabled ? 'Enabled — your account is protected' : 'Not enabled'}
-        </p>
+      <div className="rounded-xl border border-border/50 bg-card p-4 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          {user.isTwoFactorEnabled ? (
+            <ShieldCheck className="size-5 text-green-500" />
+          ) : (
+            <Shield className="size-5 text-muted-foreground" />
+          )}
+          <div>
+            <p className="text-sm font-semibold">Two-Factor Authentication</p>
+            <p className="text-xs text-muted-foreground">
+              {user.isTwoFactorEnabled ? 'Enabled — your account is protected' : 'Not enabled'}
+            </p>
+          </div>
         </div>
-    </div>
 
-    {user.isTwoFactorEnabled ? (
-        <Button
-        variant="outline"
-        size="sm"
-        className="text-destructive border-destructive/30 hover:bg-destructive/10"
-        onClick={() => disable2FA()}
-        disabled={disabling}
-        >
-        {disabling ? 'Disabling…' : 'Disable'}
-        </Button>
-    ) : (
-        <Button variant="outline" size="sm" asChild>
-        <Link to="/2fa/setup">Enable</Link>
-        </Button>
-    )}
-    </div>
+        {user.isTwoFactorEnabled ? (
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-destructive border-destructive/30 hover:bg-destructive/10"
+                disabled={disabling}
+              >
+                {disabling ? 'Disabling…' : 'Disable'}
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Disable Two-Factor Authentication?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will remove an extra layer of security from your account. You will no longer need a verification code to sign in.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  onClick={() => disable2FA()}
+                >
+                  Yes, disable 2FA
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        ) : (
+          <Button variant="outline" size="sm" asChild>
+            <Link to="/2fa/setup">Enable</Link>
+          </Button>
+        )}
+      </div>
 
 
       {/* Email */}
