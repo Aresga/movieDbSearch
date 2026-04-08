@@ -29,7 +29,7 @@ export interface UpdatePasswordPayload {
  * Payload for setting an initial password (e.g., for OAuth accounts).
  */
 export interface SetPasswordPayload {
-  password: string
+  newPassword: string
 }
 
 /**
