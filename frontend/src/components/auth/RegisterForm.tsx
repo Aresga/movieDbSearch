@@ -13,12 +13,20 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { useRegister } from '@/hooks/useAuth'
 
+/**
+ * Validation schema for the registration form.
+ * Ensures strict checks on password pairing during account setup.
+ */
 const schema = z
   .object({
     username: z.string().min(3),
     email: z.string().email(),
-    password: z.string().min(8),
-    confirmPassword: z.string().min(1),
+    password: z.string()
+      .min(8, 'Password must be at least 8 characters')
+      .max(64, 'Password must not exceed 64 characters'),
+    confirmPassword: z.string()
+      .min(8, 'Confirm password must be at least 8 characters')
+      .max(64, 'Confirm password must not exceed 64 characters'),
   })
   .refine((d) => d.password === d.confirmPassword, {
     message: 'Passwords do not match',
@@ -27,6 +35,10 @@ const schema = z
 
 type FormData = z.infer<typeof schema>
 
+/**
+ * RegisterForm Component
+ * Fully encapsulates user registration via hook-form, integrating with the useRegister mutation hook.
+ */
 export function RegisterForm() {
   const { mutate: register, isPending } = useRegister()
 

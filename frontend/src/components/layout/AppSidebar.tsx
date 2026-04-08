@@ -1,4 +1,4 @@
-import { Home, Users, User, Shield, Film, LogOut, LogIn, Settings, MessageCircle } from 'lucide-react'
+import { Home, Users, User, Film, LogOut, LogIn, Settings, MessageCircle } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 import {
   Sidebar,
@@ -11,7 +11,6 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarProvider,
   useSidebar,
 
   // SidebarSeparator,
@@ -33,6 +32,12 @@ const authNavItems = [
   // { title: '2FA Security', url: '/2fa/setup', icon: Shield },
 ]
 
+/**
+ * AppSidebar Component
+ * Renders the global collapsible navigation sidebar for the application.
+ * Manages rendering of public navigation links versus authenticated navigation links
+ * based on the Zustand global auth state. Connects directly to the SidebarProvider.
+ */
 export function AppSidebar() {
   const location = useLocation()
   const user = useAuthStore((s) => s.user)

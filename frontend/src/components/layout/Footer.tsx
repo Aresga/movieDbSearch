@@ -1,11 +1,15 @@
 import { Link } from 'react-router-dom'
 import { Film } from 'lucide-react'
 
+/**
+ * Footer Component
+ * The global application footer displaying branding, copyright, and static policy links.
+ */
 export function Footer() {
     return (
-    	<footer className="w-full border-t border-border bg-card/30 backdrop-blur-sm mt-auto">
-        	<div className="container flex flex-col items-center justify-between gap-6 py-8 md:h-24 md:flex-row md:py-0 px-6 max-w-7xl mx-auto">
-            	<div className="flex items-center gap-2 text-foreground font-bold tracking-tight">
+        <footer className="w-full border-t border-border bg-card/30 backdrop-blur-sm mt-auto">
+            <div className="container flex flex-col items-center justify-between gap-6 py-8 md:h-24 md:flex-row md:py-0 px-6 max-w-7xl mx-auto">
+                <div className="flex items-center gap-2 text-foreground font-bold tracking-tight">
                     <Film className="w-5 h-5 text-primary" />
                     <span>moviesearchdb</span>
                 </div>

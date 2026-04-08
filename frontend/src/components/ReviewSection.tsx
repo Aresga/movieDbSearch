@@ -9,8 +9,18 @@ import { formatDistanceToNow } from 'date-fns'
 import { Link } from 'react-router-dom'
 import { EmotionBadge } from '@/components/ui/EmotionBadge'
 
+/**
+ * StarRating Props
+ */
+interface StarRatingProps {
+  value: number
+  onChange?: (v: number) => void
+}
 
-function StarRating({ value, onChange }: { value: number; onChange?: (v: number) => void }) {
+/**
+ * Reusable interactive or static star rating component.
+ */
+function StarRating({ value, onChange }: StarRatingProps) {
   const [hovered, setHovered] = useState(0)
   const active = hovered || value
 
@@ -27,11 +37,10 @@ function StarRating({ value, onChange }: { value: number; onChange?: (v: number)
           disabled={!onChange}
         >
           <Star
-            className={`size-5 transition-colors ${
-              star <= active
+            className={`size-5 transition-colors ${star <= active
                 ? 'fill-brand text-brand'
                 : 'fill-muted text-muted-foreground'
-            }`}
+              }`}
           />
         </button>
       ))}
@@ -44,6 +53,11 @@ function StarRating({ value, onChange }: { value: number; onChange?: (v: number)
   )
 }
 
+/**
+ * ReviewSection Component
+ * Displays and manages user reviews for a specific movie, including creating,
+ * editing, deleting, and displaying an aggregated rating.
+ */
 export function ReviewSection({ movieId }: { movieId: string }) {
   const user = useAuthStore((s) => s.user)
   const { data: reviews = [], isLoading, isError } = useReviews(movieId)
@@ -131,10 +145,10 @@ export function ReviewSection({ movieId }: { movieId: string }) {
               {!rating
                 ? 'Select a rating first'
                 : isPosting || isEditing
-                ? 'Saving...'
-                : isEditMode
-                ? 'Save changes'
-                : 'Submit review'}
+                  ? 'Saving...'
+                  : isEditMode
+                    ? 'Save changes'
+                    : 'Submit review'}
             </Button>
             {isEditMode && (
               <Button size="sm" variant="ghost" onClick={() => setIsEditMode(false)}>
@@ -165,11 +179,10 @@ export function ReviewSection({ movieId }: { movieId: string }) {
             const isOwn = user?.id === r.userId
             return (
               <div
-              key={r.id}
-              className={`p-5 rounded-xl border bg-card transition-colors ${
-                isOwn ? 'border-brand/30' : 'border-border'
-              }`}
-              
+                key={r.id}
+                className={`p-5 rounded-xl border bg-card transition-colors ${isOwn ? 'border-brand/30' : 'border-border'
+                  }`}
+
               >
 
                 <div className="flex items-start gap-3">
@@ -182,13 +195,13 @@ export function ReviewSection({ movieId }: { movieId: string }) {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2 mb-1">
                       <div className="flex items-center gap-2">
-                        <Link 
-                          to={ isOwn ? `/user/me` : `/user/${r.userId}`}
-                          className='text-sm font-semibold hover:text-brand transition-colors'  
-                          >
+                        <Link
+                          to={isOwn ? `/user/me` : `/user/${r.userId}`}
+                          className='text-sm font-semibold hover:text-brand transition-colors'
+                        >
                           {r.user?.username ?? 'Unknown'}
                         </Link>
-                          {r.sentiment && <EmotionBadge sentiment={r.sentiment} score={r.sentimentScore} className='ml-2' />}
+                        {r.sentiment && <EmotionBadge sentiment={r.sentiment} score={r.sentimentScore} className='ml-2' />}
                         {/* <span className="text-sm font-semibold">{r.user?.username ?? 'Unknown'}</span> */}
                         {/* {isOwn && (
                           <span className="text-xs bg-brand/10 text-brand px-1.5 py-0.5 rounded-full font-medium">
