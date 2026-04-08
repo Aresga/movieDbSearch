@@ -24,6 +24,8 @@ const FriendsPage = lazy(() => import('@/pages/FriendsPage').then(m => ({ defaul
 const MyProfilePage = lazy(() => import('@/pages/MyProfilePage').then(m => ({ default: m.MyProfilePage })))
 const PrivacyPolicyPage = lazy(() => import('@/pages/PrivacyPolicyPage').then(m => ({ default: m.PrivacyPolicyPage })))
 const CookiePolicyPage = lazy(() => import('@/pages/CookiePolicyPage').then(m => ({ default: m.CookiePolicyPage })))
+const ChatMenuPage = lazy(() => import('@/pages/ChatMenuPage').then(m => ({ default: m.ChatMenuPage })))
+const ChatPage = lazy(() => import('@/pages/ChatPage').then(m => ({ default: m.ChatPage })))
 
 /**
  * UTILITY COMPONENTS
@@ -82,6 +84,8 @@ function App() {
                 <Route path="/settings" element={<SettingsPage />} />
                 <Route path="/friends" element={<FriendsPage />} />
                 <Route path="/2fa/setup" element={<TwoFactorSetupPage />} />
+                <Route path="/menu/rooms" element={<ChatMenuPage />} />
+                <Route path="/rooms/:roomId" element={<ChatPage />} />
               </Route>
 
             </Route>
