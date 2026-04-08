@@ -1,14 +1,21 @@
-interface CastMember {
+/**
+ * Standardized CastMember properties mapped from TMDB.
+ */
+export interface CastMember {
   id: number
   name: string
   character?: string
   profile_path?: string
 }
 
-interface MovieCastProps {
+export interface MovieCastProps {
   cast: CastMember[]
 }
 
+/**
+ * MovieCast Component
+ * Renders a horizontally-scrollable list of top billed cast members.
+ */
 export function MovieCast({ cast }: MovieCastProps) {
   if (cast.length === 0) return null
 

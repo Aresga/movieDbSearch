@@ -1,22 +1,37 @@
 import axios from 'axios'
 import { useAuthStore } from '@/store/authStore'
 
+/** 
+ * Base path for API requests; utilized for manual URL construction 
+ */
 const BASE_URL = '/api'
 
+/**
+ * Main Axios instance configured with defaults.
+ */
 export const apiClient = axios.create({
   baseURL: BASE_URL,
   headers: { 'Content-Type': 'application/json' },
+  // CRITICAL: Required for the browser to include HttpOnly cookies (JWT) 
+  // in cross-origin or same-site requests.
   withCredentials: true, // sends cookies, ON every request
 })
 
-
-// flag for preventing infinit refresh 
-let isRefreshing = false
+/**
+ * TOKEN REFRESH STATE
+ * Used to handle "Race Conditions" where multiple API calls fail at once
+ * because the token expired.
+ */
+let isRefreshing = false // Prevents multiple calls to /auth/refresh
 let failedQueue: Array<{
   resolve: (value?: unknown) => void
   reject: (reason?: unknown) => void
-}> = []
+}> = [] // Holds pending requests until the token is refreshed
 
+/**
+ * Processes the queue of failed requests.
+ * If refresh succeeded, it resolves them; otherwise, it rejects them.
+ */
 function processQueue(error: unknown) {
   failedQueue.forEach((prom) => {
     if (error) {
@@ -28,42 +43,60 @@ function processQueue(error: unknown) {
   failedQueue = []
 }
 
-
+/**
+ * RESPONSE INTERCEPTOR
+ * Intercepts every response. If it sees a 401 (Unauthorized), 
+ * it attempts to refresh the session.
+ */
 apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config
-
+    // Helper flags to avoid infinite loops
     const isRefreshEndpoint = originalRequest?.url?.includes('/auth/refresh')
     const isLogoutEndpoint = originalRequest?.url?.includes('/auth/logout')
 
-    // so here it 401 and not already retrying and not on refresh or logout 
+    /**
+     * Logic for handling 401 Unauthorized errors
+     */
     if (
       error.response?.status === 401 &&
-      !originalRequest._retry && 
-      !isRefreshEndpoint && 
-      !isLogoutEndpoint
+      !originalRequest?._retry &&   // Don't retry more than once per request
+      !isRefreshEndpoint &&         // Don't try to refresh if the refresh call itself failed
+      !isLogoutEndpoint             // Don't try to refresh if the user is logging out
     ) {
+      // Mark this request immediately so we don't loop indefinitely on retries
+      if (!originalRequest) {
+        return Promise.reject(error)
+      }
+      originalRequest._retry = true
+
+      // If a refresh is already in progress, add this request to the queue
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
-          failedQueue.push({ resolve, reject } )
+          failedQueue.push({ resolve, reject })
         })
-        .then(() => apiClient(originalRequest))
-        .catch((err) => Promise.reject(err))
+          .then(() => apiClient(originalRequest)) // Retry after success
+          .catch((err) => Promise.reject(err))
       }
 
-      originalRequest._retry = true
       isRefreshing = true
 
       try {
-        // refresh token cookie sent to backend auto via withcreds
-        // backend respond with a new access_token cookie 
+        /**
+         * ATTEMPT SILENT REFRESH
+         * Note: Backend should be using HttpOnly cookies for this to be secure.
+         */
         await apiClient.post('/auth/refresh')
+        // Refresh succeeded! Process all other requests waiting in the queue.
         processQueue(null)
+        // Retry the original request that failed initially
         return apiClient(originalRequest) // retry 
 
       } catch (refreshError) {
+        // Refresh failed (e.g., refresh token also expired)
         processQueue(refreshError)
+        // Wipe local auth state and force a login
         useAuthStore.getState().clearAuth()
         window.location.href = '/login'
         return Promise.reject(refreshError)
@@ -71,30 +104,7 @@ apiClient.interceptors.response.use(
         isRefreshing = false
       }
     }
-
+    // If it's a different error (404, 500, etc.), just pass it through
     return Promise.reject(error)
-  } 
+  }
 )
-
-
-
-
-
-
-// apiClient.interceptors.request.use((config) => {
-//   const token = useAuthStore.getState().token
-//   if (token) config.headers.Authorization = `Bearer ${token}`
-//   return config
-// })
-
-// apiClient.interceptors.response.use(
-//   (response) => response,
-//   (error) => {
-//     const isLogout = (error.config?.url as string | undefined)?.includes('/auth/logout')
-//     if (error.response?.status === 401 && !isLogout) {
-//       useAuthStore.getState().clearAuth()
-//       window.location.href = '/login'
-//     }
-//     return Promise.reject(error)
-//   },
-// )

@@ -9,11 +9,15 @@ interface FriendCardProps {
   friend: Friend
 }
 
+/**
+ * FriendCard Component
+ * Displays a single friend connection in a list layout, showcasing their avatar, 
+ * identity, online indicator status via websocket, and allowing the user to sever the connection.
+ */
 export function FriendCard({ friend }: FriendCardProps) {
   const { mutate: remove, isPending } = useRemoveFriend()
   const initials = friend.username.slice(0, 2).toUpperCase()
   const isOnline = friend.isOnline
-  console.log('[FriendCard]', friend.username, friend.isOnline)
 
   return (
     <div className="flex items-center gap-3 p-3 rounded-lg border border-border/50 bg-card hover:border-border transition-colors">
@@ -24,7 +28,7 @@ export function FriendCard({ friend }: FriendCardProps) {
             {initials}
           </AvatarFallback>
         </Avatar>
-        
+
         {isOnline && (
           <span className="absolute bottom-0 right-0 size-2.5 rounded-full bg-green-500 ring-2 ring-background" />
         )}
@@ -36,9 +40,6 @@ export function FriendCard({ friend }: FriendCardProps) {
         >
           {friend.username}
         </Link>
-        {/* {friend.email && (
-          <p className="text-xs text-muted-foreground truncate">{friend.email}</p>
-        )} */}
       </div>
       <Button
         variant="ghost"

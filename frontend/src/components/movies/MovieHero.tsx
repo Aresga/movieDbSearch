@@ -1,21 +1,26 @@
 import { Badge } from '@/components/ui/badge'
 
-interface MovieHeroProps {
-  data: {
-    id: number
-    title: string
-    overview: string
-    tagline?: string
-    genres: string[]
-    release_year?: number
-    runtime?: number
-    popularity?: number
-    vote_count?: number
-    poster_path?: string
-    backdrop_path?: string
-  }
+export interface MovieHeroData {
+  id: number
+  title: string
+  overview: string
+  tagline?: string
+  genres: string[]
+  release_year?: number
+  runtime?: number
+  popularity?: number
+  vote_count?: number
+  poster_path?: string
+  backdrop_path?: string
 }
 
+export interface MovieHeroProps {
+  data: MovieHeroData
+}
+
+/**
+ * Formats a raw minute value into a human-readable xH yM format.
+ */
 const formatRuntime = (min?: number) => {
   if (!min && min !== 0) return null
   const h = Math.floor(min / 60)
@@ -23,6 +28,11 @@ const formatRuntime = (min?: number) => {
   return h > 0 ? `${h}h ${m}m` : `${m}m`
 }
 
+/**
+ * MovieHero Component
+ * The visual centerpiece of the Movie details page, rendering the large background
+ * backdrop, the main poster, title, tagline, and overview.
+ */
 export function MovieHero({ data }: MovieHeroProps) {
   const poster = data.poster_path
     ? data.poster_path.startsWith('http')
@@ -53,7 +63,7 @@ export function MovieHero({ data }: MovieHeroProps) {
           <img
             src={poster}
             alt={data.title}
-            className={`w-full md:w-72 rounded-lg shadow-2xl flex-shrink-0 ${backdrop ? 'md:mb-8' : ''}`}
+            className={`w-full md:w-72 rounded-lg shadow-2xl shrink-0 ${backdrop ? 'md:mb-8' : ''}`}
           />
 
           <div className="flex-1 pt-15">
@@ -76,7 +86,7 @@ export function MovieHero({ data }: MovieHeroProps) {
         </div>
 
         <h2 className="text-lg font-semibold mb-2">Overview</h2>
-        <p className="text-g italic  mb-6">{data.overview}</p>
+        <p className="text-foreground italic mb-6">{data.overview}</p>
       </div>
     </>
   )

@@ -9,16 +9,12 @@ import {
 import { useNotificationStore } from '@/hooks/useNotificationStore'
 import { formatDistanceToNow } from 'date-fns'
 
-// /// @TODO 
-// function useNotifications() {
-//   const { data: friends = [] } = useFriends()
-//   return friends.slice(0, 3).map((f) => ({
-//     id: f.id,
-//     message: `${f.username} is now your friend`,
-//   }))
-// }
-
-
+/**
+ * NotificationBell Component
+ * Placed in the global AppLayout header. It subscribes to the global Zustand notification 
+ * store to display an unread badge. Opens a popover menu standardizing notification 
+ * chronologies and mark-as-read dispatches.
+ */
 export function NotificationBell() {
   const [open, setOpen] = useState(false)
   const { notifications, markAllRead, clear } = useNotificationStore()
