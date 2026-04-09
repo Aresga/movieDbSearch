@@ -14,4 +14,4 @@ COPY default.conf /etc/nginx/templates/conf.d/default.conf.template
 
 RUN chmod 644 /etc/nginx/conf/server.key /etc/nginx/conf/server.crt
 
-EXPOSE 443
+EXPOSE 80 443
