@@ -4,6 +4,11 @@ import { useAuthStore } from "@/store/authStore";
 import { generateSlug } from "random-word-slugs";
 import { Footer } from "./Footer";
 
+/**
+ * AuthLayout Component
+ * A stylized split-screen layout intended specifically for public authentication pages.
+ * Handles automatic redirects if the user is already logged in.
+ */
 export function AuthLayout() {
   const token = useAuthStore((s) => s.token);
   const location = useLocation();

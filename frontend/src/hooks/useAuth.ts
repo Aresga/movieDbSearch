@@ -6,6 +6,10 @@ import { authApi } from '@/api/auth'
 import { useAuthStore } from '@/store/authStore'
 import { getApiErrorMessage } from '@/lib/apiError'
 
+/**
+ * Custom hook for handling user login.
+ * Manages the API mutation, routing on success, and error toasting.
+ */
 export function useLogin() {
   const navigate = useNavigate()
   const { setAuth } = useAuthStore()
@@ -25,6 +29,9 @@ export function useLogin() {
   })
 }
 
+/**
+ * Custom hook for handling new user registration.
+ */
 export function useRegister() {
   const navigate = useNavigate()
   const { clearAuth } = useAuthStore()
@@ -43,6 +50,10 @@ export function useRegister() {
   })
 }
 
+/**
+ * Custom hook for securely logging out a user.
+ * Clears the backend session cookies and local Zustand state.
+ */
 export function useLogout() {
   const navigate = useNavigate()
   const { clearAuth } = useAuthStore()

@@ -8,6 +8,7 @@ import { MovieGrid } from '@/components/movies/MovieGrid'
 import { useSearch } from '@/hooks/useSearch'
 import { useTrending } from '@/hooks/useSearch'
 import { useAuthStore } from '@/store/authStore'
+import type { SearchResponse } from '@/types'
 
 function GuestBanner() {
   return (
@@ -33,12 +34,17 @@ export function HomePage() {
   const [inputValue, setInputValue] = useState('')
   const [query, setQuery] = useState('')
 
-  const searchResult = useSearch(query)
+  const searchResult = useSearch(query, 12)
   const trendingResult = useTrending(20)
 
   // If no active search, show trending
   const isSearching = !!query
   const { data, isLoading, isError } = isSearching ? searchResult : trendingResult
+  const fetchNextPage = isSearching ? searchResult.fetchNextPage : trendingResult.fetchNextPage
+  const hasNextPage = isSearching ? searchResult.hasNextPage : trendingResult.hasNextPage
+  const isFetchingNextPage = isSearching
+    ? searchResult.isFetchingNextPage
+    : trendingResult.isFetchingNextPage
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -50,7 +56,7 @@ export function HomePage() {
     setInputValue('')
   }
 
-  const movies = data?.results ?? []
+  const movies = (data?.pages ?? []).flatMap((page: SearchResponse) => page.results)
 
   return (
     <div className="flex flex-col min-h-full">
@@ -96,13 +102,26 @@ export function HomePage() {
           }
           <p className="text-sm text-muted-foreground">
             {isSearching
-              ? <><strong className="text-foreground">"{query}"</strong> — {data?.total_results ?? 0} results</>
+              ? <><strong className="text-foreground">"{query}"</strong> — {movies.length} results</>
               : 'Trending right now'
             }
           </p>
         </div>
 
         <MovieGrid movies={movies} isLoading={isLoading} query={query || 'trending'} />
+
+        {hasNextPage && (
+          <div className="mt-6 flex justify-center">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => fetchNextPage?.()}
+              disabled={isFetchingNextPage}
+            >
+              {isFetchingNextPage ? 'Loading...' : 'Load more'}
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   )
