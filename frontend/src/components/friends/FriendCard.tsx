@@ -11,7 +11,7 @@ interface FriendCardProps {
 
 /**
  * FriendCard Component
- * Displays a single friend connection in a list layout, showcasing their avatar, 
+ * Displays a single friend connection in a list layout, showcasing their avatar,
  * identity, online indicator status via websocket, and allowing the user to sever the connection.
  */
 export function FriendCard({ friend }: FriendCardProps) {

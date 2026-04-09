@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom'
-import { Calendar, MessageCircle, Settings, Shield, Star, Trash2, Users } from 'lucide-react'
+import { Calendar, MessageCircle, Settings, Shield, Star, Trash2, Users, UserPlus, UserMinus } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -76,7 +76,7 @@ function AddFriendButton({ userId }: { userId: string }) {
 
 /**
  * ProfileDashboard Component
- * Renders the main dashboard for a user profile. It handles both private (self) and public 
+ * Renders the main dashboard for a user profile. It handles both private (self) and public
  * (other user) rendering contexts based on the isPrivate prop.
  */
 export function ProfileDashboard({

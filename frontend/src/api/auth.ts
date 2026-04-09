@@ -1,11 +1,17 @@
 import type { AuthResponse } from '@/types'
 import { apiClient } from './client'
 
-/** 
- * Base path for API requests; utilized for manual URL construction 
+/**
+ * Base path for API requests; utilized for manual URL construction
  * like OAuth redirects.
  */
 const BASE_URL = '/api'
+
+export interface RegisterSuccessResponse {
+  message: string
+  id: string
+  username: string
+}
 
 /**
  * Payload required for creating a new user account
@@ -32,10 +38,9 @@ export const authApi = {
   /**
    * Registers a new user.
    * @param data - The registration payload (username, email, password).
-   * @returns A promise resolving to the AuthResponse.
    */
-  register: async (data: RegisterPayload): Promise<AuthResponse> => {
-    const res = await apiClient.post<AuthResponse>('/auth/register', data)
+  register: async (data: RegisterPayload): Promise<RegisterSuccessResponse> => {
+    const res = await apiClient.post<RegisterSuccessResponse>('/auth/register', data)
     return res.data
   },
 

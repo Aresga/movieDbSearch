@@ -34,14 +34,17 @@ export function useLogin() {
  */
 export function useRegister() {
   const navigate = useNavigate()
-  const { setAuth } = useAuthStore()
+  const { clearAuth } = useAuthStore()
 
   return useMutation({
     mutationFn: authApi.register,
     onSuccess: (data) => {
-      setAuth(data.user)
-      navigate('/login')
-      toast.success('Account created successfuly! Welcome to moviesearchDb')
+      clearAuth()
+      navigate('/login', {
+        replace: true,
+        state: { registered: true, username: data.username },
+      })
+      toast.success('Account created. Sign in with your email and password.')
     },
     onError: (error) => toast.error(getApiErrorMessage(error)),
   })

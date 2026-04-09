@@ -1,4 +1,4 @@
-import { Controller, Req, Res, UseGuards, Get, Post, HttpCode, Body, UnauthorizedException, Delete } from '@nestjs/common';
+import { Controller, Req, Res, UseGuards, Get, Post, HttpCode, Body, UnauthorizedException } from '@nestjs/common';
 import type { Response } from 'express';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { TwofactorauthService } from './twofactorauth.service';
@@ -76,9 +76,19 @@ export class TwofactorauthController {
     return { user: result.user } 
     }
 
-    @Delete('disable')
-    discale2FA(@Req() req) {
-        return this.twofactorauthservice.disable2FA(req.user.id);
+    @Post('disable')
+    @HttpCode(200)
+    async disable(@Req() req, @Body() dto: TwoFactorTokenDto) {
+        const user = await this.userService.findById(req.user.id)
+        if (!user.isTwoFactorEnabled) throw new UnauthorizedException('2FA is not enabled')
+
+        const secret = await this.userService.findTwoFactorSecret(req.user.id)
+        if (!secret) throw new UnauthorizedException('2FA setup not initialized')
+
+        const isValid = await this.twofactorauthservice.verifyToken(dto.token, secret)
+        if (!isValid) throw new UnauthorizedException('Invalid authentication code')
+
+        return this.twofactorauthservice.disable2FA(req.user.id)
     }
 
 }
