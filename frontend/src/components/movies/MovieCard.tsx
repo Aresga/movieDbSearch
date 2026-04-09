@@ -1,4 +1,4 @@
-import { Star } from 'lucide-react'
+import { Film, Star } from 'lucide-react'
 import type { Movie } from '@/types'
 import { Badge } from '@/components/ui/badge'
 import { Link } from 'react-router-dom'
@@ -10,11 +10,10 @@ interface MovieCardProps {
 
 /**
  * Resolves the poster URL from the TMDB image path.
- * Falls back to a randomly seeded placeholder if no poster is available.
  */
-function getPosterUrl(movie: Movie): string {
+function getPosterUrl(movie: Movie): string | null {
   if (!movie.poster_path) {
-    return `https://picsum.photos/seed/movie-${movie.id}/300/450`
+    return null
   }
   if (movie.poster_path.startsWith('http')) return movie.poster_path
   return `https://image.tmdb.org/t/p/w500${movie.poster_path}`
@@ -43,6 +42,7 @@ export function MovieCard({ movie }: MovieCardProps) {
   const title = getTitle(movie)
   const year = getYear(movie)
   const rating = movie.vote_average
+  const posterUrl = getPosterUrl(movie)
 
   return (
     <div className="group relative rounded-lg overflow-hidden bg-card border border-border/50 transition-all duration-300 hover:scale-[1.03] hover:shadow-2xl hover:shadow-black/60 hover:border-brand/40">
@@ -52,12 +52,18 @@ export function MovieCard({ movie }: MovieCardProps) {
       >
         {/* Poster */}
         <div className="aspect-2/3 overflow-hidden bg-muted">
-          <img
-            src={getPosterUrl(movie)}
-            alt={title}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-            loading="lazy"
-          />
+          {posterUrl ? (
+            <img
+              src={posterUrl}
+              alt={title}
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              loading="lazy"
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center bg-muted text-muted-foreground/60">
+              <Film className="size-8" />
+            </div>
+          )}
         </div>
 
         {/* Overlay on hover */}
