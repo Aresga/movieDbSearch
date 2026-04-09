@@ -6,7 +6,6 @@ import { Badge } from '@/components/ui/badge'
 import type { User, Review } from '@/types'
 import { useFriends, useAddFriend, useRemoveFriend } from '@/hooks/useFriends'
 import { useCreateChatRoom } from '@/hooks/useChat'
-import { UserPlus, UserMinus } from 'lucide-react'
 
 export interface ProfileDashboardProps {
   user: User

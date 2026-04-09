@@ -28,9 +28,9 @@ const authNavItems = [
   { title: 'My profile', url: '/user/me', icon: User },
   { title: 'Friends', url: '/friends', icon: Users },
   { title: 'Chats', url: '/menu/rooms', icon: MessageCircle },
-  { title: 'Settings', url: '/settings', icon: Settings },
   { title: 'Wish List', url: '/wishlist', icon: Heart },
   { title: 'Watched List', url: '/watched', icon: Check },
+  { title: 'Settings', url: '/settings', icon: Settings },
 ]
 
 /**
