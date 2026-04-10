@@ -25,7 +25,11 @@ export function useLogin() {
         toast.success('Welcome back !')
       }
     },
-    onError: (error) => toast.error(getApiErrorMessage(error)),
+    onError: (error) => {
+      // console.log('Login failed: Incorrect credentials')
+      // toast.error('Incorrect email or password')
+      toast.error(getApiErrorMessage(error))
+    },
   })
 }
 
