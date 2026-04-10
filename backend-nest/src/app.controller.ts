@@ -1,7 +1,8 @@
-import { BadRequestException, Controller, Get, Param, ParseIntPipe, Query, Req } from '@nestjs/common';
+import { BadRequestException, Controller, Get, Param, ParseIntPipe, Query, Req, UseGuards } from '@nestjs/common';
 import { AppService } from './app.service';
 import { TmdbService } from './tmdb/tmdb.service';
 import { ParamsTokenFactory } from '@nestjs/core/pipes';
+import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 
 @Controller()
 export class AppController {
@@ -48,5 +49,15 @@ export class AppController {
   ) {
     return this.tmdb.getMovieFull(tmdbId, lang)
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('recommendations')
+  async getRecommendations(
+    @Req() req,
+    @Query('limit') limit: number = 20,
+  ) {
+    return this.appService.getRecommendations(req.user.id, limit);
+  }
+
 
 }

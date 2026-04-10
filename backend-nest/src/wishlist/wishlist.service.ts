@@ -63,11 +63,19 @@ export class WishListService {
           userId,
           movieId: movie.id,
         }
-      }); 
+      });
+      
+      
+      this.prisma.userMovieAction.create({
+        data: { userId, movieId: movie.id, action: 'wishlisted' },
+      }).catch(() => {});
+
+
       return {
         message: 'WishList added successfully',
         data: entry
       };
+
     } catch(error) {
       if (error instanceof NotFoundException)
         throw error;
@@ -93,6 +101,11 @@ export class WishListService {
           }
         }
       });
+
+      await this.prisma.userMovieAction.deleteMany({
+        where: { userId, movieId: movie.id, action: 'wishlisted' },
+      }).catch(() => {});
+      
       return {
         message: 'Movie removed from wishList successfully',
       };

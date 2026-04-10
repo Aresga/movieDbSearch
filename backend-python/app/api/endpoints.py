@@ -3,6 +3,8 @@ from app.services.search_service import SearchService
 from pydantic import BaseModel
 from app.services.sentiment_service import SentimentService
 from .dependencies import get_search_service, get_sentiment_service
+from app.services.recommendation_service import RecommendationService
+from .dependencies import get_recommendation_service
 
 class reviewRequest(BaseModel):
     text: str
@@ -37,3 +39,12 @@ def analyze_sentiment(
     Get sentiment analyzis
     """
     return svc.analyze(body.text)
+
+
+@router.get("/recommendations/{user_id}")
+def get_recommendations(
+    user_id: str,
+    limit: int = Query(20, ge=1, le=100),
+    service: RecommendationService = Depends(get_recommendation_service)
+):
+    return service.get_recommendations(user_id, limit)

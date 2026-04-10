@@ -134,6 +134,25 @@ export class AppService {
     }
   }
 
+  async getRecommendations(userId: string, limit: number = 20) {
+    const baseUrl = this.configService.get<string>('AI_SERVICE_URL');
+
+    if (!baseUrl) throw new Error('AI_SERVICE_URL is not defined');
+
+    const cleanBase = baseUrl.replace(/\/$/, '');
+
+    try {
+      const response = await lastValueFrom(
+        this.httpService.get(`${cleanBase}/recommendations/${userId}`, {
+          params: { limit }
+        }).pipe(map((res) => res.data))
+      );
+      return response;
+    } catch (error) {
+      console.error('Recommendation service failed:', error.message);
+      throw new HttpException('Recommendation service unavailable', 503);
+    }
+  }
 
 
 }

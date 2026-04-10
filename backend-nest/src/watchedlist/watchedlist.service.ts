@@ -44,6 +44,11 @@ export class WatchedListService {
           movieId: movie.id
         }
       });
+
+      this.prisma.userMovieAction.create({
+        data: { userId, movieId: movie.id, action: 'watched' },
+      }).catch(() => {});
+
       return {
         message: 'WatchedList added successfully',
         data: entry
@@ -74,6 +79,11 @@ export class WatchedListService {
           }
         }
       });
+
+      await this.prisma.userMovieAction.deleteMany({
+        where: { userId, movieId: movie.id, action: 'watched' },
+      }).catch(() => {});
+
       return {
         message: 'Movie removed from watchedList successfully',
       };

@@ -15,9 +15,10 @@ model User {
   providerId String? @unique
 
   // Social Relations
-  reviews  Review[]
-  wishList WishList[]
-  watchedList WatchedList[]
+  reviews      Review[]
+  wishList     WishList[]
+  watchedList  WatchedList[]
+  movieActions UserMovieAction[]
 
   // self-ref MAny to many for friends
   friends  User[] @relation("UserFriends")
