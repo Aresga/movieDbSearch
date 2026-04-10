@@ -35,6 +35,7 @@ export function useUpdateMe() {
         prev ? { ...prev, ...data } : undefined,
       )
       updateUser(data)
+      void queryClient.invalidateQueries({ queryKey: ['friends'] })
       toast.success('Profile updated')
     },
     onError: (error) => toast.error(getApiErrorMessage(error)),

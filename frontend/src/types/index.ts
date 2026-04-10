@@ -60,7 +60,8 @@ export interface Friend {
   username: string
   email?: string
   isOnline?: boolean
-  avatar_url?: string
+  /** Matches Nest/Prisma JSON field name */
+  avatarUrl?: string
   created_at?: string
 }
 

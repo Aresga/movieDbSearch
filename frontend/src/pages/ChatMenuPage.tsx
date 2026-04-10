@@ -6,6 +6,8 @@ import { apiClient } from '@/api/client';
 import { getSocket } from '@/lib/socket';
 import { useAuthStore } from '@/store/authStore';
 import { BellRing } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import type { Friend as FriendRow } from '@/types';
 
 type IdLike = { id?: string; _id?: string };
 
@@ -24,10 +26,6 @@ type Message = {
   content: string;
   createdAt: string;
   read: boolean;
-};
-
-type Friend = IdLike & {
-  username?: string;
 };
 
 export function ChatMenuPage() {
@@ -64,7 +62,7 @@ export function ChatMenuPage() {
     };
 
     loadRooms();
-  }, [token, userId]);
+  }, [token, userId, user?.avatarUrl]);
 
   useEffect(() => {
     const socket = getSocket();
@@ -131,7 +129,7 @@ export function ChatMenuPage() {
   }, [rooms, userId]);
 
   const validFriends = useMemo(() => {
-    return (friends as Friend[]).filter((f) => {
+    return (friends as FriendRow[]).filter((f) => {
       const fid = getId(f);
       return !!fid && fid !== userId && !existingChatFriendIds.has(fid);
     });
@@ -198,14 +196,21 @@ export function ChatMenuPage() {
               <div className="flex flex-wrap gap-2">
                 {validFriends.map((friend) => {
                   const friendId = getId(friend);
+                  const initials = (friend.username ?? '?').slice(0, 2).toUpperCase();
                   return (
                     <button
                       key={friendId}
                       onClick={() => createRoom(friendId)}
                       disabled={isCreatingRoom}
-                      className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground transition hover:bg-accent hover:text-accent-foreground disabled:cursor-not-allowed disabled:opacity-50"
+                      className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground transition hover:bg-accent hover:text-accent-foreground disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                      Start chat with {friend.username ?? 'Unknown user'}
+                      <Avatar className="size-8 shrink-0">
+                        <AvatarImage src={friend.avatarUrl ?? undefined} />
+                        <AvatarFallback className="bg-brand/20 text-brand text-xs font-semibold">
+                          {initials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span>Start chat with {friend.username ?? 'Unknown user'}</span>
                     </button>
                   );
                 })}
@@ -225,6 +230,7 @@ export function ChatMenuPage() {
             {rooms.map((room) => {
               const otherParticipant = room.participants.find((p) => getId(p) !== userId);
               const friendName = otherParticipant?.username ?? 'Unknown user';
+              const otherInitials = friendName.slice(0, 2).toUpperCase();
 
               return (
                 <li key={room._id}>
@@ -237,8 +243,14 @@ export function ChatMenuPage() {
                         ),
                       );
                     }}
-                    className="block py-3 text-foreground transition hover:text-primary"
+                    className="flex items-center gap-3 py-3 text-foreground transition hover:text-primary"
                   >
+                    <Avatar className="size-10 shrink-0">
+                      <AvatarImage src={otherParticipant?.avatarUrl ?? undefined} />
+                      <AvatarFallback className="bg-brand/20 text-brand text-sm font-semibold">
+                        {otherInitials}
+                      </AvatarFallback>
+                    </Avatar>
                     <span className="font-medium">{friendName}</span>
                     {room.isUnRead && (
                       <span className="ml-2 inline-block align-middle" title="Unread message">

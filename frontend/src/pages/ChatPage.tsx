@@ -4,6 +4,7 @@ import { useAuthStore } from '@/store/authStore';
 import { apiClient } from '@/api/client';
 import { getSocket } from '@/lib/socket';
 import { Check, CheckCheck } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 type Message = {
   _id: string;
@@ -17,6 +18,7 @@ type Message = {
 type Participant = {
   id: string;
   username: string;
+  avatarUrl?: string | null;
 };
 
 export function ChatPage() {
@@ -34,16 +36,12 @@ export function ChatPage() {
   }, [participants]);
 
   useEffect(() => {
-    console.log(participantsMap);
-  }, [participantsMap]);
-
-  useEffect(() => {
     if (!roomId) return;
 
     const getRoomInfo = async () => {
       try {
-        const res = await apiClient.get(`/message/rooms/${roomId}/info`);
-        setParticipants(res.data.participants);
+        const res = await apiClient.get<{ participants: Participant[] }>(`/message/rooms/${roomId}/info`);
+        setParticipants(res.data.participants ?? []);
       } catch (error) {
         console.error("Failed to fetch room info", error);
       }
@@ -76,7 +74,7 @@ export function ChatPage() {
     }
 
     fetchData();
-  }, [roomId]);
+  }, [roomId, user?.avatarUrl]);
 
   useEffect(() => {
     if (!roomId || !socket) return;
@@ -129,6 +127,13 @@ export function ChatPage() {
     return participantsMap.get(senderId)?.username ?? senderId;
   };
 
+  const otherParticipant = useMemo(
+    () => participants.find((p) => p.id !== userId),
+    [participants, userId],
+  );
+  const otherInitials = (otherParticipant?.username ?? '?').slice(0, 2).toUpperCase();
+  const myInitials = (user?.username ?? '?').slice(0, 2).toUpperCase();
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -158,7 +163,20 @@ export function ChatPage() {
   return (
     <div className="flex h-screen flex-col bg-background">
       <div className="border-b border-border/50 bg-card px-4 py-3">
-        <h2 className="text-lg font-semibold text-card-foreground">Chat</h2>
+        <div className="flex items-center gap-3">
+          <Avatar className="size-10 shrink-0">
+            <AvatarImage src={otherParticipant?.avatarUrl ?? undefined} />
+            <AvatarFallback className="bg-brand/20 text-brand text-sm font-semibold">
+              {otherInitials}
+            </AvatarFallback>
+          </Avatar>
+          <div>
+            <h2 className="text-lg font-semibold text-card-foreground">
+              {otherParticipant?.username ?? 'Chat'}
+            </h2>
+            <p className="text-xs text-muted-foreground">Direct message</p>
+          </div>
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 py-4">
@@ -169,35 +187,50 @@ export function ChatPage() {
 
         {messages.map((m) => {
           const isOwnMessage = m.senderId === userId;
+          const peerAvatar = participantsMap.get(m.senderId)?.avatarUrl ?? undefined;
           return (
             <div
               key={m._id}
-              className={`mb-4 flex flex-col ${isOwnMessage ? 'items-end' : 'items-start'}`}
+              className={`mb-4 flex gap-2 ${isOwnMessage ? 'flex-row-reverse' : 'flex-row'}`}
             >
-              <div
-                className={`max-w-xs rounded-lg px-4 py-2 ${
-                  isOwnMessage
-                    ? 'bg-blue-600 text-white'
-                    : 'border border-slate-700/70 bg-slate-900 text-slate-100'
-                }`}
-              >
-                {!isOwnMessage && (
-                  <p className="mb-1 text-xs font-semibold text-muted-foreground">
-                    {getSenderName(m.senderId)}
-                  </p>
-                )}
-                <p className="break-words">{m.content}</p>
-              </div>
-              <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
-                <small>{new Date(m.createdAt).toLocaleTimeString()}</small>
+              <Avatar className="size-8 shrink-0 mt-0.5">
+                <AvatarImage
+                  src={
+                    isOwnMessage
+                      ? (user?.avatarUrl ?? undefined)
+                      : peerAvatar
+                  }
+                />
+                <AvatarFallback className="bg-brand/20 text-brand text-xs font-semibold">
+                  {isOwnMessage ? myInitials : (participantsMap.get(m.senderId)?.username ?? '?').slice(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div className={`flex max-w-[min(100%,20rem)] flex-col ${isOwnMessage ? 'items-end' : 'items-start'}`}>
+                <div
+                  className={`rounded-lg px-4 py-2 ${
+                    isOwnMessage
+                      ? 'bg-blue-600 text-white'
+                      : 'border border-slate-700/70 bg-slate-900 text-slate-100'
+                  }`}
+                >
+                  {!isOwnMessage && (
+                    <p className="mb-1 text-xs font-semibold text-muted-foreground">
+                      {getSenderName(m.senderId)}
+                    </p>
+                  )}
+                  <p className="break-words">{m.content}</p>
+                </div>
+                <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+                  <small>{new Date(m.createdAt).toLocaleTimeString()}</small>
 
-                {isOwnMessage && (
-                  m.read ? (
-                    <CheckCheck className="h-3.5 w-3.5 text-sky-400" aria-label="Read" />
-                  ) : (
-                    <Check className="h-3.5 w-3.5 opacity-70" aria-label="Sent" />
-                  )
-                )}
+                  {isOwnMessage && (
+                    m.read ? (
+                      <CheckCheck className="h-3.5 w-3.5 text-sky-400" aria-label="Read" />
+                    ) : (
+                      <Check className="h-3.5 w-3.5 opacity-70" aria-label="Sent" />
+                    )
+                  )}
+                </div>
               </div>
             </div>
           );
