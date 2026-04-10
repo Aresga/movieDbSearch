@@ -18,12 +18,13 @@ export class AppController {
   @Get('search')
   async search(
     @Query('q') query: string,
-    @Query('limit') limit: number = 5,
+    @Query('page') page: number = 1,
+    @Query('size') size: number = 5,
   ) {
     if (!query) {
       throw new BadRequestException('Query param "q" is required');
     }
-    const results = await this.appService.searchMovies(query, limit);
+    const results = await this.appService.searchMovies(query, page, size);
     return results;
   }
 
@@ -33,8 +34,11 @@ export class AppController {
   }
 
   @Get('trending')
-  async trending(@Query('limit') limit: number = 20) {
-    return this.appService.getTrending(limit);
+  async trending(
+    @Query('page') page: number = 1,
+    @Query('size') size: number = 20,
+  ) {
+    return this.appService.getTrending(page, size);
   }
 
   @Get('movie/:id/full')

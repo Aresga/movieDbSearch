@@ -1,12 +1,19 @@
 import type { AuthResponse, TwoFaSetupResponse } from '@/types'
 import { apiClient } from './client'
 
+/**
+ * Two-Factor Authentication API Service
+ * Manages the lifecycle of TOTP/2FA security including setup, activation, verification, and teardown.
+ */
 export const twofaApi = {
+  /**
+   * Initializes the 2FA setup process.
+   * Retrieves the secret and a generated QR code URL for authenticator apps.
+   */
   setup: async (): Promise<TwoFaSetupResponse> => {
     const res = await apiClient.get<Record<string, unknown>>('/2fa/setup')
     const payload = res.data
 
-    // normalize possible backend shapes: { qr_code_url, secret } or { qrcode, secret }
     const qr_code_url = String(payload.qr_code_url ?? payload.qrcode ?? payload.qr ?? '')
     const secret = String(payload.secret ?? payload.key ?? '')
     const bc = payload.backup_codes
@@ -14,20 +21,28 @@ export const twofaApi = {
 
     return { qr_code_url, secret, backup_codes }
   },
-  activate: async (code: string): Promise<unknown> => {
-    // backend expects { token: "123456" }
-    const res = await apiClient.post('/2fa/activate', { token: code })
+
+  /**
+   * Confirms and activates 2FA for the user after scanning the QR code.
+   */
+  activate: async (code: string): Promise<{ message: string }> => {
+    const res = await apiClient.post<{ message: string }>('/2fa/activate', { token: code })
     return res.data
   },
+
+  /**
+   * Verifies the 2FA code during the authentication sequence.
+   */
   verify: async (code: string): Promise<AuthResponse> => {
-    // backend expects { token: "123456", temp_token?: "..." }
-    // const payload: any = { token: code }
-    // if (tempToken) payload.temp_token = tempToken
-    const res = await apiClient.post<AuthResponse>('/2fa/verify', {token: code})
+    const res = await apiClient.post<AuthResponse>('/2fa/verify', { token: code })
     return res.data
   },
+
+  /**
+   * Disables 2FA on the currently logged-in account (requires TOTP code).
+   */
   disable: async (code: string): Promise<{ message: string }> => {
-    const res = await apiClient.post('/2fa/disable', { token: code })
+    const res = await apiClient.post<{ message: string }>('/2fa/disable', { token: code })
     return res.data
-  }
+  },
 }

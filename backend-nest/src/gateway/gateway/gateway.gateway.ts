@@ -17,9 +17,8 @@ export class GatewayGateway implements OnGatewayConnection, OnGatewayDisconnect 
   private userRooms = new Map();
   @OnEvent('message.create')
   handleMessageCreateEvent(payload: any) {
-	this.server.emit('onMessage', payload);
+	this.server.emit('receiveMessage', payload);
   }
-  // map to track userId
   private connectedUsers = new Map<string, string>();
 
   constructor(
@@ -48,7 +47,7 @@ export class GatewayGateway implements OnGatewayConnection, OnGatewayDisconnect 
       this.connectedUsers.set(userId, client.id);
       client.data.userId = userId;
 
-      await this.prisma.user.update({
+      await this.prisma.user.updateMany({
         where: { id: userId },
         data: { isOnline: true },
       });
@@ -65,7 +64,7 @@ export class GatewayGateway implements OnGatewayConnection, OnGatewayDisconnect 
     this.userRooms.delete(userId);
     this.connectedUsers.delete(userId);
 
-    await this.prisma.user.update({
+    await this.prisma.user.updateMany({
       where: { id: userId },
       data: { isOnline: false },
     });
@@ -95,11 +94,25 @@ export class GatewayGateway implements OnGatewayConnection, OnGatewayDisconnect 
     }
   }
 
+  @SubscribeMessage('joinRoom')
+  async handleRoomJoin(client: Socket, roomId: string)
+  {
+      client.join(roomId);
+      return { success: true, room: roomId }
+  }
+
   sendToUser(userId: string, event: string, payload: any) {
     const socketId = this.connectedUsers.get(userId);
     if (socketId) {
       this.server.to(socketId).emit(event, payload);
     }
+  }
+
+  @SubscribeMessage('leaveRoom')
+  async handleLeaveRoom(client: Socket, roomId: string)
+  {
+    client.leave(roomId);
+    return { success: true, room: roomId }
   }
 
 
@@ -111,23 +124,45 @@ export class GatewayGateway implements OnGatewayConnection, OnGatewayDisconnect 
   {
     try {
       const senderId = client.data.userId;
-      const { roomId, content } = data;
+      const roomId = data.roomId;
+      const content = data.content?.trim();
 
+      if (!senderId || !roomId || !content) {
+        return ;
+      }
+
+      const roomSockets = await this.server.in(roomId).fetchSockets();
+      const checkForUser = roomSockets.some((socket) => socket.data.userId && socket.data.userId !== senderId);
       const message = await this.messageService.storeMessage(
-        roomId, senderId, content,
+        roomId,
+        senderId,
+        content,
+        checkForUser,
       );
 
-      this.server.to(roomId).emit('receiveMessage', {
-        id: message._id,
+      const payload = {
+        _id: String(message._id),
         roomId,
         senderId,
         content: message.content,
-        timestamp: message.createdAt,
-      });
-
-      return { success: true, messageId: message._id };
+        createdAt: new Date(message.createdAt).toISOString(),
+        read: checkForUser,
+      };
+      console.log(`Message from ${senderId} in room ${roomId}: "${content}"`);
+      this.server.to(roomId).emit('receiveMessage', payload)
     } catch (error) {
-      return { success: false, error: error.message };
+        console.error('Failed to send message:', error);
     }
+  }
+
+  @SubscribeMessage('markRoomAsRead')
+  async handleMarkRoomAsRead(client: Socket, roomId: string)
+  {
+    const userId = client.data.userId;
+    await this.messageService.markAsRead(roomId, userId);
+    this.server.to(roomId).emit('markAsRead', {
+      roomId,
+      readBy: userId,
+    });
   }
 }

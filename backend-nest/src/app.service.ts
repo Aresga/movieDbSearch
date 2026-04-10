@@ -29,7 +29,7 @@ export class AppService {
     };
   }
 
-  async searchMovies(query: string, limit: number = 5) {
+  async searchMovies(query: string, page: number = 1, size: number = 5) {
     const baseUrl = this.configService.get<string>('AI_SERVICE_URL');
     
     if (!baseUrl) {
@@ -42,7 +42,7 @@ export class AppService {
     try {
       const response = await lastValueFrom(
         this.httpService.get<PyResponse>(fullUrl, {
-          params: { q: query, limit }
+          params: { q: query, page, size }
         }).pipe(
           map((res) => res.data)
         )
@@ -81,14 +81,16 @@ export class AppService {
   return movie
   }
 
-  async getTrending(limit: number = 20) {
+  async getTrending(page: number = 1, size: number = 20) {
+    const offset = (page - 1) * size;
     const movies = await this.prisma.movies.findMany({
       where: {
         popularity: { not: null },
         poster_path: { not: null },
       },
       orderBy: { popularity: 'desc' },
-      take: limit,
+      skip: offset,
+      take: size,
       select: {
               id: true,
               tmdb_id: true,
@@ -105,7 +107,7 @@ export class AppService {
               backdrop_path: true,
             },
     });
-    return { movies };
+    return { movies, page, size };
   }
 
   async analyzeSentiment(text: string) {

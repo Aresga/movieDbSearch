@@ -8,23 +8,23 @@ function isRecord(v: unknown): v is Record<string, unknown> {
 }
 
 export const searchApi = {
-  search: async (q: string, limit = 10): Promise<SearchResponse> => {
+  search: async (q: string, page = 1, size = 10): Promise<SearchResponse> => {
     const res = await apiClient.get<unknown>('/search', {
-      params: { q, limit },
+      params: { q, page, size },
     })
 
     const payload = res.data
 
     if (Array.isArray(payload)) {
-      return { results: payload, total_results: payload.length }
+      return { results: payload as Movie[], total_results: payload.length, page }
     }
 
     if (payload == null) {
-      return { results: [], total_results: 0 }
+      return { results: [], total_results: 0, page }
     }
 
     if (!isRecord(payload)) {
-      return { results: [], total_results: 0 }
+      return { results: [], total_results: 0, page }
     }
 
     const mapMovie = (m: RawMovie): Movie => {
@@ -49,30 +49,41 @@ export const searchApi = {
     }
 
     if (Array.isArray(payload.results)) {
-      return payload as unknown as SearchResponse
+      const rows = payload.results as RawMovie[]
+      return {
+        results: rows.map(mapMovie),
+        total_results:
+          typeof payload.total_results === 'number' ? payload.total_results : rows.length,
+        page: typeof payload.page === 'number' ? payload.page : page,
+        total_pages: typeof payload.total_pages === 'number' ? payload.total_pages : undefined,
+      }
     }
 
     if (Array.isArray(payload.data)) {
       const rows = payload.data as RawMovie[]
-      return { results: rows.map(mapMovie), total_results: rows.length }
+      return { results: rows.map(mapMovie), total_results: rows.length, page }
     }
 
     const data = payload.data
     if (isRecord(data) && Array.isArray(data.results)) {
+      const nested = data.results as RawMovie[]
       return {
         ...(data as unknown as SearchResponse),
-        results: (data.results as RawMovie[]).map(mapMovie),
+        results: nested.map(mapMovie),
+        page: typeof data.page === 'number' ? data.page : page,
+        total_results:
+          typeof data.total_results === 'number' ? data.total_results : nested.length,
       }
     }
 
     if (Array.isArray(payload.items)) {
       const rows = payload.items as RawMovie[]
-      return { results: rows.map(mapMovie), total_results: rows.length }
+      return { results: rows.map(mapMovie), total_results: rows.length, page }
     }
 
     if (Array.isArray(payload.movies)) {
       const rows = payload.movies as RawMovie[]
-      return { results: rows.map(mapMovie), total_results: rows.length }
+      return { results: rows.map(mapMovie), total_results: rows.length, page }
     }
 
     return {
@@ -80,17 +91,19 @@ export const searchApi = {
         ? (payload.results as RawMovie[]).map(mapMovie)
         : [],
       total_results: typeof payload.total_results === 'number' ? payload.total_results : undefined,
-      page: typeof payload.page === 'number' ? payload.page : undefined,
+      page: typeof payload.page === 'number' ? payload.page : page,
       total_pages: typeof payload.total_pages === 'number' ? payload.total_pages : undefined,
     }
   },
 
-  trending: async (limit = 20): Promise<SearchResponse> => {
-    const res = await apiClient.get<{ movies?: RawMovie[] }>('/trending', { params: { limit } })
+  trending: async (page = 1, size = 20): Promise<SearchResponse> => {
+    const res = await apiClient.get<{ movies?: RawMovie[]; page?: number }>('/trending', {
+      params: { page, size },
+    })
     const movies: Movie[] = (res.data.movies ?? []).map((m) => ({
       id: (m.tmdb_id ?? m.id) as Movie['id'],
       title: m.title as string | undefined,
-      name: m.title as string | undefined,
+      name: (m.title ?? m.name) as string | undefined,
       overview: m.overview as string | undefined,
       poster_path: m.poster_path as string | undefined,
       backdrop_path: m.backdrop_path as string | undefined,
@@ -101,7 +114,10 @@ export const searchApi = {
       genre_ids: undefined,
       media_type: 'movie' as const,
     }))
-    return { results: movies, total_results: movies.length }
+    return {
+      results: movies,
+      total_results: movies.length,
+      page: res.data.page ?? page,
+    }
   },
-
 }

@@ -6,12 +6,18 @@ import { getSocket, disconnectSocket } from '@/lib/socket'
 import type { Friend } from '@/types'
 import { useNotificationStore } from './useNotificationStore'
 
-interface FriendStatusEvent {
+export interface FriendStatusEvent {
   userId: string
   username: string
   isOnline: boolean
 }
 
+/**
+ * Custom hook to initialize and manage the global WebSocket connection.
+ * Connects automatically if a user is logged in, and sets up listeners for:
+ * - Realtime friend online/offline status updates
+ * - Incoming friend requests
+ */
 export function useSocket() {
   const user = useAuthStore((s) => s.user)
   const queryClient = useQueryClient()
@@ -49,13 +55,13 @@ export function useSocket() {
 
       // Toast 
       if (isOnline) {
-        addNotification({ message: `${username} is now online`, type: 'friend_online'})
+        addNotification({ message: `${username} is now online`, type: 'friend_online' })
         toast.info(`${username} is now online`, { duration: 3000 })
       }
     })
 
     socket.on('friendRequest', (data) => {
-      addNotification({ message: `${data.from} added you as friend!`, type: 'friend_request'})
+      addNotification({ message: `${data.from} added you as a friend!`, type: 'friend_request' })
       toast.info(`${data.from} added you as a friend!`)
     })
 

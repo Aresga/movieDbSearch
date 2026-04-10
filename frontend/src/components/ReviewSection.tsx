@@ -10,7 +10,15 @@ import { Link } from 'react-router-dom'
 import { EmotionBadge } from '@/components/ui/EmotionBadge'
 import type { Review } from '@/types'
 
-function StarRating({ value, onChange }: { value: number; onChange?: (v: number) => void }) {
+interface StarRatingProps {
+  value: number
+  onChange?: (v: number) => void
+}
+
+/**
+ * Reusable interactive or static star rating component.
+ */
+function StarRating({ value, onChange }: StarRatingProps) {
   const [hovered, setHovered] = useState(0)
   const active = hovered || value
 
@@ -27,11 +35,10 @@ function StarRating({ value, onChange }: { value: number; onChange?: (v: number)
           disabled={!onChange}
         >
           <Star
-            className={`size-5 transition-colors ${
-              star <= active
+            className={`size-5 transition-colors ${star <= active
                 ? 'fill-brand text-brand'
                 : 'fill-muted text-muted-foreground'
-            }`}
+              }`}
           />
         </button>
       ))}
@@ -108,6 +115,11 @@ function ReviewComposeInner({
   )
 }
 
+/**
+ * ReviewSection Component
+ * Displays and manages user reviews for a specific movie, including creating,
+ * editing, deleting, and displaying an aggregated rating.
+ */
 export function ReviewSection({ movieId }: { movieId: string }) {
   const user = useAuthStore((s) => s.user)
   const { data: reviews = [], isLoading, isError } = useReviews(movieId)
@@ -179,11 +191,10 @@ export function ReviewSection({ movieId }: { movieId: string }) {
             const isOwn = user?.id === r.userId
             return (
               <div
-              key={r.id}
-              className={`p-5 rounded-xl border bg-card transition-colors ${
-                isOwn ? 'border-brand/30' : 'border-border'
-              }`}
-              
+                key={r.id}
+                className={`p-5 rounded-xl border bg-card transition-colors ${isOwn ? 'border-brand/30' : 'border-border'
+                  }`}
+
               >
 
                 <div className="flex items-start gap-3">

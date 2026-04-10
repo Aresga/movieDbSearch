@@ -13,12 +13,13 @@ class SearchService:
         self.engine = engine
         self.model = model
 
-    def search_movies(self, q: str, limit: int = 10):
+    def search_movies(self, q: str, page: int = 1, size: int = 10):
         if not q:
             raise HTTPException(status_code=400, detail="Query string 'q' is required")
 
         try:
             query_vec = self.model.encode(q).tolist()
+            offset = (page - 1) * size
 
             with Session(self.engine) as session:
                 raw_distance = Movie.embedding.cosine_distance(query_vec)
@@ -37,13 +38,17 @@ class SearchService:
                     select(Movie, final_distance) # Select the boosted distance
                     .where(Movie.overview != None)
                     .order_by(final_distance)     # Sort by the boosted score
-                    .limit(limit)
+                    .offset(offset)
+                    .limit(size)
                 )
 
                 results = session.exec(statement).all()
 
             return {
                 "query": q,
+                "page": page,
+                "size": size,
+                "offset": offset,
                 "results": [
                     {
                         "title": movie.title,

@@ -8,6 +8,10 @@ export function getSocket(): Socket {
             path: '/socket.io',
             withCredentials: true,
             autoConnect: false,
+            reconnection: true,
+            reconnectionAttempts: 10,
+            reconnectionDelay: 5000,
+            timeout: 10000,
             transports: ['websocket'],
         })
     }

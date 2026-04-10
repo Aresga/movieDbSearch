@@ -25,6 +25,11 @@ function GoogleIcon() {
   )
 }
 
+/**
+ * OAuthButtons Component
+ * Renders the social sign-in buttons (Google, GitHub). By modifying the window 
+ * location directly, it hands off the authentication flow entirely to the backend OAuth provider.
+ */
 export function OAuthButtons() {
   const handleGoogle = () => {
     window.location.href = authApi.getGoogleUrl()

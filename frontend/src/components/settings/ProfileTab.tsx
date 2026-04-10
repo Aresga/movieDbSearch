@@ -23,8 +23,13 @@ const profileSchema = z.object({
   bio: z.string().optional(),
 })
 
-type ProfileForm = z.infer<typeof profileSchema>
+export type ProfileForm = z.infer<typeof profileSchema>
 
+/**
+ * ProfileTab Component
+ * Renders a reactive form to update public-facing user profile information.
+ * Uses React Hook Form's dirtyFields tracking to optimally patch only modified fields.
+ */
 export function ProfileTab({ user }: { user: User }) {
   const { mutateAsync: updateMeAsync, isPending: updating } = useUpdateMe()
   const fileInputRef = useRef<HTMLInputElement>(null)
