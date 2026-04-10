@@ -31,7 +31,7 @@ const schema = z
     password: z
       .string()
       .min(8, 'Password must be at least 8 characters')
-      .max(32, 'Password must not exceed 32 characters')
+      .max(64, 'Password must not exceed 64 characters')
       .regex(
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]/,
         {
@@ -39,7 +39,10 @@ const schema = z
             'Password must include upper & lowercase letters, a number, and a special character (@$!%*?&#)',
         },
       ),
-    confirmPassword: z.string().min(1, 'Confirm your password'),
+    confirmPassword: z
+      .string()
+      .min(8, 'Confirm password must be at least 8 characters')
+      .max(64, 'Confirm password must not exceed 64 characters'),
     privacyAccepted: z.boolean().refine((v) => v === true, {
       message: 'You must accept the Privacy Policy to create an account',
     }),

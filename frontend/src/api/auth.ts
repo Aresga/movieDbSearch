@@ -35,6 +35,9 @@ export interface LoginPayload {
  * Handles user registration, login, token refreshing, and OAuth flows.
  */
 export const authApi = {
+  /**
+   * Registers a new user.
+   */
   register: async (data: RegisterPayload): Promise<RegisterSuccessResponse> => {
     const res = await apiClient.post<RegisterSuccessResponse>('/auth/register', data)
     return res.data

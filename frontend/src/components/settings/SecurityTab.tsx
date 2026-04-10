@@ -129,7 +129,9 @@ export function SecurityTab({ user }: { user: User }) {
           <div>
             <p className="text-sm font-semibold">Two-Factor Authentication</p>
             <p className="text-xs text-muted-foreground">
-              {user.isTwoFactorEnabled ? 'Enabled — your account is protected' : 'Not enabled'}
+              {user.isTwoFactorEnabled
+                ? 'Enabled — your account is protected'
+                : 'Not enabled'}
             </p>
           </div>
         </div>
@@ -143,14 +145,15 @@ export function SecurityTab({ user }: { user: User }) {
               onClick={() => setDisable2faOpen(true)}
               disabled={disabling}
             >
-              Disable
+              {disabling ? 'Disabling…' : 'Disable'}
             </Button>
             <Dialog open={disable2faOpen} onOpenChange={handleDisable2faOpenChange}>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Disable two-factor authentication</DialogTitle>
+                  <DialogTitle>Disable Two-Factor Authentication?</DialogTitle>
                   <DialogDescription>
-                    Enter the 6-digit code from your authenticator app to confirm. This helps make sure only you can turn off 2FA.
+                    This removes an extra layer of security. Enter the 6-digit code from your
+                    authenticator app so only you can confirm turning off 2FA.
                   </DialogDescription>
                 </DialogHeader>
                 <div className="flex flex-col items-center gap-4 py-2">
@@ -175,7 +178,7 @@ export function SecurityTab({ user }: { user: User }) {
                     disabled={disable2faCode.length < 6 || disabling}
                     onClick={handleConfirmDisable2fa}
                   >
-                    {disabling ? 'Disabling…' : 'Disable 2FA'}
+                    {disabling ? 'Disabling…' : 'Yes, disable 2FA'}
                   </Button>
                 </DialogFooter>
               </DialogContent>

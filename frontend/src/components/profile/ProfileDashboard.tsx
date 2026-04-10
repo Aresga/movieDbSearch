@@ -56,7 +56,7 @@ function AddFriendButton({ userId }: { userId: string }) {
 
 /**
  * ProfileDashboard Component
- * Renders the main dashboard for a user profile. It handles both private (self) and public 
+ * Renders the main dashboard for a user profile. It handles both private (self) and public
  * (other user) rendering contexts based on the isPrivate prop.
  */
 export function ProfileDashboard({

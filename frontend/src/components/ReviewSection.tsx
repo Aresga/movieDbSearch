@@ -36,9 +36,9 @@ function StarRating({ value, onChange }: StarRatingProps) {
         >
           <Star
             className={`size-5 transition-colors ${star <= active
-                ? 'fill-brand text-brand'
-                : 'fill-muted text-muted-foreground'
-              }`}
+              ? 'fill-brand text-brand'
+              : 'fill-muted text-muted-foreground'
+            }`}
           />
         </button>
       ))}
@@ -193,7 +193,7 @@ export function ReviewSection({ movieId }: { movieId: string }) {
               <div
                 key={r.id}
                 className={`p-5 rounded-xl border bg-card transition-colors ${isOwn ? 'border-brand/30' : 'border-border'
-                  }`}
+                }`}
 
               >
 
