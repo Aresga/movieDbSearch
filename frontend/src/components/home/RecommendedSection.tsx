@@ -39,18 +39,18 @@ export function RecommendedSection({ pageSize, isSearching }: RecommendedSection
   if (!shouldShowRecommendations) return null
 
   return (
-    <section className="p-6 border-b border-border/40 from-amber-50/40 to-transparent overflow-hidden">
+    <section className="p-6 border-b border-border/40 min-w-full">
       {recommendationsResult.isError && (
         <Alert variant="destructive" className="mb-4 max-w-xl">
           <AlertDescription>Failed to load personalized recommendations.</AlertDescription>
         </Alert>
       )}
 
-      <div className="flex items-center gap-2 mb-4">
+      <div className="flex items-center gap-4 mb-4">
         <Sparkles className="size-4 text-amber-500" />
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-muted-foreground flex items-center gap-4">
           <strong className="text-foreground">Recommended for you</strong>
-          {' '}based on your wishlist and watched history
+          {' '} based on your wishlist and watched history
         </p>
       </div>
 
@@ -59,7 +59,7 @@ export function RecommendedSection({ pageSize, isSearching }: RecommendedSection
           {Array.from({ length: 6 }).map((_, idx) => (
             <div
               key={idx}
-              className="shrink-0 w-[160px] sm:w-[180px] md:w-[200px] rounded-lg overflow-hidden border border-border/50"
+              className="shrink-0 w-[160px] sm:w-[180px] md:w-[200px] rounded-lg border border-border/50"
             >
               <Skeleton className="aspect-2/3 w-full" />
               <div className="p-3 space-y-2">
@@ -70,13 +70,13 @@ export function RecommendedSection({ pageSize, isSearching }: RecommendedSection
           ))}
         </div>
       ) : recommendedMovies.length > 0 ? (
-        <div className="max-w-full overflow-hidden">
-          <ScrollArea className="w-full max-w-full rounded-md overflow-hidden">
+        // <div className="max-w-full overflow-hidden">
+          <ScrollArea className="w-0 min-w-full rounded-md ">
             <div className="flex gap-4 pb-4">
               {recommendedMovies.map((movie) => (
                 <div
                   key={movie.id}
-                  className="shrink-0 w-[160px] sm:w-[180px] md:w-[200px]"
+                  className="shrink-0 w-[160px] sm:w-[180px] md:w-[200px] overflow-hidden rounded-lg border border-border/50"
                 >
                   <MovieCard movie={movie} />
                 </div>
@@ -84,7 +84,7 @@ export function RecommendedSection({ pageSize, isSearching }: RecommendedSection
             </div>
             <ScrollBar orientation="horizontal" />
           </ScrollArea>
-        </div>
+        // </div>
       ) : (
         <p className="text-sm text-muted-foreground">
           We are still learning your taste. Add more movies to your wishlist or watched list.

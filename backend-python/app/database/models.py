@@ -23,8 +23,6 @@ class Movie(SQLModel, table=True):
     embedding:     List[float]     = Field(sa_column=Column(Vector(384)))
 
 
-from datetime import datetime
-
 class UserMovieAction(SQLModel, table=True):
     __tablename__ = "user_movie_actions"
 
@@ -32,4 +30,15 @@ class UserMovieAction(SQLModel, table=True):
     user_id:    str           = Field(sa_column=Column("userId", String))
     movie_id:   int           = Field(sa_column=Column("movieId", Integer))
     action:     str
+    created_at: datetime      = Field(sa_column=Column("createdAt", default=datetime.utcnow))
+
+
+
+class UserSearchAction(SQLModel, table=True):
+    __tablename__ = "user_search_actions"
+
+    id:         Optional[int] = Field(default=None, primary_key=True)
+    user_id:    str           = Field(sa_column=Column("userId", String, index=True))
+    query:      str
+    embedding:  List[float]   = Field(sa_column=Column(Vector(384)))
     created_at: datetime      = Field(sa_column=Column("createdAt", default=datetime.utcnow))
