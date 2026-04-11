@@ -27,6 +27,7 @@ services:
     volumes:
       - ./backend-python:/app
       - ./backend-python/dbCSV:/dbCSV
+      - ./backend-python/models:/home/appuser/.cache/huggingface
     ports:
       - "8000:8000"
     healthcheck:

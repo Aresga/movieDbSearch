@@ -21,15 +21,14 @@ async def lifespan(app: FastAPI):
         db_connection = DatabaseConnection()
         sentiment_service = SentimentService()
         engine = db_connection.create_engine()
-        model = SentenceTransformer(settings.model_name)
+        model = SentenceTransformer(
+            settings.model_name, 
+            cache_folder=settings.transformers_cache, 
+            local_files_only=True)
 
         container.engine = engine
         container.model = model
         container.sentiment_service = sentiment_service
-
-        # # Init and Ingest -> create the db with emb vects
-        # container.ingestion_service.init_db()
-        # container.ingestion_service.ingest_data()
 
     except Exception as e:
         logger.error(f"Failed to start application: {e}")

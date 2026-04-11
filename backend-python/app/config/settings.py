@@ -15,6 +15,11 @@ class Settings:
 
         # Model Configuration
         self.model_name: Optional[str] = os.getenv("MODEL_NAME")
+        self.hf_home: str = os.getenv("HF_HOME")
+        self.transformers_cache: str = os.getenv("TRANSFORMERS_CACHE")
+        self.hf_hub_offline: bool = os.getenv("HF_HUB_OFFLINE") == "1"
+        self.transformers_offline: bool = os.getenv("TRANSFORMERS_OFFLINE") == "1"
+
 
         # Dataset url 
         # self.csv_path: str = 'dbCSV/imdb_top_1000.csv'
