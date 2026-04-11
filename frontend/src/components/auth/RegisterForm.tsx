@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -19,14 +20,32 @@ import { useRegister } from '@/hooks/useAuth'
  */
 const schema = z
   .object({
-    username: z.string().min(3),
-    email: z.string().email(),
-    password: z.string()
+    username: z
+      .string()
+      .min(3, 'Username must be at least 3 characters')
+      .max(20, 'Username must not exceed 20 characters')
+      .regex(/^[a-zA-Z0-9_-]+$/, {
+        message: 'Username can only use letters, numbers, underscores, and dashes',
+      }),
+    email: z.string().email('Please enter a valid email address'),
+    password: z
+      .string()
       .min(8, 'Password must be at least 8 characters')
-      .max(64, 'Password must not exceed 64 characters'),
-    confirmPassword: z.string()
+      .max(64, 'Password must not exceed 64 characters')
+      .regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]/,
+        {
+          message:
+            'Password must include upper & lowercase letters, a number, and a special character (@$!%*?&#)',
+        },
+      ),
+    confirmPassword: z
+      .string()
       .min(8, 'Confirm password must be at least 8 characters')
       .max(64, 'Confirm password must not exceed 64 characters'),
+    privacyAccepted: z.boolean().refine((v) => v === true, {
+      message: 'You must accept the Privacy Policy to create an account',
+    }),
   })
   .refine((d) => d.password === d.confirmPassword, {
     message: 'Passwords do not match',
@@ -44,7 +63,13 @@ export function RegisterForm() {
 
   const form = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: { username: '', email: '', password: '', confirmPassword: '' },
+    defaultValues: {
+      username: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+      privacyAccepted: false,
+    },
   })
 
   const onSubmit = ({ username, email, password }: FormData) =>
@@ -62,6 +87,9 @@ export function RegisterForm() {
               <FormControl>
                 <Input placeholder="johndoe" autoComplete="username" {...field} />
               </FormControl>
+              <p className="text-xs text-muted-foreground">
+                3–20 characters: letters, numbers, underscore (_), or dash (-). Not your email.
+              </p>
               <FormMessage />
             </FormItem>
           )}
@@ -88,6 +116,9 @@ export function RegisterForm() {
               <FormControl>
                 <Input type="password" placeholder="Min 8 characters" autoComplete="new-password" {...field} />
               </FormControl>
+              <p className="text-xs text-muted-foreground">
+                Upper & lower case, a number, and a special character from @$!%*?&#.
+              </p>
               <FormMessage />
             </FormItem>
           )}
@@ -102,6 +133,38 @@ export function RegisterForm() {
                 <Input type="password" placeholder="••••••••" autoComplete="new-password" {...field} />
               </FormControl>
               <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="privacyAccepted"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-start gap-3 space-y-0">
+              <FormControl>
+                <input
+                  type="checkbox"
+                  className="mt-1 size-4 shrink-0 rounded border border-input bg-background accent-primary"
+                  checked={field.value}
+                  onChange={(e) => field.onChange(e.target.checked)}
+                  onBlur={field.onBlur}
+                  ref={field.ref}
+                />
+              </FormControl>
+              <div className="space-y-1 leading-snug">
+                <FormLabel className="text-sm font-normal cursor-pointer">
+                  I agree to the{' '}
+                  <Link
+                    to="/privacy-policy"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="font-medium text-primary hover:underline"
+                  >
+                    Privacy Policy
+                  </Link>
+                </FormLabel>
+                <FormMessage />
+              </div>
             </FormItem>
           )}
         />

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useFriends } from '@/hooks/useFriends';
 import type { User } from '@/types'
@@ -237,18 +237,17 @@ export function ChatMenuPage() {
                         ),
                       );
                     }}
-                    className="block py-3 text-foreground transition hover:text-primary"
+                    className="block overflow-hidden py-3 text-foreground transition hover:text-primary"
                   >
                     <span className="font-medium">{friendName}</span>
                     {room.isUnRead && (
                       <BellRing
                         className="ml-2 inline-block h-4 w-4 text-amber-500 align-middle"
                         aria-label="Unread message"
-                        title="Unread message"
                       />
                     )}
                     {room.lastMessage && (
-                      <span className="ml-2 text-sm text-muted-foreground">- {room.lastMessage.content}</span>
+                      <span className="ml-2 inline-block max-w-[70%] truncate align-middle text-sm text-muted-foreground">- {room.lastMessage.content}</span>
                     )}
                   </Link>
                 </li>

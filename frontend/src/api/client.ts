@@ -55,6 +55,7 @@ apiClient.interceptors.response.use(
     // Helper flags to avoid infinite loops
     const isRefreshEndpoint = originalRequest?.url?.includes('/auth/refresh')
     const isLogoutEndpoint = originalRequest?.url?.includes('/auth/logout')
+    const isLoginEndpoint = originalRequest?.url?.includes('/auth/login')
 
     /**
      * Logic for handling 401 Unauthorized errors
@@ -62,6 +63,7 @@ apiClient.interceptors.response.use(
     if (
       error.response?.status === 401 &&
       !originalRequest?._retry &&   // Don't retry more than once per request
+      !isLoginEndpoint &&           // Let login failures surface to the form handler
       !isRefreshEndpoint &&         // Don't try to refresh if the refresh call itself failed
       !isLogoutEndpoint             // Don't try to refresh if the user is logging out
     ) {

@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/store/authStore'
@@ -16,10 +17,11 @@ export interface FriendStatusEvent {
  * Custom hook to initialize and manage the global WebSocket connection.
  * Connects automatically if a user is logged in, and sets up listeners for:
  * - Realtime friend online/offline status updates
- * - Incoming friend requests
+ * - Incoming friend requests (Kinda)
  */
 export function useSocket() {
   const user = useAuthStore((s) => s.user)
+  const location = useLocation()
   const queryClient = useQueryClient()
   const addNotification = useNotificationStore((s) => s.add)
 
@@ -30,11 +32,13 @@ export function useSocket() {
     socket.connect()
 
     socket.on('connect', () => {
-      console.log('[socket] connected', socket.id)
+      queryClient.invalidateQueries({ queryKey: ['user', 'me'] })
     })
 
-    socket.on('disconnect', (reason) => {
-      console.log('[socket] disconnected', reason)
+    socket.on('disconnect', () => {
+      if (useAuthStore.getState().user) {
+        queryClient.invalidateQueries({ queryKey: ['user', 'me'] })
+      }
     })
 
     socket.on('connect_error', (err) => {
@@ -63,6 +67,21 @@ export function useSocket() {
       toast.info(`${data.from} added you as a friend!`)
     })
 
+    socket.on('receiveMessageNotification', (data) => {
+      const senderId = data.senderId
+      if (!senderId || senderId === user.id) return
+
+      const isInChatPage = location.pathname.startsWith('/rooms/')
+      if (isInChatPage) return
+
+      const senderLabel = data.senderUsername ?? senderId
+      addNotification({
+        message: `New message from ${senderLabel}`,
+        type: 'chat_message',
+      })
+      toast.info(`New message from ${senderLabel}`)
+    })
+
 
     return () => {
       // Cleanup listeners but keep socket alive while user is logged
@@ -71,9 +90,10 @@ export function useSocket() {
       socket.off('connect_error')
       socket.off('friendStatus')
       socket.off('friendRequest')
+      socket.off('receiveMessageNotification')
 
     }
-  }, [user, queryClient])
+  }, [user, queryClient, addNotification, location.pathname])
 
   // Disconnect on logout 
   useEffect(() => {

@@ -7,25 +7,27 @@ import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp'
+import {
   Form, FormControl, FormField, FormItem, FormLabel, FormMessage,
 } from '@/components/ui/form'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog'
 import { useUpdateEmail, useUpdatePassword, useSetPassword } from '@/hooks/useUser'
 import type { User } from '@/types'
 import { useDisable2FA } from '@/hooks/useTwoFa'
 
 const emailSchema = z.object({
   email: z.string().email(),
+  confirmEmail: z.string().email(),
+}).refine((data) => data.email === data.confirmEmail, {
+  message: 'Emails do not match',
+  path: ['confirmEmail'],
 })
 
 const passwordSchema = z.object({
@@ -34,12 +36,22 @@ const passwordSchema = z.object({
   newPassword: z.string()
     .min(8, 'Minimum 8 characters')
     .max(64, 'Maximum 64 characters'),
+  confirmNewPassword: z.string()
+    .min(1, 'Please confirm your new password'),
+}).refine((data) => data.newPassword === data.confirmNewPassword, {
+  message: 'Passwords do not match',
+  path: ['confirmNewPassword'],
 })
 
 const setPasswordSchema = z.object({
   newPassword: z.string()
     .min(8, 'Minimum 8 characters')
     .max(64, 'Maximum 64 characters'),
+  confirmNewPassword: z.string()
+    .min(1, 'Please confirm your new password'),
+}).refine((data) => data.newPassword === data.confirmNewPassword, {
+  message: 'Passwords do not match',
+  path: ['confirmNewPassword'],
 })
 
 type EmailForm = z.infer<typeof emailSchema>
@@ -60,34 +72,36 @@ export function SecurityTab({ user }: { user: User }) {
 
   const [editingEmail, setEditingEmail] = useState(false)
   const [editingPassword, setEditingPassword] = useState(false)
+  const [disable2faOpen, setDisable2faOpen] = useState(false)
+  const [disable2faCode, setDisable2faCode] = useState('')
 
   const emailForm = useForm<EmailForm>({
     resolver: zodResolver(emailSchema),
-    defaultValues: { email: '' },
+    defaultValues: { email: '', confirmEmail: '' },
   })
 
   const passwordForm = useForm<PasswordForm>({
     resolver: zodResolver(passwordSchema),
-    defaultValues: { currentPassword: '', newPassword: '' },
+    defaultValues: { currentPassword: '', newPassword: '', confirmNewPassword: '' },
   })
 
   const setPasswordForm = useForm<SetPasswordForm>({
     resolver: zodResolver(setPasswordSchema),
-    defaultValues: { newPassword: '' },
+    defaultValues: { newPassword: '', confirmNewPassword: '' },
   })
 
   useEffect(() => {
-    emailForm.reset({ email: user.email ?? '' })
+    emailForm.reset({ email: user.email ?? '', confirmEmail: user.email ?? '' })
   }, [user, emailForm])
 
   const handleEmailSubmit = (data: EmailForm) => {
-    updateEmail(data, {
+    updateEmail({ email: data.email }, {
       onSuccess: () => setEditingEmail(false),
     })
   }
 
   const handlePasswordSubmit = (data: PasswordForm) => {
-    updatePassword(data, {
+    updatePassword({ currentPassword: data.currentPassword, newPassword: data.newPassword }, {
       onSuccess: () => {
         setEditingPassword(false)
         passwordForm.reset()
@@ -96,7 +110,7 @@ export function SecurityTab({ user }: { user: User }) {
   }
 
   const handleSetPasswordSubmit = (data: SetPasswordForm) => {
-    setPassword(data, {
+    setPassword({ newPassword: data.newPassword }, {
       onSuccess: () => {
         setEditingPassword(false)
         setPasswordForm.reset()
@@ -104,10 +118,22 @@ export function SecurityTab({ user }: { user: User }) {
     })
   }
 
+  const handleDisable2faOpenChange = (open: boolean) => {
+    setDisable2faOpen(open)
+    if (!open) setDisable2faCode('')
+  }
+
+  const handleConfirmDisable2fa = () => {
+    if (disable2faCode.length !== 6) return
+    disable2FA(disable2faCode, {
+      onSuccess: () => handleDisable2faOpenChange(false),
+    })
+  }
+
   return (
     <div className="flex flex-col gap-4">
 
-      {/* 2FA — unchanged */}
+      {/* 2FA — OTP confirmation aligns with POST /2fa/disable { token } */}
       <div className="rounded-xl border border-border/50 bg-card p-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           {user.isTwoFactorEnabled ? (
@@ -118,48 +144,67 @@ export function SecurityTab({ user }: { user: User }) {
           <div>
             <p className="text-sm font-semibold">Two-Factor Authentication</p>
             <p className="text-xs text-muted-foreground">
-              {user.isTwoFactorEnabled ? 'Enabled — your account is protected' : 'Not enabled'}
+              {user.isTwoFactorEnabled
+                ? 'Enabled — your account is protected'
+                : 'Not enabled'}
             </p>
           </div>
         </div>
 
         {user.isTwoFactorEnabled ? (
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-destructive border-destructive/30 hover:bg-destructive/10"
-                disabled={disabling}
-              >
-                {disabling ? 'Disabling…' : 'Disable'}
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Disable Two-Factor Authentication?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This will remove an extra layer of security from your account. You will no longer need a verification code to sign in.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                  onClick={() => disable2FA()}
-                >
-                  Yes, disable 2FA
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          <>
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-destructive border-destructive/30 hover:bg-destructive/10"
+              onClick={() => setDisable2faOpen(true)}
+              disabled={disabling}
+            >
+              {disabling ? 'Disabling…' : 'Disable'}
+            </Button>
+            <Dialog open={disable2faOpen} onOpenChange={handleDisable2faOpenChange}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Disable Two-Factor Authentication?</DialogTitle>
+                  <DialogDescription>
+                    This removes an extra layer of security. Enter the 6-digit code from your
+                    authenticator app so only you can confirm turning off 2FA.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="flex flex-col items-center gap-4 py-2">
+                  <InputOTP maxLength={6} value={disable2faCode} onChange={setDisable2faCode}>
+                    <InputOTPGroup>
+                      <InputOTPSlot index={0} />
+                      <InputOTPSlot index={1} />
+                      <InputOTPSlot index={2} />
+                      <InputOTPSlot index={3} />
+                      <InputOTPSlot index={4} />
+                      <InputOTPSlot index={5} />
+                    </InputOTPGroup>
+                  </InputOTP>
+                </div>
+                <DialogFooter>
+                  <Button type="button" variant="outline" onClick={() => handleDisable2faOpenChange(false)}>
+                    Cancel
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    disabled={disable2faCode.length < 6 || disabling}
+                    onClick={handleConfirmDisable2fa}
+                  >
+                    {disabling ? 'Disabling…' : 'Yes, disable 2FA'}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </>
         ) : (
           <Button variant="outline" size="sm" asChild>
             <Link to="/2fa/setup">Enable</Link>
           </Button>
         )}
       </div>
-
 
       {/* Email */}
       <div className="rounded-xl border border-border/50 bg-card p-4">
@@ -200,6 +245,19 @@ export function SecurityTab({ user }: { user: User }) {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>New Email</FormLabel>
+                    <FormControl>
+                      <Input type="email" placeholder="you@example.com" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={emailForm.control}
+                name="confirmEmail"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Confirm New Email</FormLabel>
                     <FormControl>
                       <Input type="email" placeholder="you@example.com" {...field} />
                     </FormControl>
@@ -281,6 +339,19 @@ export function SecurityTab({ user }: { user: User }) {
                   </FormItem>
                 )}
               />
+              <FormField
+                control={passwordForm.control}
+                name="confirmNewPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Confirm New Password</FormLabel>
+                    <FormControl>
+                      <Input type="password" placeholder="••••••••" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <Button type="submit" size="sm" disabled={updatingPassword} className="self-start">
                 {updatingPassword ? 'Saving…' : 'Change Password'}
               </Button>
@@ -304,6 +375,19 @@ export function SecurityTab({ user }: { user: User }) {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>New Password</FormLabel>
+                    <FormControl>
+                      <Input type="password" placeholder="••••••••" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={setPasswordForm.control}
+                name="confirmNewPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Confirm New Password</FormLabel>
                     <FormControl>
                       <Input type="password" placeholder="••••••••" {...field} />
                     </FormControl>

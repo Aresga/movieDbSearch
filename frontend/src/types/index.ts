@@ -60,7 +60,7 @@ export interface Friend {
   username: string
   email?: string
   isOnline?: boolean
-  avatar_url?: string
+  avatarUrl?: string
   created_at?: string
 }
 

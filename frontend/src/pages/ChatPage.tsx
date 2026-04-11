@@ -1,87 +1,59 @@
-import React, { useEffect, useState, useMemo, useRef } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
-import { apiClient } from '@/api/client';
 import { getSocket } from '@/lib/socket';
+import { useChatRoomInfo, useChatRoomMessages, useMarkRoomAsRead } from '@/hooks/useChat';
+import type { ChatMessage } from '@/api/chat';
+import type { User } from '@/types';
 import { Check, CheckCheck } from 'lucide-react';
-
-type Message = {
-  _id: string;
-  roomId: string;
-  senderId: string;
-  content: string;
-  createdAt: string;
-  read: boolean;
-};
-
-type Participant = {
-  id: string;
-  username: string;
-};
+import { ChatEmojiPicker } from '@/components/chat/ChatEmojiPicker';
 
 export function ChatPage() {
+  const TEXTAREA_MAX_HEIGHT = 128;
   const { user } = useAuthStore();
   const userId = user?.id ?? '';
   const { roomId } = useParams<{ roomId: string }>();
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
-  const [loading, setLoading] = useState(true);
   const socket = getSocket();
-  const [participants, setParticipants] = useState<Participant[]>([]);
+  const [isSocketConnected, setIsSocketConnected] = useState(socket.connected);
+  const { data: roomInfo } = useChatRoomInfo(roomId ?? '');
+  const { data: roomMessages = [], isLoading: isMessagesLoading } = useChatRoomMessages(roomId ?? '');
+  const { mutate: markRoomAsRead } = useMarkRoomAsRead();
+  const participants = (roomInfo?.participants ?? []) as User[];
 
   const participantsMap = useMemo(() => {
     return new Map(participants.map((p) => [p.id, p]));
   }, [participants]);
 
   useEffect(() => {
-    console.log(participantsMap);
-  }, [participantsMap]);
-
-  useEffect(() => {
-    if (!roomId) return;
-
-    const getRoomInfo = async () => {
-      try {
-        const res = await apiClient.get(`/message/rooms/${roomId}/info`);
-        setParticipants(res.data.participants);
-      } catch (error) {
-        console.error("Failed to fetch room info", error);
-      }
-    };
-
-    const loadMessages = async () => {
-      setLoading(true);
-      try {
-        const res = await apiClient.get<Message[]>(`/message/rooms/${roomId}/messages`);
-        const data = res.data;
-        if (Array.isArray(data)) {
-          setMessages(data.reverse());
-        }
-        else
-          setMessages([]);
-        } 
-      catch (error)
-      {
-        console.error("Failed to load messages", error);
-        setMessages([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    const fetchData = async () => {
-      await getRoomInfo();
-      await loadMessages();
-      await markRoomAsRead();
+    if (!roomMessages) {
+      setMessages([]);
+      return;
     }
-
-    fetchData();
-  }, [roomId]);
+    const ordered = [...roomMessages].reverse();
+    setMessages(ordered);
+  }, [roomMessages]);
 
   useEffect(() => {
     if (!roomId || !socket) return;
 
-    const handleReceiveMessage = (msg: Message) => {
+    const ensureConnected = () => {
+      if (!socket.connected) {
+        socket.connect();
+      }
+    };
+
+    const handleConnect = () => {
+      setIsSocketConnected(true);
+      socket.emit('joinRoom', roomId);
+    };
+
+    const handleDisconnect = () => {
+      setIsSocketConnected(false);
+    };
+
+    const handleReceiveMessage = (msg: ChatMessage) => {
       if (msg.roomId !== roomId) return;
       setMessages((prev) => {
         if (prev.some((m) => m._id === msg._id)) return prev;
@@ -95,14 +67,40 @@ export function ChatPage() {
         )
       );
     };
+
+    socket.on('connect', handleConnect);
+    socket.on('disconnect', handleDisconnect);
     socket.on('receiveMessage', handleReceiveMessage);
     socket.on('markAsRead', markMessageAsRead);
-    socket.emit('joinRoom', roomId);
+
+    const handleVisibilityOrFocus = () => {
+      if (document.visibilityState === 'visible') {
+        ensureConnected();
+      }
+    };
+
+    const handleOnline = () => {
+      ensureConnected();
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityOrFocus);
+    window.addEventListener('focus', handleVisibilityOrFocus);
+    window.addEventListener('online', handleOnline);
+
+    ensureConnected();
+    if (socket.connected) {
+      handleConnect();
+    }
 
     return () => {
       socket.emit('leaveRoom', roomId);
+      socket.off('connect', handleConnect);
+      socket.off('disconnect', handleDisconnect);
       socket.off('receiveMessage', handleReceiveMessage);
       socket.off('markAsRead', markMessageAsRead);
+      document.removeEventListener('visibilitychange', handleVisibilityOrFocus);
+      window.removeEventListener('focus', handleVisibilityOrFocus);
+      window.removeEventListener('online', handleOnline);
     };
   }, [roomId, socket]);
 
@@ -130,6 +128,7 @@ export function ChatPage() {
   };
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -139,31 +138,62 @@ export function ChatPage() {
     scrollToBottom();
   }, [messages]);
 
-    const markRoomAsRead = async () => {
-  if (!roomId) return;
+  useEffect(() => {
+    if (!inputRef.current) return;
 
-  try {
-    await apiClient.post(`/message/rooms/${roomId}/messages`);
-    socket.emit('markRoomAsRead', roomId);
-    setMessages((prev) =>
-      prev.map((message) =>
-        message.senderId !== userId ? { ...message, read: true } : message
-      )
-    );
-  } catch (error) {
-    console.error('Failed to mark room as read', error);
-  }
-};
+    inputRef.current.style.height = 'auto';
+    const nextHeight = Math.min(inputRef.current.scrollHeight, TEXTAREA_MAX_HEIGHT);
+    inputRef.current.style.height = `${nextHeight}px`;
+    inputRef.current.style.overflowY = inputRef.current.scrollHeight > TEXTAREA_MAX_HEIGHT ? 'auto' : 'hidden';
+  }, [TEXTAREA_MAX_HEIGHT, input]);
+
+  useEffect(() => {
+    if (!roomId) return;
+
+    markRoomAsRead(roomId, {
+      onSuccess: () => {
+        socket.emit('markRoomAsRead', roomId);
+        setMessages((prev) =>
+          prev.map((message) =>
+            message.senderId !== userId ? { ...message, read: true } : message
+          )
+        );
+      },
+    });
+  }, [markRoomAsRead, roomId, socket, userId]);
+
+  const addEmoji = (emoji: string) => {
+    const textarea = inputRef.current;
+
+    if (!textarea) {
+      setInput((prev) => `${prev}${emoji}`.slice(0, 1000));
+      return;
+    }
+
+    const start = textarea.selectionStart ?? input.length;
+    const end = textarea.selectionEnd ?? input.length;
+    const nextValue = `${input.slice(0, start)}${emoji}${input.slice(end)}`.slice(0, 1000);
+
+    setInput(nextValue);
+
+    requestAnimationFrame(() => {
+      textarea.focus();
+      const cursor = Math.min(start + emoji.length, nextValue.length);
+      textarea.setSelectionRange(cursor, cursor);
+    });
+  };
 
   return (
-    <div className="flex h-screen flex-col bg-background">
+    // <div className="flex h-full min-h-0 flex-col overflow-hidden bg-background">
+    // <div className="flex h-[calc(100vh-3.5rem-48px)] flex-col overflow-hidden bg-background">
+    <div className="flex h-[calc(100dvh-3.5rem-48px)] flex-col overflow-hidden bg-background">
       <div className="border-b border-border/50 bg-card px-4 py-3">
-        <h2 className="text-lg font-semibold text-card-foreground">Chat</h2>
+        <h2 className="text-lg font-semibold text-card-foreground">Chat with {roomInfo?.participants.find((p) => p.id !== userId)?.username ?? 'Unknown User'}</h2>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 py-4">
-        {loading && <p className="text-center text-muted-foreground">Loading messages...</p>}
-        {!loading && messages.length === 0 && (
+      <div className="flex-1 min-h-0 overflow-y-auto px-4 py-4">
+        {isMessagesLoading && <p className="text-center text-muted-foreground">Loading messages...</p>}
+        {!isMessagesLoading && messages.length === 0 && (
           <p className="text-center text-muted-foreground">Start a conversation!</p>
         )}
 
@@ -205,24 +235,38 @@ export function ChatPage() {
         <div ref={messagesEndRef} />
       </div>
 
-      {!socket.connected && (
+      {!isSocketConnected && (
         <div className="border-t border-border/50 bg-card px-4 py-2 text-center text-sm text-muted-foreground">
           Connecting to chat...
         </div>
       )}
-      <div className="border-t border-border/50 bg-card px-4 py-3">
-        <div className="flex gap-2">
-          <input
-            type="text"
+      <div className=" bg-card px-2 py-3">
+        <div className="relative flex items-end gap-2">
+          <ChatEmojiPicker
+            disabled={!roomId || !isSocketConnected}
+            onEmojiSelect={addEmoji}
+          />
+
+          <textarea
+            ref={inputRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-            disabled={!roomId || !socket.connected}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+              }
+            }}
+            disabled={!roomId || !isSocketConnected}
             placeholder="Type a message..."
-            className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-foreground placeholder:text-muted-foreground transition focus:border-ring focus:outline-none disabled:opacity-50"/>
+            rows={1}
+            maxLength={1000}
+            className="h-10 max-h-32 min-h-10 flex-1 resize-none rounded-md border border-input bg-background px-3 py-2 text-foreground placeholder:text-muted-foreground transition focus:border-ring focus:outline-none disabled:opacity-50"
+          />
           <button
+            type="button"
             onClick={sendMessage}
-            disabled={!roomId || !input.trim() || !socket.connected}
+            disabled={!roomId || !input.trim() || !isSocketConnected}
             className="rounded-md bg-blue-600 px-4 py-2 font-medium text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-50">
             Send
           </button>

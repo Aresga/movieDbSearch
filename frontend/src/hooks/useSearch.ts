@@ -1,13 +1,17 @@
 import { useInfiniteQuery } from '@tanstack/react-query'
+import type { SearchResponse } from '@/types'
 import { searchApi } from '@/api/search'
+import type { SearchResponse } from '@/types'
 
 export function useSearch(query: string, size = 10) {
-  return useInfiniteQuery({
+  return useInfiniteQuery<SearchResponse>({
     queryKey: ['search', query, size],
-    queryFn: ({ pageParam = 1 }) => searchApi.search(query, pageParam, size),
+    queryFn: ({ pageParam }: { pageParam: number }) =>
+      searchApi.search(query, pageParam, size),
     enabled: !!query,
+    initialPageParam: 1,
     staleTime: 1000 * 60 * 5,
-    getNextPageParam: (lastPage) => {
+    getNextPageParam: (lastPage: SearchResponse) => {
       const nextPage = (lastPage.page ?? 1) + 1
       return lastPage.results.length === size ? nextPage : undefined
     },
@@ -15,11 +19,13 @@ export function useSearch(query: string, size = 10) {
 }
 
 export function useTrending(size = 20) {
-  return useInfiniteQuery({
+  return useInfiniteQuery<SearchResponse>({
     queryKey: ['trending', size],
-    queryFn: ({ pageParam = 1 }) => searchApi.trending(pageParam, size),
-    staleTime: 1000 * 60 * 10, // cache for 10min, its enough since it doesnt change that much or never for our backend 
-    getNextPageParam: (lastPage) => {
+    queryFn: ({ pageParam }: { pageParam: number }) =>
+      searchApi.trending(pageParam, size),
+    initialPageParam: 1,
+    staleTime: 1000 * 60 * 10,
+    getNextPageParam: (lastPage: SearchResponse) => {
       const nextPage = (lastPage.page ?? 1) + 1
       return lastPage.results.length === size ? nextPage : undefined
     },
