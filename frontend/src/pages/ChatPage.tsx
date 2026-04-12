@@ -6,10 +6,13 @@ import { useChatRoomInfo, useChatRoomMessages, useMarkRoomAsRead } from '@/hooks
 import type { ChatMessage } from '@/api/chat';
 import type { User } from '@/types';
 import { Check, CheckCheck, SmilePlus } from 'lucide-react';
-import EmojiPicker, { Theme } from 'emoji-picker-react';
+import EmojiPicker, { Theme, EmojiStyle } from 'emoji-picker-react';
+import { useTheme } from 'next-themes';
 import { useFriends } from '@/hooks/useFriends';
+import '@/styles/emoji-picker.css';
 
 export function ChatPage() {
+  const { theme } = useTheme();
   const TEXTAREA_MAX_HEIGHT = 128;
   const { user } = useAuthStore();
   const userId = user?.id ?? '';
@@ -33,9 +36,6 @@ export function ChatPage() {
     if (!secondId) return false
     return friends.some((f) => f.id === secondId)
   }, [friends, secondId])
-
-
-
 
   const participantsMap = useMemo(() => {
     return new Map(participants.map((p) => [p.id, p]));
@@ -259,8 +259,10 @@ export function ChatPage() {
         <div className="relative flex items-end gap-2">
           {isEmojiPickerOpen && (
             <div className="absolute bottom-12 left-0 z-20">
-              <EmojiPicker
-                theme={Theme.DARK}
+                <EmojiPicker
+                  className="chat-emoji-picker"
+                theme={theme === 'dark' ? Theme.DARK : Theme.LIGHT}
+                emojiStyle={EmojiStyle.NATIVE}
                 onEmojiClick={(emojiData) => {
                   addEmoji(emojiData.emoji);
                   setIsEmojiPickerOpen(false);

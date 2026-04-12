@@ -1,0 +1,15 @@
+/* frontend/src/styles/emoji-picker.css */
+.chat-emoji-picker {
+  --epr-bg-color: color-mix(in hsl, hsl(var(--background)) 80%, black);
+  --epr-text-color: hsl(var(--card-foreground));
+  --epr-search-input-bg-color: hsl(var(--input));
+  --epr-category-label-bg-color: color-mix(in hsl, hsl(var(--background)) 85%, black);
+  --epr-hover-bg-color: hsl(var(--accent));
+  --epr-focus-bg-color: hsl(var(--accent));
+  --epr-active-indicator-color: hsl(var(--primary));
+  --epr-border-color: hsl(var(--border));
+  --epr-search-input-border-color: hsl(var(--input));
+  --epr-search-input-placeholder-color: hsl(var(--muted-foreground));
+  --epr-picker-border-radius: 0.5rem;
+  --epr-search-input-border-radius: 0.375rem;
+}
