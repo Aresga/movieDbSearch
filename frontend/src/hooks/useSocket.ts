@@ -78,6 +78,7 @@ export function useSocket() {
       addNotification({
         message: `New message from ${senderLabel}`,
         type: 'chat_message',
+        href: '/rooms/' + data.roomId,
       })
       toast.info(`New message from ${senderLabel}`)
     })
