@@ -7,9 +7,9 @@ export function getSocket(): Socket {
         // Route all socket traffic through WAF/HTTPS (443) for security compliance.
         // This allows ModSecurity to inspect WebSocket packets.
         socket = io('https://localhost', {
-            path: '/socket.io',
+            path: '/socket.io/',
             withCredentials: true,
-            autoConnect: false,
+            autoConnect: true,
             transports: ['websocket'], // Use WebSocket for WAF compatibility
             secure: true,              // SSL/TLS enabled
             rejectUnauthorized: false, // Required for self-signed certificates in dev env

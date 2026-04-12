@@ -31,7 +31,9 @@ async function bootstrap() {
 
     // Create NestJS application with HTTPS
     const app = await NestFactory.create(AppModule);
-    
+
+    app.setGlobalPrefix('api');
+
     // Middleware and Security
     app.use(cookieParser());
 
@@ -64,7 +66,9 @@ async function bootstrap() {
       .build()
 
     const document = SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup('api', app, document);
+    SwaggerModule.setup('docs', app, document, {
+      useGlobalPrefix: true,
+    });
 
     // Start the server on 0.0.0.0 to allow external access
     await app.listen(3000, '0.0.0.0');

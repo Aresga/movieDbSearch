@@ -33,32 +33,44 @@ services:
     networks:
       - moviedb-network
 
+# HashiCorp Vault: Centralized secret management
   vault:
-    image: hashicorp/vault:1.15
+    build:
+      context: ./vault
+      dockerfile: Dockerfile
     container_name: Movie_vault
-    ports:
-      - "8200:8200"
+    env_file:
+      - ./.env
+    secrets:
+      - initial_secrets
+#    ports:
+#      - "8200:8200"
     environment:
-      - VAULT_DEV_ROOT_TOKEN_ID=root-token
       - VAULT_ADDR=http://0.0.0.0:8200
     cap_add:
       - IPC_LOCK
     volumes:
       - vault_data:/vault/file
-    command: server -dev -dev-root-token-id="root-token" -dev-listen-address="0.0.0.0:8200"
     healthcheck:
-      test: ["CMD", "vault", "status"]
+      test: ["CMD", "vault", "status", "-address=http://127.0.0.1:8200"]
       interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
     networks:
       - moviedb-network
 
+# PostgreSQL: Relational database
   postgres:
     image: pgvector/pgvector:pg16
     container_name: Movie_db
     env_file:
-      - .env
+      - ./.env
+    secrets:
+      - postgres_password
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_PASSWORD_FILE=/run/secrets/postgres_password
     volumes:
       - ./backend-python/init_db:/docker-entrypoint-initdb.d
       - postgres_data:/var/lib/postgresql/data
@@ -74,7 +86,8 @@ services:
         condition: service_healthy
     networks:
       - moviedb-network
-    
+
+# FastAPI Backend
   backend-python:
     build:
       context: ./backend-python
@@ -82,9 +95,13 @@ services:
     container_name: Movie_fast_api
     env_file:
       - ./.env
+    environment:
+      - VAULT_ADDR=${VAULT_ADDR}
+      - VAULT_TOKEN_FILE=/vault/file/vault_root_token
     volumes:
       - ./backend-python:/app
       - ./backend-python/dbCSV:/dbCSV
+      - vault_data:/vault/file:ro
 #    ports:
 #      - "8000:8000"
     healthcheck:
@@ -100,16 +117,19 @@ services:
     networks:
       - moviedb-network
 
+# MongoDB: NoSQL database
   mongodb:
     image: mongo:7
     container_name: Movie_mongodb
     command: mongod --quiet
     env_file:
-      - .env
+      - ./.env
+    secrets:
+      - mongo_password
     environment:
       - MONGO_INITDB_ROOT_USERNAME=${MONGO_ROOT_USERNAME}
-      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_ROOT_PASSWORD}
       - MONGO_INITDB_DATABASE=${MONGO_DB_NAME}
+      - MONGO_INITDB_ROOT_PASSWORD_FILE=/run/secrets/mongo_password
     volumes:
       - mongodb_data:/data/db
       - mongodb_config:/data/configdb
@@ -126,6 +146,7 @@ services:
     networks:
       - moviedb-network
 
+# NestJS Backend
   backend-nest:
     container_name: Movie_nest_api
     build: 
@@ -135,12 +156,18 @@ services:
 #      - "3000:3000"
     env_file:
       - ./.env
+    secrets:
+      - postgres_password
     environment:
-      - VAULT_TOKEN=root-token
-      - VAULT_ADDR=http://vault:8200
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_PASSWORD_FILE=/run/secrets/postgres_password
+      - VAULT_ADDR=${VAULT_ADDR}
+      - VAULT_TOKEN_FILE=/vault/file/vault_root_token
     volumes:
       - ./backend-nest:/app
       - /app/node_modules
+      - vault_data:/vault/file:ro
     depends_on:
       postgres:
         condition: service_healthy
@@ -153,6 +180,7 @@ services:
     networks:
       - moviedb-network
 
+# Frontend: UI Service
   frontend:
     build:
       context: ./frontend
@@ -170,6 +198,15 @@ services:
     networks:
       - moviedb-network
     restart: unless-stopped
+
+# External secret definitions
+secrets:
+  postgres_password:
+    file: ./secrets/postgres_password.txt
+  mongo_password:
+    file: ./secrets/mongo_password.txt
+  initial_secrets:
+    file: ./secrets/initial_secrets.json
 
 volumes:
   postgres_data:
