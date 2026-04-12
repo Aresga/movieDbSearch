@@ -1,14 +1,13 @@
-import { Link } from 'react-router-dom'
-import { Calendar, Settings, Shield, Star, Trash2, Users, VariableIcon } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
+import { Calendar, MessageCircle, Settings, Shield, Star, Trash2, Users, UserPlus, UserMinus } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import type { User, Review } from '@/types'
 import { useFriends, useAddFriend, useRemoveFriend } from '@/hooks/useFriends'
-import { UserPlus, UserMinus } from 'lucide-react'
-import { size } from 'zod'
+import { useCreateChatRoom } from '@/hooks/useChat'
 
-type ProfileDashboardProps = {
+export interface ProfileDashboardProps {
   user: User
   reviews: Review[]
   friendsCount: number
@@ -17,43 +16,68 @@ type ProfileDashboardProps = {
   onDeleteReview?: (movieId: number) => void
 }
 
+/**
+ * AddFriendButton Component
+ * Internal stateful component that manages the "Add/Remove Friend" toggle logic for the profile.
+ */
 function AddFriendButton({ userId }: { userId: string }) {
-  const { data: friends = [] }  = useFriends()
+  const navigate = useNavigate()
+  const { data: friends = [] } = useFriends()
   const { mutate: addFriend, isPending: isAdding } = useAddFriend()
   const { mutate: removeFriend, isPending: isRemoving } = useRemoveFriend()
+  const { mutate: createRoom, isPending: isCreating } = useCreateChatRoom()
 
-  const isFriend = friends.some((f) => f.id === userId )
+  const isFriend = friends.some((f) => f.id === userId)
   const isPending = isAdding || isRemoving
 
   if (isFriend) return (
-
-    <Button
-      size='sm'
-      variant='outline'
-      className='gap-2 w-full text-destructive hover:gb-destructive hover:text-white border-destructive/40'
-      onClick={() => removeFriend(userId)}
-      disabled={isPending}
-    >
-      <UserMinus className='size-4'/>
-      {isRemoving ? 'Removing...' : 'Remove Friend'}
-    </Button>
+    <div className="grid w-full grid-cols-2 gap-2">
+      <Button
+        size="sm"
+        variant="outline"
+        className="gap-1 h-8 w-full px-2 text-xs"
+        onClick={() =>
+          createRoom(userId, {
+            onSuccess: (room) => navigate(`/rooms/${room._id}`),
+          })
+        }
+        disabled={isRemoving || isCreating}
+      >
+        <MessageCircle className="size-4" />
+        {isCreating ? 'Opening…' : 'Message'}
+      </Button>
+      <Button
+        size="sm"
+        variant="outline"
+        className="gap-1 h-8 w-full px-2 text-xs text-destructive hover:bg-destructive hover:text-white border-destructive/40"
+        onClick={() => removeFriend(userId)}
+        disabled={isRemoving || isCreating}
+      >
+        <UserMinus className="size-4" />
+        {isRemoving ? 'Removing...' : 'Remove'}
+      </Button>
+    </div>
   )
 
   return (
     <Button
       size='sm'
-      className='gap-2 w-full text-destructive hover:gb-destructive hover:text-black border-destructive/40'
+      variant='outline'
+      className='gap-2 w-full text-primary hover:bg-primary hover:text-primary-foreground border-primary/40'
       onClick={() => addFriend(userId)}
       disabled={isPending}
     >
-      <UserPlus className='size-4'/>
+      <UserPlus className='size-4' />
       {isPending ? 'Sending...' : 'Add friend'}
     </Button>
   )
-
 }
 
-
+/**
+ * ProfileDashboard Component
+ * Renders the main dashboard for a user profile. It handles both private (self) and public
+ * (other user) rendering contexts based on the isPrivate prop.
+ */
 export function ProfileDashboard({
   user,
   reviews,
@@ -121,7 +145,7 @@ export function ProfileDashboard({
                 {user.isTwoFactorEnabled ? '2FA Enabled' : '2FA Disabled'}
               </Badge>
             )}
-            {!isPrivate && <AddFriendButton userId={user.id}/>}
+            {!isPrivate && <AddFriendButton userId={user.id} />}
           </div>
 
           <div className="border-t border-border/50" />

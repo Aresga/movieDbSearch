@@ -16,20 +16,12 @@ async function bootstrap() {
   }
 
   try {
-
     // Fetch secrets from Vault before app initialization
     const secrets = await loadVaultSecrets();
 
     // Inject fetched secrets into process.env
     Object.assign(process.env, secrets);
 
-    // Setup HTTPS options (Reading from local files)
-    // const httpsOptions = {
-    // key : fs.readFileSync('./key.pem'),
-    // cert: fs.readFileSync('./cert.pem'),
-    // };
-
-    // Create NestJS application with HTTPS
     const app = await NestFactory.create(AppModule);
 
     app.setGlobalPrefix('api');
@@ -43,7 +35,10 @@ async function bootstrap() {
         'https://localhost:5173',
         'http://localhost',
         'https://localhost',
-        'http://backend-nest:3000'
+        'http://backend-nest:3000',
+        'http://backend-nest:5173',
+        'https://backend-nest:5173',
+        'https://localhost:3000'
       ],
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],

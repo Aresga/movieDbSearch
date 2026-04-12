@@ -9,7 +9,7 @@ secrets/
 ##
 ## Get latest from https://github.com/github/gitignore/blob/main/VisualStudio.gitignore
 
-# local database volume 
+# local database volume
 .postgres_data/
 
 # vault data volume
@@ -429,3 +429,4 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+backend-nest/src/message/tmp

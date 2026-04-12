@@ -5,6 +5,9 @@ import { twofaApi } from '@/api/twofa'
 import { useAuthStore } from '@/store/authStore'
 import { getApiErrorMessage } from '@/lib/apiError'
 
+/**
+ * Hook to retrieve the 2FA setup configuration (secret and QR code).
+ */
 export function useTwoFaSetup() {
   return useQuery({
     queryKey: ['2fa', 'setup'],
@@ -14,6 +17,9 @@ export function useTwoFaSetup() {
   })
 }
 
+/**
+ * Hook to activate 2FA for the user after they scan the QR code.
+ */
 export function useActivateTwoFa() {
   const queryClient = useQueryClient()
 
@@ -27,6 +33,9 @@ export function useActivateTwoFa() {
   })
 }
 
+/**
+ * Hook to verify the 2FA code during the login authentication flow.
+ */
 export function useVerifyTwoFa() {
   const navigate = useNavigate()
   const { setAuth } = useAuthStore()
@@ -42,12 +51,14 @@ export function useVerifyTwoFa() {
   })
 }
 
-
+/**
+ * Hook to disable and remove 2FA from the authenticated user's account.
+ */
 export function useDisable2FA() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: () => twofaApi.disable(),
+    mutationFn: (code: string) => twofaApi.disable(code),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user', 'me'] })
       toast.success('2FA disabled')
@@ -55,4 +66,3 @@ export function useDisable2FA() {
     onError: (error) => toast.error(getApiErrorMessage(error)),
   })
 }
-

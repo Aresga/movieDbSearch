@@ -1,19 +1,14 @@
 import { useState } from 'react'
-import { Navigate, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { Shield } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp'
-import { useAuthStore } from '@/store/authStore'
 import { useVerifyTwoFa } from '@/hooks/useTwoFa'
 
 export function TwoFactorVerifyPage() {
-  const { tempToken } = useAuthStore()
-  console.log('[2fa verify page] tempToken:', tempToken)
   const { mutate: verify, isPending } = useVerifyTwoFa()
   const navigate = useNavigate()
   const [code, setCode] = useState('')
-
-  // if (!tempToken) return <Navigate to="/login" replace />
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()

@@ -13,6 +13,10 @@ export function getSocket(): Socket {
             transports: ['websocket'], // Use WebSocket for WAF compatibility
             secure: true,              // SSL/TLS enabled
             rejectUnauthorized: false, // Required for self-signed certificates in dev env
+            reconnection: true,
+            reconnectionAttempts: 10,
+            reconnectionDelay: 5000,
+            timeout: 10000,
         })
     }
     return socket

@@ -3,12 +3,12 @@ import { create } from 'zustand'
 export interface AppNotification {
   id: string
   message: string
-  type: 'friend_request' | 'friend_online'
+  type: 'friend_request' | 'friend_online' | 'chat_message'
   read: boolean
   createdAt: Date
 }
 
-interface NotificationStore {
+export interface NotificationStore {
   notifications: AppNotification[]
   add: (n: Omit<AppNotification, 'id' | 'read' | 'createdAt'>) => void
   markAllRead: () => void
@@ -20,7 +20,10 @@ const uuid = () =>
     ? crypto.randomUUID()
     : Math.random().toString(36).slice(2) + Date.now().toString(36)
 
-
+/**
+ * Global Zustand store for managing in-app notifications.
+ * Handles queuing, reading, and clearing real-time alerts.
+ */
 export const useNotificationStore = create<NotificationStore>((set) => ({
   notifications: [],
   add: (n) => set((s) => ({
