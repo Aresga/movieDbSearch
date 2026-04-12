@@ -19,27 +19,35 @@ Whether you're looking for "a dark thriller with a mind-bending twist" or want t
 
 ### Installation & Setup
 1. **Clone the repository**
-2. **Prepare configuration files:** 
-Copy the templates and fill in your actual API keys and passwords.
+2. **Set up configuration files**: Copy the environment template.
 ```bash
 cp .env.example .env
-cp vault/setup-secrets.sh.example vault/setup-secrets.sh
 ```
-3. **Launch the infrastructure:**
+3. **Configure Secrets(Critical)**: Create a `secrets/` directory in the project root and provide the following files (these are git-ignored for security).
+    - `initial_secrets.json`: Fill in your API keys and passwords in this JSON format.
+    ```bash
+    {
+        "POSTGRES_PASSWORD": "your_db_password",
+        "MONGO_ROOT_PASSWORD": "your_mongo_password",
+        "JWT_SECRET": "your_jwt_signing_key",
+        "JWT_REFRESH_SECRET": "your_jwt_refresh_key",
+        "GOOGLE_CLIENT_SECRET": "your_oauth_secret",
+        "GITHUB_CLIENT_SECRET": "your_oauth_secret",
+        "HF_TOKEN": "your_huggingface_token",
+        "TMDB_KEY": "your_tmdb_api_key",
+        "TMDB_API_KEY": "your_tmdb_api_key",
+        "SMTP_PASS": "your_email_app_password"
+    }
+    ```
+    - `Password files (.txt)`: Create these without a trailing newline to avoid login errors. Use the `printf` command for accuracy.
+    ```bash
+    printf "your_password_here" > secrets/postgres_password.txt
+    printf "your_password_here" > secrets/mongo_password.txt
+    ```
+4. **Deployment**: Run the stack in detached mode.
 ```bash
 docker compose -f docker-compose.dev.yml up --build -d
 ```
-4. **Inject Secrets into Vault:**
-Run the automated script to move your credentials into Vault's encrypted memory.
-```bash
-chmod +x vault/setup-secrets.sh
-./vault/setup-secrets.sh
-```
-
-### Security Note
-- **Credential Protection**: After Vault injection, replace sensitive secrets (API Keys, OAuth Secrets, JWT Secrets) in `.env` with dummy values.
-- **Maintain Infrastructure Configs**: Do not delete the `.env` file or essential non-sensitive variables (e.g., `VAULT_ADDR`, `DB_NAME`, `PORT`); they are still required for basic container orchestration.
-
 
 ## Team Information
 Our team is structured to ensure clear accountability and efficient collaboration throughout the development of **moviesearchdb**.
