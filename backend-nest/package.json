@@ -23,6 +23,7 @@
     "db:migrate": "prisma migrate dev"
   },
   "dependencies": {
+    "@ferrucc-io/emoji-picker": "^0.0.48",
     "@nestjs/axios": "^4.0.1",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.3",

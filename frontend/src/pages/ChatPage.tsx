@@ -6,13 +6,10 @@ import { useChatRoomInfo, useChatRoomMessages, useMarkRoomAsRead } from '@/hooks
 import type { ChatMessage } from '@/api/chat';
 import type { User } from '@/types';
 import { Check, CheckCheck, SmilePlus } from 'lucide-react';
-import EmojiPicker, { Theme, EmojiStyle } from 'emoji-picker-react';
-import { useTheme } from 'next-themes';
+import { EmojiPicker } from '@ferrucc-io/emoji-picker';
 import { useFriends } from '@/hooks/useFriends';
-import '@/styles/emoji-picker.css';
 
 export function ChatPage() {
-  const { theme } = useTheme();
   const TEXTAREA_MAX_HEIGHT = 128;
   const { user } = useAuthStore();
   const userId = user?.id ?? '';
@@ -26,7 +23,7 @@ export function ChatPage() {
   const { data: roomMessages = [], isLoading: isMessagesLoading } = useChatRoomMessages(roomId ?? '');
   const { mutate: markRoomAsRead } = useMarkRoomAsRead();
   const participants = (roomInfo?.participants ?? []) as User[];
-  const { data: friends = [], isLoading: isFriendsLoading } = useFriends()
+  const { data: friends = [] } = useFriends()
 
     const secondId = useMemo(() => {
     return participants.find((p) => p.id !== userId)?.id ?? ''
@@ -259,15 +256,22 @@ export function ChatPage() {
         <div className="relative flex items-end gap-2">
           {isEmojiPickerOpen && (
             <div className="absolute bottom-12 left-0 z-20">
-                <EmojiPicker
-                  className="chat-emoji-picker"
-                theme={theme === 'dark' ? Theme.DARK : Theme.LIGHT}
-                emojiStyle={EmojiStyle.NATIVE}
-                onEmojiClick={(emojiData) => {
-                  addEmoji(emojiData.emoji);
+              <EmojiPicker
+                className="w-[320px] rounded-lg border border-border bg-popover"
+                emojisPerRow={8}
+                emojiSize={26}
+                onEmojiSelect={(emoji) => {
+                  addEmoji(emoji);
                   setIsEmojiPickerOpen(false);
                 }}
-              />
+              >
+                <EmojiPicker.Header className="p-2 pb-0">
+                  <EmojiPicker.Input placeholder="Search emoji" />
+                </EmojiPicker.Header>
+                <EmojiPicker.Group>
+                  <EmojiPicker.List containerHeight={320} />
+                </EmojiPicker.Group>
+              </EmojiPicker>
             </div>
           )}
 
