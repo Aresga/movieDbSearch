@@ -4,45 +4,75 @@ import { ValidationPipe } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
 import * as fs from 'fs';
 // import * as https from 'https';
+import * as dotenv from 'dotenv'
+import * as path from 'path';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger'
+import { loadVaultSecrets } from './common/vault.loader';
 
 async function bootstrap() {
-  const httpsOptions = {
-    key : fs.readFileSync('./key.pem'),
-    cert: fs.readFileSync('./cert.pem'),
-  };
-  
-  const app = await NestFactory.create(AppModule, { httpsOptions });
+  const envPath = path.resolve(process.cwd(), '.env');
+  if (fs.existsSync(envPath)) {
+    dotenv.config({ path: envPath });
+  }
 
-  app.use(cookieParser());
+  try {
+    // Fetch secrets from Vault before app initialization
+    const secrets = await loadVaultSecrets();
 
-  app.enableCors({
-    origin: ['http://localhost:5173', 'https://localhost:5173', 'http://backend-nest:5173', 'https://backend-nest:5173, "https://localhost:3000'],
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
-  })
-  
-  app.useGlobalPipes(new ValidationPipe({
+    // Inject fetched secrets into process.env
+    Object.assign(process.env, secrets);
+
+    const app = await NestFactory.create(AppModule);
+
+    app.setGlobalPrefix('api');
+
+    // Middleware and Security
+    app.use(cookieParser());
+
+    app.enableCors({
+      origin: [
+        'http://localhost:5173',
+        'https://localhost:5173',
+        'http://localhost',
+        'https://localhost',
+        'http://backend-nest:3000',
+        'http://backend-nest:5173',
+        'https://backend-nest:5173',
+        'https://localhost:3000'
+      ],
+      credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
+    });
+
+    // Global Validation Pipe
+    app.useGlobalPipes(new ValidationPipe({
     whitelist: true,
     forbidNonWhitelisted: true,
     transform: true,
-  }));
+    }));
 
-  const config = new DocumentBuilder()
-    .setTitle('Moviedb API')
-    .setDescription('The movieDb API')
-    .setVersion('0.0')
-    .addBearerAuth()
-    .build()
+    // Swagger Documentation
+    const config = new DocumentBuilder()
+      .setTitle('Moviedb API')
+      .setDescription('The movieDb API')
+      .setVersion('0.0')
+      .addBearerAuth()
+      .build()
 
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document);
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('docs', app, document, {
+      useGlobalPrefix: true,
+    });
 
+    // Start the server on 0.0.0.0 to allow external access
+    await app.listen(3000, '0.0.0.0');
+    console.log(`Application is running on: ${await app.getUrl()}`);
 
-
-
-  await app.listen(3000, '0.0.0.0');
-  console.log(`Application is running on: ${await app.getUrl()}`);
+  } catch (error: any) {
+    console.error('Failed to start application:', error.message);
+    process.exit(1);
+  }
 }
+
 bootstrap();
