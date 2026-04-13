@@ -6,6 +6,7 @@ import { useAuthStore } from '@/store/authStore'
 import { getSocket, disconnectSocket } from '@/lib/socket'
 import type { Friend } from '@/types'
 import { useNotificationStore } from './useNotificationStore'
+import { MessageSquare } from 'lucide-react'
 
 export interface FriendStatusEvent {
   userId: string
@@ -74,9 +75,10 @@ export function useSocket() {
       const isInChatPage = location.pathname.startsWith('/rooms/')
       if (isInChatPage) return
 
+      const content = data.content.length > 15 ? data.content.slice(0, 15) + '...' : data.content
       const senderLabel = data.senderUsername ?? senderId
       addNotification({
-        message: `New message from ${senderLabel}`,
+        message: `New message from ${senderLabel}: ${content}`,
         type: 'chat_message',
         href: '/rooms/' + data.roomId,
       })
