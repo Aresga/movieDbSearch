@@ -49,6 +49,7 @@ cp .env.example .env
 docker compose -f docker-compose.dev.yml up --build -d
 ```
 
+
 ## Team Information
 Our team is structured to ensure clear accountability and efficient collaboration throughout the development of **moviesearchdb**.
 - **PO (Product Owner)**: `tsomacha`, `agaga` 
