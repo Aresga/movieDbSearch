@@ -40,30 +40,33 @@ export default defineConfig({
   },
   server: {
     hmr: {
-      host: '0.0.0.0',
-      clientPort: 5173,
+      host: 'localhost',
+      protocol: 'wss',
+      clientPort: 443,
     },
     host: '0.0.0.0',
     port: 5173,
+    strictPort: true,
+    https: false, 
     watch: {
       usePolling: true,
     },
-    proxy: {
-      '/api': {
-        target: 'https://backend-nest:3000',
-        changeOrigin: true,
-        secure: false, 
-        rewrite: (path) => path.replace(/^\/api/, ''),
-        configure: (proxy) => {
-          proxy.on('error', (err) => console.error('[proxy error]', err))
-        },
-      },
-      '/socket.io': {
-        target: 'https://backend-nest:3000',
-        changeOrigin: true,
-        secure: false,
-        ws: true,
-      },
-    },
+    // proxy: {
+    //   '/api': {
+    //     target: 'https://backend-nest:3000',
+    //     changeOrigin: true,
+    //     secure: false, 
+    //     rewrite: (path) => path.replace(/^\/api/, ''),
+    //     configure: (proxy) => {
+    //       proxy.on('error', (err) => console.error('[proxy error]', err))
+    //     },
+    //   },
+    //   '/socket.io': {
+    //     target: 'https://backend-nest:3000',
+    //     changeOrigin: true,
+    //     secure: false,
+    //     ws: true,
+    //   },
+    // },
   },
 })
