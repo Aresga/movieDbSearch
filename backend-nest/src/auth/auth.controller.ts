@@ -14,6 +14,34 @@ import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
 export class AuthController {
     constructor(private authService: AuthService) {}
 
+    private resolveFrontendBaseUrl(req: any): string {
+        const forwardedProto = String(req.headers['x-forwarded-proto'] || '')
+            .split(',')[0]
+            .trim();
+        const forwardedHost = String(req.headers['x-forwarded-host'] || '')
+            .split(',')[0]
+            .trim();
+        const requestHost = forwardedHost || req.get?.('host') || '';
+        const requestProtocol = forwardedProto || req.protocol || 'https';
+
+        // Return users to the exact origin where OAuth was started.
+        if (requestHost) {
+            return `${requestProtocol}://${requestHost}`;
+        }
+
+        const configuredFrontendUrl = process.env.FRONTEND_URL?.trim();
+        if (configuredFrontendUrl) {
+            return configuredFrontendUrl.replace(/\/+$/, '');
+        }
+
+        return 'http://localhost:5173';
+    }
+
+    private redirectToFrontendOauthCallback(req: any, res: Response, query: string) {
+        const frontendBaseUrl = this.resolveFrontendBaseUrl(req);
+        return res.redirect(`${frontendBaseUrl}/auth/callback${query}`);
+    }
+
 
     private setTokenCookies(res: Response, access_token: string, refresh_token: string) {
         res.cookie('access_token', access_token, {
@@ -116,11 +144,11 @@ export class AuthController {
                 sameSite: 'lax',
                 maxAge: 5 * 60 * 1000,
             });
-            return res.redirect(`${process.env.FRONTEND_URL}/auth/callback?error=2fa_required`)
+            return this.redirectToFrontendOauthCallback(req, res, '?error=2fa_required');
         }
 
         this.setTokenCookies(res, result.access_token, result.refresh_token);
-        res.redirect(`${process.env.FRONTEND_URL}/auth/callback?success=true`);
+        return this.redirectToFrontendOauthCallback(req, res, '?success=true');
     }
 
 
@@ -137,11 +165,11 @@ export class AuthController {
                 sameSite: 'lax',
                 maxAge: 5 * 60 * 1000,
             });
-            return res.redirect(`${process.env.FRONTEND_URL}/auth/callback?error=2fa_required`)
+            return this.redirectToFrontendOauthCallback(req, res, '?error=2fa_required');
         }
 
         this.setTokenCookies(res, result.access_token, result.refresh_token);
-        res.redirect(`${process.env.FRONTEND_URL}/auth/callback?success=true`);
+        return this.redirectToFrontendOauthCallback(req, res, '?success=true');
     }
 
 
