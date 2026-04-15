@@ -1,0 +1,123 @@
+groups:
+  - name: moviedb_recording
+    interval: 30s
+    rules:
+      - record: moviedb:nest_http_requests_per_second
+        expr: sum(rate(http_request_duration_seconds_count{job="backend-nest"}[5m]))
+
+      - record: moviedb:nest_http_5xx_ratio
+        expr: |
+          (
+            sum(rate(http_request_duration_seconds_count{job="backend-nest",status_code=~"5.."}[5m]))
+            or vector(0)
+          )
+          /
+          clamp_min(sum(rate(http_request_duration_seconds_count{job="backend-nest"}[5m])), 1e-9)
+
+      - record: moviedb:nest_http_4xx_ratio
+        expr: |
+          (
+            sum(rate(http_request_duration_seconds_count{job="backend-nest",status_code=~"4.."}[5m]))
+            or vector(0)
+          )
+          /
+          clamp_min(sum(rate(http_request_duration_seconds_count{job="backend-nest"}[5m])), 1e-9)
+
+      - record: moviedb:nest_latency_p95_seconds
+        expr: |
+          histogram_quantile(
+            0.95,
+            sum by (le) (rate(http_request_duration_seconds_bucket{job="backend-nest"}[5m]))
+          )
+
+      - record: moviedb:nest_latency_p99_seconds
+        expr: |
+          histogram_quantile(
+            0.99,
+            sum by (le) (rate(http_request_duration_seconds_bucket{job="backend-nest"}[5m]))
+          )
+
+      - record: moviedb:fastapi_http_requests_per_second
+        expr: sum(rate(http_requests_total{job="backend-python"}[5m]))
+
+      - record: moviedb:fastapi_http_5xx_ratio
+        expr: |
+          (
+            sum(rate(http_requests_total{job="backend-python",status="5xx"}[5m]))
+            or vector(0)
+          )
+          /
+          clamp_min(sum(rate(http_requests_total{job="backend-python"}[5m])), 1e-9)
+
+      - record: moviedb:fastapi_http_4xx_ratio
+        expr: |
+          (
+            sum(rate(http_requests_total{job="backend-python",status="4xx"}[5m]))
+            or vector(0)
+          )
+          /
+          clamp_min(sum(rate(http_requests_total{job="backend-python"}[5m])), 1e-9)
+
+      - record: moviedb:fastapi_latency_p95_seconds
+        expr: |
+          histogram_quantile(
+            0.95,
+            sum by (le) (rate(http_request_duration_seconds_bucket{job="backend-python"}[5m]))
+          )
+
+  - name: moviedb_alerts
+    interval: 30s
+    rules:
+      - alert: MoviedbTargetDown
+        expr: up{job=~"backend-nest|backend-python"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: Scrape target {{ $labels.job }} is down
+          description: Prometheus cannot reach {{ $labels.job }} at {{ $labels.instance }}. User-facing APIs may be unavailable.
+
+      - alert: MoviedbNestHigh5xxRate
+        expr: moviedb:nest_http_5xx_ratio > 0.02
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: Nest API 5xx ratio above 2% (5m)
+          description: Current ratio is {{ $value | printf "%.4f" }}. Check Nest logs and dependencies.
+
+      - alert: MoviedbFastapiHigh5xxRate
+        expr: moviedb:fastapi_http_5xx_ratio > 0.02
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: FastAPI 5xx ratio above 2% (5m)
+          description: Current ratio is {{ $value | printf "%.4f" }}. Check Python service and Postgres.
+
+      - alert: MoviedbNestHighLatencyP95
+        expr: moviedb:nest_latency_p95_seconds > 3
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: Nest p95 latency above 3s
+          description: p95 is {{ $value | printf "%.2f" }}s. Investigate slow routes or downstream calls.
+
+      - alert: MoviedbFastapiHighLatencyP95
+        expr: moviedb:fastapi_latency_p95_seconds > 10
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: FastAPI p95 latency above 10s
+          description: p95 is {{ $value | printf "%.2f" }}s. Model load or DB may be slow.
+
+      - alert: MoviedbPrometheusScrapeSlow
+        expr: scrape_duration_seconds{job=~"backend-nest|backend-python"} > 5
+        for: 5m
+        labels:
+          severity: info
+        annotations:
+          summary: Slow metrics scrape for {{ $labels.job }}
+          description: Scrape took {{ $value | printf "%.2f" }}s. Metrics endpoint may be overloaded.

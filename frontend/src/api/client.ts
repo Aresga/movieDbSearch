@@ -1,4 +1,4 @@
-import axios from 'axios'
+import axios, { AxiosHeaders } from 'axios'
 import { useAuthStore } from '@/store/authStore'
 
 /** 
@@ -17,12 +17,52 @@ export const apiClient = axios.create({
   withCredentials: true, // sends cookies, ON every request
 })
 
+// Default JSON for object bodies; omit Content-Type for FormData so the boundary is set correctly.
+apiClient.interceptors.request.use((config) => {
+  const { data } = config
+  const headers = AxiosHeaders.from(config.headers)
+  if (data instanceof FormData) {
+    headers.delete('Content-Type')
+  } else if (
+    data != null &&
+    typeof data === 'object' &&
+    !(data instanceof Blob) &&
+    !(data instanceof ArrayBuffer)
+  ) {
+    if (headers.get('Content-Type') == null) {
+      headers.set('Content-Type', 'application/json')
+    }
+  }
+  config.headers = headers
+  return config
+})
+
+// Default JSON for object bodies; omit Content-Type for FormData so the boundary is set correctly.
+apiClient.interceptors.request.use((config) => {
+  const { data } = config
+  const headers = AxiosHeaders.from(config.headers)
+  if (data instanceof FormData) {
+    headers.delete('Content-Type')
+  } else if (
+    data != null &&
+    typeof data === 'object' &&
+    !(data instanceof Blob) &&
+    !(data instanceof ArrayBuffer)
+  ) {
+    if (headers.get('Content-Type') == null) {
+      headers.set('Content-Type', 'application/json')
+    }
+  }
+  config.headers = headers
+  return config
+})
+
 /**
  * TOKEN REFRESH STATE
  * Used to handle "Race Conditions" where multiple API calls fail at once
  * because the token expired.
  */
-let isRefreshing = false // Prevents multiple calls to /auth/refresh
+let isRefreshing = false // Prevents multiple calls to /auth/refresh 
 let failedQueue: Array<{
   resolve: (value?: unknown) => void
   reject: (reason?: unknown) => void

@@ -18,7 +18,7 @@ export function RegisterPage() {
           <Separator />
         </div>
         <div className="relative flex justify-center text-[11px] uppercase">
-          <span className="bg-background px-2 text-muted-foreground tracking-widest">
+          <span className="bg-inherit px-2 text-muted-foreground tracking-widest">
             or sign up with
           </span>
         </div>

@@ -55,6 +55,15 @@ export const userApi = {
     const res = await apiClient.patch<User>('/user/me', data)
     return res.data
   },
+  uploadAvatar: async (file: File): Promise<{ publicUrl: string }> => {
+    const formData = new FormData()
+    formData.append('file', file)
+    const res = await apiClient.post<{ publicUrl: string }>(
+      '/user/me/avatar',
+      formData,
+    )
+    return res.data
+  },
 
   /**
    * Deletes the currently authenticated user's account entirely.
