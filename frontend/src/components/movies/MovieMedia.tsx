@@ -1,6 +1,9 @@
 import { useState } from 'react'
 
-interface Video {
+/**
+ * Standard YouTube video parameters retrieved from TMDB mapping.
+ */
+export interface Video {
   id: string
   key: string
   name: string
@@ -8,10 +11,16 @@ interface Video {
   type: string
 }
 
-interface MovieMediaProps {
+export interface MovieMediaProps {
   videos: Video[]
 }
 
+/**
+ * MovieMedia Component
+ * Manages the display and integrated playback of Trailers and Teasers.
+ * Renders a scrollable thumbnail gallery and loads an actively selected trailer
+ * directly via YouTube iframe in a full-screen theater mode.
+ */
 export function MovieMedia({ videos }: MovieMediaProps) {
   const [activeVideo, setActiveVideo] = useState<string | null>(null)
 
@@ -27,8 +36,8 @@ export function MovieMedia({ videos }: MovieMediaProps) {
   })
 
   return (
-    <section className="mt-8 max-w-5xl mx-auto">
-      <h2 className="text-lg font-semibold mb-3">Media</h2>
+    <section className="mt-8 max-w-5xl mx-auto pl-2 pr-2">
+      <h2 className="text-lg font-semibold mb-3 pl-4">Media</h2>
 
       {/* Lightbox / active player */}
       {activeVideo && (
@@ -62,7 +71,7 @@ export function MovieMedia({ videos }: MovieMediaProps) {
           <button
             key={v.id}
             onClick={() => setActiveVideo(v.key)}
-            className="flex-shrink-0 w-56 rounded-lg hover:opacity-80 transition-opacity group overflow-hidden text-left"
+            className="shrink-0 w-56 rounded-lg hover:opacity-80 transition-opacity group overflow-hidden text-left"
           >
             <div className="relative w-full aspect-video">
               <img

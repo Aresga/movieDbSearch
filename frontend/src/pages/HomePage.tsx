@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Search, Flame, LogIn } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { Input } from '@/components/ui/input'
@@ -7,7 +7,23 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { MovieGrid } from '@/components/movies/MovieGrid'
 import { useSearch } from '@/hooks/useSearch'
 import { useTrending } from '@/hooks/useSearch'
+import { RecommendedSection } from '@/components/home/RecommendedSection'
 import { useAuthStore } from '@/store/authStore'
+import type { SearchResponse } from '@/types'
+
+const getGridColumns = (width: number) => {
+  if (width >= 1280) return 6
+  if (width >= 1024) return 5
+  if (width >= 768) return 4
+  if (width >= 640) return 3
+  return 2
+}
+
+const getResponsivePageSize = (width: number, height: number) => {
+  const columns = getGridColumns(width)
+  const rows = height >= 900 ? 4 : 3
+  return columns * rows
+}
 
 function GuestBanner() {
   return (
@@ -32,13 +48,42 @@ export function HomePage() {
   const user = useAuthStore((s) => s.user)
   const [inputValue, setInputValue] = useState('')
   const [query, setQuery] = useState('')
+  const [pageSize, setPageSize] = useState(() => {
+    if (typeof window === 'undefined') return 12
+    return getResponsivePageSize(window.innerWidth, window.innerHeight)
+  })
 
-  const searchResult = useSearch(query)
-  const trendingResult = useTrending(20)
+  useEffect(() => {
+    let frameId = 0
+
+    const handleResize = () => {
+      cancelAnimationFrame(frameId)
+      frameId = requestAnimationFrame(() => {
+        const nextSize = getResponsivePageSize(window.innerWidth, window.innerHeight)
+        setPageSize((currentSize) => (currentSize === nextSize ? currentSize : nextSize))
+      })
+    }
+
+    window.addEventListener('resize', handleResize)
+    handleResize()
+
+    return () => {
+      cancelAnimationFrame(frameId)
+      window.removeEventListener('resize', handleResize)
+    }
+  }, [])
+
+  const searchResult = useSearch(query, pageSize)
+  const trendingResult = useTrending(pageSize)
 
   // If no active search, show trending
   const isSearching = !!query
   const { data, isLoading, isError } = isSearching ? searchResult : trendingResult
+  const fetchNextPage = isSearching ? searchResult.fetchNextPage : trendingResult.fetchNextPage
+  const hasNextPage = isSearching ? searchResult.hasNextPage : trendingResult.hasNextPage
+  const isFetchingNextPage = isSearching
+    ? searchResult.isFetchingNextPage
+    : trendingResult.isFetchingNextPage
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -50,24 +95,30 @@ export function HomePage() {
     setInputValue('')
   }
 
-  const movies = data?.results ?? []
+  const pages = (data?.pages ?? []) as SearchResponse[]
+  const movies = pages.flatMap((page) => page.results)
 
   return (
     <div className="flex flex-col min-h-full">
       {/* Hero */}
       <div className="px-6 pt-8 pb-6 border-b border-border/50 bg-gradient-to-b from-brand/5 to-transparent">
         <h1 className="text-2xl font-black tracking-tight mb-1">
-          {user ? `Welcome back, ${user.username}` : 'Discover Movies and make friends'}
+          {user ? `Welcome back, ${user.username}` : 'Discover Movies with Semantic Search'}
         </h1>
         <p className="text-sm text-muted-foreground mb-4">
-          {user ? 'Find something to watch tonight.' : 'Search millions of titles — no account needed.'}
+          {user
+            ? 'Describe a vibe, plot, or mood and find the right movie faster.'
+            : 'This is semantic search: describe what you want, not just exact title keywords.'}
+        </p>
+        <p className="text-xs text-muted-foreground/90 mb-3">
+          Try: "dark psychological thriller with a plot twist" or "feel-good family road trip movie".
         </p>
         <form onSubmit={handleSearch} className="flex gap-2 max-w-xl">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
             <Input
               className="pl-9"
-              placeholder="Search movies, TV shows…"
+              placeholder="Describe a movie idea, mood, or story..."
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
             />
@@ -80,6 +131,12 @@ export function HomePage() {
       </div>
 
       {!user && <GuestBanner />}
+
+      {/* <div className="px-6">
+        <div className="mx-auto w-full max-w-full md:w-[calc(100vw-var(--sidebar-width)-4rem)] md:max-w-[1400px]"> */}
+          <RecommendedSection pageSize={pageSize} isSearching={isSearching} />
+        {/* </div>
+      </div> */}
 
       {/* Results */}
       <div className="p-6 flex-1">
@@ -96,15 +153,27 @@ export function HomePage() {
           }
           <p className="text-sm text-muted-foreground">
             {isSearching
-              ? <><strong className="text-foreground">"{query}"</strong> — {data?.total_results ?? 0} results</>
+              ? <><strong className="text-foreground">"{query}"</strong> — {movies.length} results</>
               : 'Trending right now'
             }
           </p>
         </div>
 
         <MovieGrid movies={movies} isLoading={isLoading} query={query || 'trending'} />
+
+        {hasNextPage && (
+          <div className="mt-6 flex justify-center">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => fetchNextPage?.()}
+              disabled={isFetchingNextPage}
+            >
+              {isFetchingNextPage ? 'Loading...' : 'Load more'}
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   )
 }
-

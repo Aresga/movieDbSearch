@@ -49,5 +49,5 @@ model WatchedList {
 
   @@unique([userId, movieId])
   @@index([userId])
-  @@index([movieId])  
-} 
+  @@index([movieId])
+}

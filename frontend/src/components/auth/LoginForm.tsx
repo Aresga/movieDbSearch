@@ -13,13 +13,21 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { useLogin } from '@/hooks/useAuth'
 
+/**
+ * Validation schema for the login form.
+ */
 const schema = z.object({
   email: z.string().email(),
-  password: z.string().min(1),
+  password: z.string().min(1, 'Password is required'),
 })
 
 type FormData = z.infer<typeof schema>
 
+/**
+ * LoginForm Component
+ * Renders a login form that integrates with React Hook Form, zod validation,
+ * and the custom React Query useLogin hook.
+ */
 export function LoginForm() {
   const { mutate: login, isPending } = useLogin()
 

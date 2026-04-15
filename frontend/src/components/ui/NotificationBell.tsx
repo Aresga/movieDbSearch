@@ -8,22 +8,19 @@ import {
 } from '@/components/ui/popover'
 import { useNotificationStore } from '@/hooks/useNotificationStore'
 import { formatDistanceToNow } from 'date-fns'
+import { useNavigate } from 'react-router-dom'
 
-// /// @TODO 
-// function useNotifications() {
-//   const { data: friends = [] } = useFriends()
-//   return friends.slice(0, 3).map((f) => ({
-//     id: f.id,
-//     message: `${f.username} is now your friend`,
-//   }))
-// }
-
-
+/**
+ * NotificationBell Component
+ * Placed in the global AppLayout header. It subscribes to the global Zustand notification 
+ * store to display an unread badge. Opens a popover menu standardizing notification 
+ * chronologies and mark-as-read dispatches.
+ */
 export function NotificationBell() {
   const [open, setOpen] = useState(false)
   const { notifications, markAllRead, clear } = useNotificationStore()
   const unread = notifications.filter((n) => !n.read).length
-
+ const navigate = useNavigate()
   return (
     <Popover open={open} onOpenChange={(val) => {
       setOpen(val)
@@ -48,20 +45,38 @@ export function NotificationBell() {
             </button>
           )}
         </div>
-        <div className="flex flex-col divide-y divide-border/40 max-h-72 overflow-y-auto">
-          {notifications.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-6">No notifications</p>
-          ) : (
-            notifications.map((n) => (
-              <div key={n.id} className={`px-4 py-3 text-sm transition-colors hover:bg-muted/50 ${!n.read ? 'bg-brand/5' : ''}`}>
-                <p>{n.message}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  {formatDistanceToNow(n.createdAt, { addSuffix: true })}
-                </p>
-              </div>
-            ))
-          )}
-        </div>
+          <div className="flex flex-col divide-y divide-border/40 max-h-72 overflow-y-auto">
+    {notifications.length === 0 ? (
+      <p className="text-sm text-muted-foreground text-center py-6">No notifications</p>
+    ) : (
+        notifications.map((n) => {
+          const isClickable = Boolean(n.href)
+
+          const handleNotificationClick = () => {
+            if (!n.href) return
+            navigate(n.href)
+            setOpen(false)
+          }
+
+          return (
+            <button
+              key={n.id}
+              type="button"
+              onClick={handleNotificationClick}
+              disabled={!isClickable}
+              className={`w-full px-4 py-3 text-left text-sm transition-colors ${
+                isClickable ? 'hover:bg-muted/50 cursor-pointer' : 'cursor-default'
+              } ${!n.read ? 'bg-brand/5' : ''}`}
+            >
+              <p>{n.message}</p>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                {formatDistanceToNow(n.createdAt, { addSuffix: true })}
+              </p>
+            </button>
+          )
+        })
+      )}
+  </div>
       </PopoverContent>
     </Popover>
   )

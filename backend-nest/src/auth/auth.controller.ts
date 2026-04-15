@@ -110,11 +110,17 @@ export class AuthController {
         const result = await this.authService.login(user);
 
         if (result.requiresTwoFactor) {
-            return res.redirect('http://localhost:5173/auth/callback?error=2fa_required')
+            res.cookie('access_token', result.access_token, {
+                httpOnly: true,
+                secure: false,
+                sameSite: 'lax',
+                maxAge: 5 * 60 * 1000,
+            });
+            return res.redirect('https://localhost/auth/callback?error=2fa_required')
         }
 
         this.setTokenCookies(res, result.access_token, result.refresh_token);
-        res.redirect(`http://localhost:5173/auth/callback?success=true`);
+        res.redirect(`https://localhost/auth/callback?success=true`);
     }
 
 
@@ -125,11 +131,17 @@ export class AuthController {
         const result = await this.authService.login(user);
 
         if (result.requiresTwoFactor) {
-            return res.redirect('http://localhost:5173/auth/callback?error=2fa_required')
+            res.cookie('access_token', result.access_token, {
+                httpOnly: true,
+                secure: false,
+                sameSite: 'lax',
+                maxAge: 5 * 60 * 1000,
+            });
+            return res.redirect('https://localhost/auth/callback?error=2fa_required')
         }
 
         this.setTokenCookies(res, result.access_token, result.refresh_token);
-        res.redirect(`http://localhost:5173/auth/callback?success=true`);
+        res.redirect(`https://localhost/auth/callback?success=true`);
     }
 
 

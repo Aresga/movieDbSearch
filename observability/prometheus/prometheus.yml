@@ -11,10 +11,8 @@ scrape_configs:
       - targets: ['localhost:9090']
 
   - job_name: backend-nest
-    scheme: https
-    tls_config:
-      insecure_skip_verify: true
-    metrics_path: /metrics
+    scheme: http
+    metrics_path: /api/metrics
     static_configs:
       - targets: ['backend-nest:3000']
 

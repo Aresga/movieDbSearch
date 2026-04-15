@@ -3,14 +3,28 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Message } from './message.schema';
 import { ChatRoom } from './chat-room.schema';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { User } from '@prisma/client';
+
+export interface MenuRoom extends Omit<ChatRoom, 'participants'> {
+	participants: User[];
+}
+
+const chatUserSelect = {
+	id: true,
+	username: true,
+	avatarUrl: true,
+	isOnline: true,
+};
 
 @Injectable()
 export class MessageService {
 	constructor(
 		@InjectModel(Message.name) private messageModel: Model<Message>,
-		@InjectModel(ChatRoom.name) private chatRoomModel: Model<ChatRoom>
+		@InjectModel(ChatRoom.name) private chatRoomModel: Model<ChatRoom>,
+		private prisma: PrismaService,
 	) {}
-	
+
 	async getCreateRoom(userId1: string, userId2: string)
 	{
 		const participants = [userId1, userId2].sort();
@@ -24,12 +38,13 @@ export class MessageService {
 		return room;
 	}
 
-	async storeMessage(roomId: string, senderId: string, content: string)
+	async storeMessage(roomId: string, senderId: string, content: string, read: boolean)
 	{
 		const message = new this.messageModel({
 			roomId,
 			senderId,
 			content,
+			read,
 		});
 		const savedMessage = await message.save();
 		await this.chatRoomModel.findByIdAndUpdate(roomId, {
@@ -48,11 +63,72 @@ export class MessageService {
 		.limit(limit)
 	}
 
+	async getRoomParticipants(roomId: string)
+	{
+		const room = await this.chatRoomModel.findById(roomId);
+		if (!room)
+		{
+			return null;
+		}
+		const users = await this.prisma.user.findMany({
+			where: {
+				id: {
+					in: room.participants,
+				},
+			},
+			select: chatUserSelect,
+		});
+		return users;
+	}
+
+    async findAllForUser(userId: string) {
+        const rooms = await this.chatRoomModel.find({ participants: userId }).select('_id').exec();
+        const roomIds = rooms.map(room => room._id);
+        return this.messageModel.find({ roomId: { $in: roomIds } }).sort({ createdAt: -1 }).exec();
+    }
+
 	async getChatRooms(userId: string)
 	{
 		return await this.chatRoomModel.find({participants: userId })
 		.populate('lastMessage')
 		.sort({ updatedAt: -1 });
+	}
+
+	async markAsRead(roomId: string, userId: string)
+	{
+		return await this.messageModel.updateMany(
+			{
+				roomId,
+				senderId: { $ne: userId },
+				read: { $ne: true },
+			},
+			{
+				$set: { read: true },
+			}
+		);
+	}
+
+	async getMenuRooms(userId: string)
+	{
+		const rooms = await this.chatRoomModel.find({participants: userId })
+		.populate('lastMessage')
+		.sort({ updatedAt: -1 })
+		.lean()
+		.exec()
+
+		const roomsWithParticipants = await Promise.all(
+			rooms.map(async (room) => {
+				const participants = await this.prisma.user.findMany({
+					where: {
+						id: {
+							in: room.participants,
+						},
+					},
+					select: chatUserSelect,
+				});
+				return {...room, participants};
+			}));
+			return roomsWithParticipants as unknown as MenuRoom[];
 	}
 
 }

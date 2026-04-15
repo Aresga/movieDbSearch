@@ -1,19 +1,43 @@
-import { useQuery } from '@tanstack/react-query'
+import { useInfiniteQuery } from '@tanstack/react-query'
+import type { SearchResponse } from '@/types'
 import { searchApi } from '@/api/search'
 
-export function useSearch(query: string) {
-  return useQuery({
-    queryKey: ['search', query],
-    queryFn: () => searchApi.search(query),
+export function useSearch(query: string, size = 10) {
+  return useInfiniteQuery<SearchResponse>({
+    queryKey: ['search', query, size],
+    queryFn: ({ pageParam }: { pageParam: number }) =>
+      searchApi.search(query, pageParam, size),
     enabled: !!query,
+    initialPageParam: 1,
     staleTime: 1000 * 60 * 5,
+    getNextPageParam: (lastPage: SearchResponse) => {
+      const nextPage = (lastPage.page ?? 1) + 1
+      return lastPage.results.length === size ? nextPage : undefined
+    },
   })
 }
 
-export function useTrending(limit = 20) {
-  return useQuery({
-    queryKey: ['trending', limit],
-    queryFn: () => searchApi.trending(limit),
-    staleTime: 1000 * 60 * 10, // cache for 10min, its enough since it doesnt change that much or never for our backend 
+export function useTrending(size = 20) {
+  return useInfiniteQuery<SearchResponse>({
+    queryKey: ['trending', size],
+    queryFn: ({ pageParam }: { pageParam: number }) =>
+      searchApi.trending(pageParam, size),
+    initialPageParam: 1,
+    staleTime: 1000 * 60 * 10,
+    getNextPageParam: (lastPage: SearchResponse) => {
+      const nextPage = (lastPage.page ?? 1) + 1
+      return lastPage.results.length === size ? nextPage : undefined
+    },
+  })
+}
+
+export function useRecommendations(size = 20, enabled = true) {
+  return useInfiniteQuery<SearchResponse>({
+    queryKey: ['recommendations', size],
+    queryFn: () => searchApi.recommendations(size),
+    enabled,
+    initialPageParam: 1,
+    staleTime: 1000 * 60 * 5,
+    getNextPageParam: () => undefined,
   })
 }

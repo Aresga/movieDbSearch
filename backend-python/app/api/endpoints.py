@@ -3,6 +3,8 @@ from app.services.search_service import SearchService
 from pydantic import BaseModel
 from app.services.sentiment_service import SentimentService
 from .dependencies import get_search_service, get_sentiment_service
+from app.services.recommendation_service import RecommendationService
+from .dependencies import get_recommendation_service
 
 class reviewRequest(BaseModel):
     text: str
@@ -19,13 +21,15 @@ def health_check():
 @router.get("/search")
 async def search_movies(
     q: str = Query(..., min_l=1),
-    limit: int = Query(5, ge=1, le=100),
+    page: int = Query(1, ge=1),
+    size: int = Query(5, ge=1, le=100),
+    userId: str | None = Query(None),
     service: SearchService = Depends(get_search_service)
 ):
     """
     Search for movies endpoint.
     """
-    return service.search_movies(q, limit)
+    return service.search_movies(q, page, size, userId)
 
 @router.post("/sentiment")
 def analyze_sentiment(
@@ -36,3 +40,12 @@ def analyze_sentiment(
     Get sentiment analyzis
     """
     return svc.analyze(body.text)
+
+
+@router.get("/recommendations/{user_id}")
+def get_recommendations(
+    user_id: str,
+    limit: int = Query(20, ge=1, le=100),
+    service: RecommendationService = Depends(get_recommendation_service)
+):
+    return service.get_recommendations(user_id, limit)

@@ -1,49 +1,56 @@
 import logging
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, status
 from prometheus_fastapi_instrumentator import Instrumentator
 from sentence_transformers import SentenceTransformer
+
 from .config.settings import settings
 from .database.connection import DatabaseConnection
 from .api.dependencies import container
 from .api.endpoints import router
 from .services.sentiment_service import SentimentService
 
-# --- Logging ---
+# --- Logging Configuration ---
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# --- API Lifecycle ---
+# --- API Lifecycle Management ---
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # 1. Startup: Load model and DB connection
-    logger.info("Starting up ... Loading AI Model...")
+    db_connection = None
+    logger.info("Starting up ... Loading AI Model and Database Resources...")
+    
     try:
+        # 1. Startup: Initialize services and load resources
         db_connection = DatabaseConnection()
         sentiment_service = SentimentService()
         engine = db_connection.create_engine()
-        model = SentenceTransformer(settings.model_name)
+        model = SentenceTransformer(
+            settings.model_name, 
+            cache_folder=settings.transformers_cache, 
+            local_files_only=True)
 
+        # Inject dependencies into the shared container
         container.engine = engine
         container.model = model
         container.sentiment_service = sentiment_service
 
-        # # Init and Ingest -> create the db with emb vects
-        # container.ingestion_service.init_db()
-        # container.ingestion_service.ingest_data()
+        # Keep the lifespan context open until application shutdown.
+        yield
 
     except Exception as e:
         logger.error(f"Failed to start application: {e}")
         raise
+    finally:
+        # 2. Shutdown: Safe resource cleanup
+        if db_connection:
+            db_connection.dispose()
+            logger.info("Resources released. Shutting down...")
 
-    yield  # app runs and stops here.
-
-    # 2. Shutdown: Cleanup
-    db_connection.dispose()
-    logger.info("Shutting down...")
-
+# --- FastAPI App Initialization ---
 app = FastAPI(lifespan=lifespan)
 
+# Include application routes
 app.include_router(router)
 
 Instrumentator().instrument(app).expose(app, include_in_schema=False)

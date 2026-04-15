@@ -1,7 +1,10 @@
-import { BadRequestException, Controller, Get, Param, ParseIntPipe, Query, Req } from '@nestjs/common';
+import { BadRequestException, Controller, Get, Param, ParseIntPipe, Query, Req, UseGuards } from '@nestjs/common';
 import { AppService } from './app.service';
 import { TmdbService } from './tmdb/tmdb.service';
 import { ParamsTokenFactory } from '@nestjs/core/pipes';
+import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
+import { User } from './user/entities/user.entity';
+import { OptionalJwtAuthGuard } from './auth/guards/optional-guard';
 
 @Controller()
 export class AppController {
@@ -15,15 +18,19 @@ export class AppController {
     return this.appService.health();
   }
 
+  @UseGuards(OptionalJwtAuthGuard)
   @Get('search')
   async search(
     @Query('q') query: string,
-    @Query('limit') limit: number = 5,
+    @Query('page') page: number = 1,
+    @Query('size') size: number = 5,
+    @Req() req,
   ) {
     if (!query) {
       throw new BadRequestException('Query param "q" is required');
     }
-    const results = await this.appService.searchMovies(query, limit);
+    const userId = req.user?.id;
+    const results = await this.appService.searchMovies(query, page, size, userId);
     return results;
   }
 
@@ -33,8 +40,11 @@ export class AppController {
   }
 
   @Get('trending')
-  async trending(@Query('limit') limit: number = 20) {
-    return this.appService.getTrending(limit);
+  async trending(
+    @Query('page') page: number = 1,
+    @Query('size') size: number = 20,
+  ) {
+    return this.appService.getTrending(page, size);
   }
 
   @Get('movie/:id/full')
@@ -44,5 +54,15 @@ export class AppController {
   ) {
     return this.tmdb.getMovieFull(tmdbId, lang)
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('recommendations')
+  async getRecommendations(
+    @Req() req,
+    @Query('limit') limit: number = 20,
+  ) {
+    return this.appService.getRecommendations(req.user.id, limit);
+  }
+
 
 }
