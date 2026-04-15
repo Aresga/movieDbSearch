@@ -145,6 +145,7 @@ services:
     build:
       context: ./backend-nest
       dockerfile: Dockerfile.prod       # multi-stage, runs compiled JS
+    entrypoint: ["/bin/sh", "./docker-entrypoint.prod.sh"]
     env_file:
       - ./.env
     secrets:
