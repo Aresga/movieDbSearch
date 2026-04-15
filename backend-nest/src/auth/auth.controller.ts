@@ -1,4 +1,4 @@
-import { Controller, Get, Post, UseGuards, Request, Body, HttpCode, HttpStatus, Res } from '@nestjs/common';
+import { Controller, Get, Post, UseGuards, Request, Body, HttpCode, HttpStatus, Res, Logger } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { RegisterDto } from './dto/register.dto';
@@ -13,6 +13,8 @@ import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
 @Controller('auth')
 export class AuthController {
     constructor(private authService: AuthService) {}
+
+    private readonly logger = new Logger(AuthController.name);
 
     private resolveFrontendBaseUrl(req: any): string {
         const forwardedProto = String(req.headers['x-forwarded-proto'] || '')
@@ -39,7 +41,11 @@ export class AuthController {
 
     private redirectToFrontendOauthCallback(req: any, res: Response, query: string) {
         const frontendBaseUrl = this.resolveFrontendBaseUrl(req);
-        return res.redirect(`${frontendBaseUrl}/auth/callback${query}`);
+        const target = `${frontendBaseUrl}/auth/callback${query}`;
+        this.logger.debug(
+            `OAuth redirect target=${target} host=${req.get?.('host')} xfh=${req.headers['x-forwarded-host'] || ''} xfp=${req.headers['x-forwarded-proto'] || ''}`,
+        );
+        return res.redirect(target);
     }
 
 
@@ -125,17 +131,30 @@ export class AuthController {
 
     @Get('google')
     @UseGuards(GoogleAuthGuard)
-    async googleAuth() {}
+    async googleAuth(@Request() req) {
+        this.logger.debug(
+            `OAuth start provider=google host=${req.get?.('host')} xfh=${req.headers['x-forwarded-host'] || ''} xfp=${req.headers['x-forwarded-proto'] || ''}`,
+        );
+    }
 
     @Get('github')
     @UseGuards(GithubAuthGuard)
-    async githubAuth() {}
+    async githubAuth(@Request() req) {
+        this.logger.debug(
+            `OAuth start provider=github host=${req.get?.('host')} xfh=${req.headers['x-forwarded-host'] || ''} xfp=${req.headers['x-forwarded-proto'] || ''}`,
+        );
+    }
 
     @Get('google/callback')
     @UseGuards(GoogleAuthGuard)
     async googleAuthCallback(@Request() req, @Res() res: Response) {
+        this.logger.debug(
+            `OAuth callback provider=google host=${req.get?.('host')} xfh=${req.headers['x-forwarded-host'] || ''} xfp=${req.headers['x-forwarded-proto'] || ''} hasCookieHeader=${Boolean(req.headers?.cookie)}`,
+        );
         const user = await this.authService.findOrCreateAuthUser(req.user);
+        this.logger.debug(`OAuth callback provider=google userId=${user.id} username=${user.username}`);
         const result = await this.authService.login(user);
+        this.logger.debug(`OAuth callback provider=google requiresTwoFactor=${Boolean(result.requiresTwoFactor)}`);
 
         if (result.requiresTwoFactor) {
             res.cookie('access_token', result.access_token, {
@@ -155,8 +174,13 @@ export class AuthController {
     @Get('github/callback')
     @UseGuards(GithubAuthGuard)
     async githubAuthCallback(@Request() req, @Res() res: Response) {
+        this.logger.debug(
+            `OAuth callback provider=github host=${req.get?.('host')} xfh=${req.headers['x-forwarded-host'] || ''} xfp=${req.headers['x-forwarded-proto'] || ''} hasCookieHeader=${Boolean(req.headers?.cookie)}`,
+        );
         const user = await this.authService.findOrCreateAuthUser(req.user);
+        this.logger.debug(`OAuth callback provider=github userId=${user.id} username=${user.username}`);
         const result = await this.authService.login(user);
+        this.logger.debug(`OAuth callback provider=github requiresTwoFactor=${Boolean(result.requiresTwoFactor)}`);
 
         if (result.requiresTwoFactor) {
             res.cookie('access_token', result.access_token, {
