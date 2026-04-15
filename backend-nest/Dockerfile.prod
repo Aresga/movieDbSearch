@@ -1,0 +1,18 @@
+FROM node:24-alpine
+
+WORKDIR /app
+
+RUN apk add --no-cache openssl curl
+
+COPY package*.json ./
+RUN npm ci
+
+COPY . .
+
+RUN npm run build && npx prisma generate
+
+RUN chmod +x docker-entrypoint.prod.sh
+
+EXPOSE 3000
+
+CMD ["/bin/sh", "./docker-entrypoint.prod.sh"]
