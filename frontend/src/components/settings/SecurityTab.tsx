@@ -24,6 +24,10 @@ import { useDisable2FA } from '@/hooks/useTwoFa'
 
 const emailSchema = z.object({
   email: z.string().email(),
+  confirmEmail: z.string().email(),
+}).refine((data) => data.email === data.confirmEmail, {
+  message: 'Emails do not match',
+  path: ['confirmEmail'],
 })
 
 const passwordSchema = z.object({
@@ -32,12 +36,22 @@ const passwordSchema = z.object({
   newPassword: z.string()
     .min(8, 'Minimum 8 characters')
     .max(64, 'Maximum 64 characters'),
+  confirmNewPassword: z.string()
+    .min(1, 'Please confirm your new password'),
+}).refine((data) => data.newPassword === data.confirmNewPassword, {
+  message: 'Passwords do not match',
+  path: ['confirmNewPassword'],
 })
 
 const setPasswordSchema = z.object({
   newPassword: z.string()
     .min(8, 'Minimum 8 characters')
     .max(64, 'Maximum 64 characters'),
+  confirmNewPassword: z.string()
+    .min(1, 'Please confirm your new password'),
+}).refine((data) => data.newPassword === data.confirmNewPassword, {
+  message: 'Passwords do not match',
+  path: ['confirmNewPassword'],
 })
 
 type EmailForm = z.infer<typeof emailSchema>
@@ -63,31 +77,31 @@ export function SecurityTab({ user }: { user: User }) {
 
   const emailForm = useForm<EmailForm>({
     resolver: zodResolver(emailSchema),
-    defaultValues: { email: '' },
+    defaultValues: { email: '', confirmEmail: '' },
   })
 
   const passwordForm = useForm<PasswordForm>({
     resolver: zodResolver(passwordSchema),
-    defaultValues: { currentPassword: '', newPassword: '' },
+    defaultValues: { currentPassword: '', newPassword: '', confirmNewPassword: '' },
   })
 
   const setPasswordForm = useForm<SetPasswordForm>({
     resolver: zodResolver(setPasswordSchema),
-    defaultValues: { newPassword: '' },
+    defaultValues: { newPassword: '', confirmNewPassword: '' },
   })
 
   useEffect(() => {
-    emailForm.reset({ email: user.email ?? '' })
+    emailForm.reset({ email: user.email ?? '', confirmEmail: user.email ?? '' })
   }, [user, emailForm])
 
   const handleEmailSubmit = (data: EmailForm) => {
-    updateEmail(data, {
+    updateEmail({ email: data.email }, {
       onSuccess: () => setEditingEmail(false),
     })
   }
 
   const handlePasswordSubmit = (data: PasswordForm) => {
-    updatePassword(data, {
+    updatePassword({ currentPassword: data.currentPassword, newPassword: data.newPassword }, {
       onSuccess: () => {
         setEditingPassword(false)
         passwordForm.reset()
@@ -96,7 +110,7 @@ export function SecurityTab({ user }: { user: User }) {
   }
 
   const handleSetPasswordSubmit = (data: SetPasswordForm) => {
-    setPassword(data, {
+    setPassword({ newPassword: data.newPassword }, {
       onSuccess: () => {
         setEditingPassword(false)
         setPasswordForm.reset()
@@ -237,6 +251,19 @@ export function SecurityTab({ user }: { user: User }) {
                   </FormItem>
                 )}
               />
+              <FormField
+                control={emailForm.control}
+                name="confirmEmail"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Confirm New Email</FormLabel>
+                    <FormControl>
+                      <Input type="email" placeholder="you@example.com" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <Button type="submit" size="sm" disabled={updatingEmail} className="self-start">
                 {updatingEmail ? 'Saving…' : 'Update Email'}
               </Button>
@@ -311,6 +338,19 @@ export function SecurityTab({ user }: { user: User }) {
                   </FormItem>
                 )}
               />
+              <FormField
+                control={passwordForm.control}
+                name="confirmNewPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Confirm New Password</FormLabel>
+                    <FormControl>
+                      <Input type="password" placeholder="••••••••" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <Button type="submit" size="sm" disabled={updatingPassword} className="self-start">
                 {updatingPassword ? 'Saving…' : 'Change Password'}
               </Button>
@@ -334,6 +374,19 @@ export function SecurityTab({ user }: { user: User }) {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>New Password</FormLabel>
+                    <FormControl>
+                      <Input type="password" placeholder="••••••••" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={setPasswordForm.control}
+                name="confirmNewPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Confirm New Password</FormLabel>
                     <FormControl>
                       <Input type="password" placeholder="••••••••" {...field} />
                     </FormControl>

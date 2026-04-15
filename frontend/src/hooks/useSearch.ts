@@ -1,9 +1,10 @@
 import { useInfiniteQuery } from '@tanstack/react-query'
 import type { SearchResponse } from '@/types'
 import { searchApi } from '@/api/search'
+import type { SearchResponse } from '@/types'
 
 export function useSearch(query: string, size = 10) {
-  return useInfiniteQuery({
+  return useInfiniteQuery<SearchResponse>({
     queryKey: ['search', query, size],
     initialPageParam: 1,
     queryFn: ({ pageParam }) => searchApi.search(query, pageParam, size),
@@ -17,7 +18,7 @@ export function useSearch(query: string, size = 10) {
 }
 
 export function useTrending(size = 20) {
-  return useInfiniteQuery({
+  return useInfiniteQuery<SearchResponse>({
     queryKey: ['trending', size],
     initialPageParam: 1,
     queryFn: ({ pageParam }) => searchApi.trending(pageParam, size),

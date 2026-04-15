@@ -27,11 +27,10 @@ const publicNavItems = [
 const authNavItems = [
   { title: 'My profile', url: '/user/me', icon: User },
   { title: 'Friends', url: '/friends', icon: Users },
-  { title: 'Settings', url: '/settings', icon: Settings },
   { title: 'Chats', url: '/menu/rooms', icon: MessageCircle },
   { title: 'Wish List', url: '/wishlist', icon: Heart },
   { title: 'Watched List', url: '/watched', icon: Check },
-  // { title: '2FA Security', url: '/2fa/setup', icon: Shield },
+  { title: 'Settings', url: '/settings', icon: Settings },
 ]
 
 /**
@@ -129,20 +128,30 @@ export function AppSidebar() {
           </div>
         ) : (
           /* Guest footer — sign in CTA */
-          <div className="px-2 py-3">
-            <Button asChild className="w-full" size="sm">
-              <Link to="/login">
-                <LogIn className="size-4 mr-2" />
-                Sign In
-              </Link>
-            </Button>
-            <p className="text-xs text-center text-muted-foreground mt-2">
-              or{' '}
-              <Link to="/register" className="underline underline-offset-2 hover:text-foreground">
-                create an account
-              </Link>
-            </p>
-          </div>
+          collapsed ? (
+            <div className="flex items-center justify-center p-0.5">
+              <Button asChild variant="ghost" size="icon" className="size-8 text-muted-foreground hover:text-foreground">
+                <Link to="/login" title="Sign in">
+                  <LogIn className="size-4" />
+                </Link>
+              </Button>
+            </div>
+          ) : (
+            <div className="px-2 py-2">
+              <Button asChild className="w-full" size="sm">
+                <Link to="/login">
+                  <LogIn className="size-4 mr-2" />
+                  Sign In
+                </Link>
+              </Button>
+              <p className="text-xs text-center text-muted-foreground mt-2">
+                or{' '}
+                <Link to="/register" className="underline underline-offset-2 hover:text-foreground">
+                  create an account
+                </Link>
+              </p>
+            </div>
+          )
         )}
       </SidebarFooter>
     </Sidebar>

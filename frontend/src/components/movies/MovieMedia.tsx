@@ -36,8 +36,8 @@ export function MovieMedia({ videos }: MovieMediaProps) {
   })
 
   return (
-    <section className="mt-8 max-w-5xl mx-auto">
-      <h2 className="text-lg font-semibold mb-3">Media</h2>
+    <section className="mt-8 max-w-5xl mx-auto pl-2 pr-2">
+      <h2 className="text-lg font-semibold mb-3 pl-4">Media</h2>
 
       {/* Lightbox / active player */}
       {activeVideo && (

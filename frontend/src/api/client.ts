@@ -71,12 +71,14 @@ apiClient.interceptors.response.use(
     const originalRequest = error.config
     const isRefreshEndpoint = originalRequest?.url?.includes('/auth/refresh')
     const isLogoutEndpoint = originalRequest?.url?.includes('/auth/logout')
+    const isLoginEndpoint = originalRequest?.url?.includes('/auth/login')
 
     if (
       error.response?.status === 401 &&
       !originalRequest?._retry &&
       !isRefreshEndpoint &&
       !isLogoutEndpoint
+      !isLoginEndpoint
     ) {
       if (!originalRequest) {
         return Promise.reject(error)

@@ -20,8 +20,8 @@ export function MovieCast({ cast }: MovieCastProps) {
   if (cast.length === 0) return null
 
   return (
-    <section className="mt-8 mb-10 max-w-5xl mx-auto">
-      <h2 className="text-lg font-semibold mb-3">Top billed cast</h2>
+    <section className="mt-8 mb-10 max-w-5xl mx-auto pl-2 pr-2">
+      <h2 className="text-lg font-semibold mb-3 pl-4">Top billed cast</h2>
       <div className="relative">
         <div className="flex gap-4 overflow-x-auto overflow-y-hidden scrollbar-hide pb-2">
           {cast.map((p) => (

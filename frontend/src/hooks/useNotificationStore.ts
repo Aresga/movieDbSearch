@@ -3,7 +3,7 @@ import { create } from 'zustand'
 export interface AppNotification {
   id: string
   message: string
-  type: 'friend_request' | 'friend_online'
+  type: 'friend_request' | 'friend_online' | 'chat_message'
   read: boolean
   createdAt: Date
 }

@@ -104,6 +104,7 @@ export class GatewayGateway implements OnGatewayConnection, OnGatewayDisconnect 
   sendToUser(userId: string, event: string, payload: any) {
     const socketId = this.connectedUsers.get(userId);
     if (socketId) {
+      console.log(`Sending event "${event}" to user ${userId} (socket ${socketId}) with payload:`, payload);
       this.server.to(socketId).emit(event, payload);
     }
   }
@@ -148,8 +149,27 @@ export class GatewayGateway implements OnGatewayConnection, OnGatewayDisconnect 
         createdAt: new Date(message.createdAt).toISOString(),
         read: checkForUser,
       };
+
+      const participants = await this.messageService.getRoomParticipants(roomId);
+      const senderUsername = participants?.find((participant) => participant.id === senderId)?.username;
+
       console.log(`Message from ${senderId} in room ${roomId}: "${content}"`);
-      this.server.to(roomId).emit('receiveMessage', payload)
+      this.server.to(roomId).emit('receiveMessage', payload);
+
+      if (participants?.length) {
+        for (const participant of participants) {
+          if (participant.id === senderId) continue;
+
+          this.sendToUser(participant.id, 'receiveMessageNotification', {
+            _id: payload._id,
+            roomId,
+            senderId,
+            senderUsername,
+            content: payload.content,
+            createdAt: payload.createdAt,
+          });
+        }
+      }
     } catch (error) {
         console.error('Failed to send message:', error);
     }

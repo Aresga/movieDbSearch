@@ -253,15 +253,13 @@ export function ChatMenuPage() {
                     </Avatar>
                     <span className="font-medium">{friendName}</span>
                     {room.isUnRead && (
-                      <span className="ml-2 inline-block align-middle" title="Unread message">
-                        <BellRing
-                          className="h-4 w-4 text-amber-500"
-                          aria-label="Unread message"
-                        />
-                      </span>
+                      <BellRing
+                        className="ml-2 inline-block h-4 w-4 text-amber-500 align-middle"
+                        aria-label="Unread message"
+                      />
                     )}
                     {room.lastMessage && (
-                      <span className="ml-2 text-sm text-muted-foreground">- {room.lastMessage.content}</span>
+                      <span className="ml-2 inline-block max-w-[70%] truncate align-middle text-sm text-muted-foreground">- {room.lastMessage.content}</span>
                     )}
                   </Link>
                 </li>
