@@ -77,7 +77,7 @@ apiClient.interceptors.response.use(
       error.response?.status === 401 &&
       !originalRequest?._retry &&
       !isRefreshEndpoint &&
-      !isLogoutEndpoint
+      !isLogoutEndpoint &&
       !isLoginEndpoint
     ) {
       if (!originalRequest) {
