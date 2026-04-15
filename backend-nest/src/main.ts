@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ValidationPipe } from '@nestjs/common';
+import { RequestMethod, ValidationPipe } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
 import * as fs from 'fs';
 // import * as https from 'https';
@@ -24,7 +24,10 @@ async function bootstrap() {
 
     const app = await NestFactory.create(AppModule);
 
-    app.setGlobalPrefix('api');
+    app.setGlobalPrefix('api', {
+      // Keep Prometheus scrape endpoint stable at /metrics.
+      exclude: [{ path: 'metrics', method: RequestMethod.ALL }],
+    });
 
     // Middleware and Security
     app.use(cookieParser());

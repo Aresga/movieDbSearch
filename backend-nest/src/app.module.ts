@@ -29,6 +29,7 @@ import { WatchedListModule } from './watchedlist/watchedlist.module';
     PrometheusModule.register({
       defaultMetrics: { enabled: true },
       defaultLabels: { service: 'backend-nest' },
+      path: '/metrics',
     }),
     ConfigModule.forRoot({ isGlobal: true, }),
     MongooseModule.forRootAsync({
