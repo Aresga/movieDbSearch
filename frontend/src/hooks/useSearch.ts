@@ -5,8 +5,10 @@ import { searchApi } from '@/api/search'
 export function useSearch(query: string, size = 10) {
   return useInfiniteQuery<SearchResponse>({
     queryKey: ['search', query, size],
-    queryFn: ({ pageParam }: { pageParam: number }) =>
-      searchApi.search(query, pageParam, size),
+    queryFn: ({ pageParam }) => {
+      const page = typeof pageParam === 'number' ? pageParam : 1
+      return searchApi.search(query, page, size)
+    },
     enabled: !!query,
     initialPageParam: 1,
     staleTime: 1000 * 60 * 5,
@@ -20,8 +22,10 @@ export function useSearch(query: string, size = 10) {
 export function useTrending(size = 20) {
   return useInfiniteQuery<SearchResponse>({
     queryKey: ['trending', size],
-    queryFn: ({ pageParam }: { pageParam: number }) =>
-      searchApi.trending(pageParam, size),
+    queryFn: ({ pageParam }) => {
+      const page = typeof pageParam === 'number' ? pageParam : 1
+      return searchApi.trending(page, size)
+    },
     initialPageParam: 1,
     staleTime: 1000 * 60 * 10,
     getNextPageParam: (lastPage: SearchResponse) => {

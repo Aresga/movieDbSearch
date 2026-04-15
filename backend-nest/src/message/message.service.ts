@@ -4,11 +4,6 @@ import { Model } from 'mongoose';
 import { Message } from './message.schema';
 import { ChatRoom } from './chat-room.schema';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { User } from '@prisma/client';
-
-export interface MenuRoom extends Omit<ChatRoom, 'participants'> {
-	participants: User[];
-}
 
 const chatUserSelect = {
 	id: true,
@@ -16,6 +11,14 @@ const chatUserSelect = {
 	avatarUrl: true,
 	isOnline: true,
 };
+
+type ChatUser = Awaited<
+	ReturnType<PrismaService['user']['findMany']>
+>[number];
+
+export interface MenuRoom extends Omit<ChatRoom, 'participants'> {
+	participants: ChatUser[];
+}
 
 @Injectable()
 export class MessageService {
