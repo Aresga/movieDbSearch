@@ -16,6 +16,10 @@ export default defineConfig(() => {
         devOptions: {
           enabled: false,
         },
+        workbox: {
+          // Keep browser navigations to backend routes out of SPA fallback.
+          navigateFallbackDenylist: [/^\/api\//, /^\/socket\.io\//],
+        },
         includeAssets: ['favicon.ico', 'icon-192-dark.png', 'icon-512-dark.png'],
         manifest: {
           name: 'MoviesearchDb',
