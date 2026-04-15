@@ -11,6 +11,9 @@ const BASE_URL = '/api'
  */
 export const apiClient = axios.create({
   baseURL: BASE_URL,
+  headers: { 'Content-Type': 'application/json' },
+  // CRITICAL: Required for the browser to include HttpOnly cookies (JWT) 
+  // in cross-origin or same-site requests.
   withCredentials: true, // sends cookies, ON every request
 })
 
@@ -34,8 +37,32 @@ apiClient.interceptors.request.use((config) => {
   return config
 })
 
+// Default JSON for object bodies; omit Content-Type for FormData so the boundary is set correctly.
+apiClient.interceptors.request.use((config) => {
+  const { data } = config
+  const headers = AxiosHeaders.from(config.headers)
+  if (data instanceof FormData) {
+    headers.delete('Content-Type')
+  } else if (
+    data != null &&
+    typeof data === 'object' &&
+    !(data instanceof Blob) &&
+    !(data instanceof ArrayBuffer)
+  ) {
+    if (headers.get('Content-Type') == null) {
+      headers.set('Content-Type', 'application/json')
+    }
+  }
+  config.headers = headers
+  return config
+})
 
-let isRefreshing = false // Prevents multiple calls to /auth/refresh
+/**
+ * TOKEN REFRESH STATE
+ * Used to handle "Race Conditions" where multiple API calls fail at once
+ * because the token expired.
+ */
+let isRefreshing = false // Prevents multiple calls to /auth/refresh 
 let failedQueue: Array<{
   resolve: (value?: unknown) => void
   reject: (reason?: unknown) => void

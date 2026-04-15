@@ -38,7 +38,8 @@ async function bootstrap() {
         'http://backend-nest:3000',
         'http://backend-nest:5173',
         'https://backend-nest:5173',
-        'https://localhost:3000'
+        'https://localhost:3000',
+        'http://localhost:9090'
       ],
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
