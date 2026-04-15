@@ -28,18 +28,16 @@ until curl -s $VAULT_ADDR/v1/sys/health > /dev/null; do
 done
 
 # Initialize Vault if not already initialized
-if ! vault status | grep -q "Initialized: true"; then
+if ! vault status -format=json | grep -Eq '"initialized"[[:space:]]*:[[:space:]]*true'; then
   echo "First-time setup: Initializing Vault..."
-  vault operator init -key-shares=1 -key-threshold=1 > $INIT_TEMP
+  vault operator init -key-shares=1 -key-threshold=1 > "$INIT_TEMP"
 
-  # Extract credentials and remove full init file for security
-  grep "Unseal Key 1:" $INIT_TEMP | awk '{print $NF}' > $UNSEAL_FILE
-  grep "Initial Root Token:" $INIT_TEMP | awk '{print $NF}' > $TOKEN_FILE
-  rm -f $INIT_TEMP
+  grep "Unseal Key 1:" "$INIT_TEMP" | awk '{print $NF}' > "$UNSEAL_FILE"
+  grep "Initial Root Token:" "$INIT_TEMP" | awk '{print $NF}' > "$TOKEN_FILE"
+  rm -f "$INIT_TEMP"
 
-  # Set strict file permissions (600 for vault-only, 644 for shared access)
-  chmod 600 $UNSEAL_FILE
-  chmod 644 $TOKEN_FILE
+  chmod 600 "$UNSEAL_FILE"
+  chmod 644 "$TOKEN_FILE"
   echo "Initialization complete."
 fi
 
