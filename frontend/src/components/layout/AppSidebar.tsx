@@ -42,6 +42,7 @@ const authNavItems = [
 export function AppSidebar() {
   const location = useLocation()
   const user = useAuthStore((s) => s.user)
+  const hasUnreadMessages = useAuthStore((s) => s.hasUnreadMessages)
   const { logout } = useLogout()
   const { state } = useSidebar()
   const collapsed = state === 'collapsed'
@@ -62,6 +63,16 @@ export function AppSidebar() {
           )}
         </div>
       </SidebarHeader>
+
+                    {/* <Link to={item.url}>
+                      <div className="flex items-center gap-2">
+                        <item.icon />
+                        <span>{item.title}</span>
+                      </div>
+                      {item.title === 'Chats' && hasUnreadMessages && (
+                        <span className="size-1 rounded-full bg-red-500 ml-auto" />
+                      )} */}
+
 
 
       <SidebarContent>
@@ -88,6 +99,9 @@ export function AppSidebar() {
                     <Link to={item.url}>
                       <item.icon />
                       <span>{item.title}</span>
+                      {item.title === 'Chats' && hasUnreadMessages && (
+                        <span className="size-1 rounded-full bg-red-500 ml-auto" />
+                      )}
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

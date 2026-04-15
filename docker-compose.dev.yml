@@ -101,6 +101,7 @@ services:
     volumes:
       - ./backend-python:/app
       - ./backend-python/dbCSV:/dbCSV
+      - ./backend-python/models:/home/appuser/.cache/huggingface
       - vault_data:/vault/file:ro
 #    ports:
 #      - "8000:8000"

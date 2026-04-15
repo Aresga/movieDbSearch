@@ -14,7 +14,7 @@ model movies {
   backdrop_path String?
   embedding     Unsupported("vector(384)")?
 
-  reviews  Review[]
-  wishList WishList[]
+  reviews     Review[]
+  wishList    WishList[]
   watchedList WatchedList[]
 }

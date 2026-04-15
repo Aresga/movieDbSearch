@@ -1,7 +1,6 @@
 import { useInfiniteQuery } from '@tanstack/react-query'
 import type { SearchResponse } from '@/types'
 import { searchApi } from '@/api/search'
-import type { SearchResponse } from '@/types'
 
 export function useSearch(query: string, size = 10) {
   return useInfiniteQuery<SearchResponse>({
@@ -27,5 +26,16 @@ export function useTrending(size = 20) {
       const nextPage = (lastPage.page ?? 1) + 1
       return lastPage.results.length === size ? nextPage : undefined
     },
+  })
+}
+
+export function useRecommendations(size = 20, enabled = true) {
+  return useInfiniteQuery<SearchResponse>({
+    queryKey: ['recommendations', size],
+    queryFn: () => searchApi.recommendations(size),
+    enabled,
+    initialPageParam: 1,
+    staleTime: 1000 * 60 * 5,
+    getNextPageParam: () => undefined,
   })
 }

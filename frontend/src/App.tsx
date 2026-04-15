@@ -20,6 +20,7 @@ const MoviePage = lazy(() => import('@/pages/MoviePage').then(m => ({ default: m
 const HomePage = lazy(() => import('@/pages/HomePage').then(m => ({ default: m.HomePage })))
 const SettingsPage = lazy(() => import('@/pages/SettingsPage').then(m => ({ default: m.SettingsPage })))
 const UserPage = lazy(() => import('@/pages/UserPage').then(m => ({ default: m.UserPage })))
+const UserReviewsPage = lazy(() => import('@/pages/UserReviewsPage').then(m => ({ default: m.UserReviewsPage })))
 const FriendsPage = lazy(() => import('@/pages/FriendsPage').then(m => ({ default: m.FriendsPage })))
 const WishlistPage = lazy(() => import('@/pages/WishlistPage').then(m => ({ default: m.WishlistPage })))
 const WatchedListPage = lazy(() => import('@/pages/WatchedListPage').then(m => ({ default: m.WatchedListPage })))
@@ -70,6 +71,7 @@ function App() {
               <Route element={<ProtectedRoute />}>
                 <Route path="/user/me" element={<MyProfilePage />} />
                 <Route path="/user/:id" element={<UserPage />} />
+                <Route path="/user/:id/reviews" element={<UserReviewsPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
                 <Route path="/friends" element={<FriendsPage />} />
                 <Route path="/2fa/setup" element={<TwoFactorSetupPage />} />

@@ -6,6 +6,7 @@ import { useAuthStore } from '@/store/authStore'
 import { getSocket, disconnectSocket } from '@/lib/socket'
 import type { Friend } from '@/types'
 import { useNotificationStore } from './useNotificationStore'
+import { MessageSquare } from 'lucide-react'
 
 export interface FriendStatusEvent {
   userId: string
@@ -21,6 +22,7 @@ export interface FriendStatusEvent {
  */
 export function useSocket() {
   const user = useAuthStore((s) => s.user)
+  const setUnreadMessages = useAuthStore((s) => s.setUnreadMessages)
   const location = useLocation()
   const queryClient = useQueryClient()
   const addNotification = useNotificationStore((s) => s.add)
@@ -74,12 +76,23 @@ export function useSocket() {
       const isInChatPage = location.pathname.startsWith('/rooms/')
       if (isInChatPage) return
 
+      const content = data.content.length > 15 ? data.content.slice(0, 15) + '...' : data.content
       const senderLabel = data.senderUsername ?? senderId
       addNotification({
-        message: `New message from ${senderLabel}`,
+        message: `New message from ${senderLabel}: ${content}`,
         type: 'chat_message',
+        href: '/rooms/' + data.roomId,
       })
       toast.info(`New message from ${senderLabel}`)
+      setUnreadMessages?.(true)
+    })
+
+    // socket.on('receiveMessage', () => {
+    //   setUnreadMessages?.(true)
+    // })
+
+    socket.on('markAsRead', () => {
+      setUnreadMessages?.(false)
     })
 
 
@@ -91,6 +104,8 @@ export function useSocket() {
       socket.off('friendStatus')
       socket.off('friendRequest')
       socket.off('receiveMessageNotification')
+      socket.off('receiveMessage')
+      socket.off('markAsRead')
 
     }
   }, [user, queryClient, addNotification, location.pathname])

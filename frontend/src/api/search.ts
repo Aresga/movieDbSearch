@@ -124,4 +124,42 @@ export const searchApi = {
       page: res.data.page ?? page,
     }
   },
+
+  recommendations: async (limit = 20): Promise<SearchResponse> => {
+    const res = await apiClient.get<unknown>('/recommendations', {
+      params: { limit },
+    })
+
+    const payload = res.data
+
+    if (Array.isArray(payload)) {
+      return {
+        results: (payload as RawMovie[]).map(mapMovie),
+        total_results: payload.length,
+        page: 1,
+      }
+    }
+
+    if (payload == null || !isRecord(payload)) {
+      return { results: [], total_results: 0, page: 1 }
+    }
+
+    if (Array.isArray(payload.results)) {
+      const results = payload.results as RawMovie[]
+      return {
+        ...payload,
+        results: results.map(mapMovie),
+        page: typeof payload.page === 'number' ? payload.page : 1,
+        total_results:
+          typeof payload.total_results === 'number' ? payload.total_results : results.length,
+      } as SearchResponse
+    }
+
+    if (Array.isArray(payload.movies)) {
+      const rows = payload.movies as RawMovie[]
+      return { results: rows.map(mapMovie), total_results: rows.length, page: 1 }
+    }
+
+    return { results: [], total_results: 0, page: 1 }
+  },
 }

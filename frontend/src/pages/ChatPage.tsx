@@ -5,9 +5,10 @@ import { getSocket } from '@/lib/socket';
 import { useChatRoomInfo, useChatRoomMessages, useMarkRoomAsRead } from '@/hooks/useChat';
 import type { ChatMessage } from '@/api/chat';
 import type { User } from '@/types';
-import { Check, CheckCheck } from 'lucide-react';
+import { Check, CheckCheck, SmilePlus } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ChatEmojiPicker } from '@/components/chat/ChatEmojiPicker';
+import { EmojiPicker } from '@ferrucc-io/emoji-picker';
+import { useFriends } from '@/hooks/useFriends';
 
 export function ChatPage() {
   const TEXTAREA_MAX_HEIGHT = 128;
@@ -16,12 +17,23 @@ export function ChatPage() {
   const { roomId } = useParams<{ roomId: string }>();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
+  const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
   const socket = getSocket();
   const [isSocketConnected, setIsSocketConnected] = useState(socket.connected);
   const { data: roomInfo } = useChatRoomInfo(roomId ?? '');
   const { data: roomMessages = [], isLoading: isMessagesLoading } = useChatRoomMessages(roomId ?? '');
   const { mutate: markRoomAsRead } = useMarkRoomAsRead();
   const participants = (roomInfo?.participants ?? []) as User[];
+  const { data: friends = [] } = useFriends()
+
+    const secondId = useMemo(() => {
+    return participants.find((p) => p.id !== userId)?.id ?? ''
+  }, [participants, userId])
+
+    const isStillFriend = useMemo(() => {
+    if (!secondId) return false
+    return friends.some((f) => f.id === secondId)
+  }, [friends, secondId])
 
   const participantsMap = useMemo(() => {
     return new Map(participants.map((p) => [p.id, p]));
@@ -191,9 +203,9 @@ export function ChatPage() {
     });
   };
 
+  const canSendMessages = Boolean(roomId && isSocketConnected) && isStillFriend;
+
   return (
-    // <div className="flex h-full min-h-0 flex-col overflow-hidden bg-background">
-    // <div className="flex h-[calc(100vh-3.5rem-48px)] flex-col overflow-hidden bg-background">
     <div className="flex h-[calc(100dvh-3.5rem-48px)] flex-col overflow-hidden bg-background">
       <div className="border-b border-border/50 bg-card px-4 py-3">
         <div className="flex items-center gap-3">
@@ -276,12 +288,40 @@ export function ChatPage() {
           Connecting to chat...
         </div>
       )}
-      <div className=" bg-card px-2 py-3">
+      <div className="bg-card px-2 py-3">
         <div className="relative flex items-end gap-2">
-          <ChatEmojiPicker
-            disabled={!roomId || !isSocketConnected}
-            onEmojiSelect={addEmoji}
-          />
+          {isEmojiPickerOpen && (
+            <div className="absolute bottom-12 left-0 z-20">
+              <EmojiPicker
+                className="w-[320px] rounded-lg border border-border bg-popover"
+                emojisPerRow={8}
+                emojiSize={26}
+                onEmojiSelect={(emoji) => {
+                  addEmoji(emoji);
+                  setIsEmojiPickerOpen(false);
+                }}
+              >
+                <EmojiPicker.Header className="p-2 pb-0">
+                  <EmojiPicker.Input placeholder="Search emoji" />
+                </EmojiPicker.Header>
+                <EmojiPicker.Group>
+                  <EmojiPicker.List containerHeight={320} />
+                </EmojiPicker.Group>
+              </EmojiPicker>
+            </div>
+          )}
+
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setIsEmojiPickerOpen(!isEmojiPickerOpen)}
+              disabled={!canSendMessages}
+              aria-label="Add emoji"
+              className="rounded-md border border-input bg-background px-3 py-2 text-muted-foreground transition hover:bg-accent hover:text-accent-foreground disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <SmilePlus className="h-4 w-4" />
+            </button>
+          </div>
 
           <textarea
             ref={inputRef}
@@ -293,17 +333,19 @@ export function ChatPage() {
                 sendMessage();
               }
             }}
-            disabled={!roomId || !isSocketConnected}
+            disabled={!canSendMessages}
             placeholder="Type a message..."
             rows={1}
             maxLength={1000}
             className="h-10 max-h-32 min-h-10 flex-1 resize-none rounded-md border border-input bg-background px-3 py-2 text-foreground placeholder:text-muted-foreground transition focus:border-ring focus:outline-none disabled:opacity-50"
           />
+
           <button
             type="button"
             onClick={sendMessage}
-            disabled={!roomId || !input.trim() || !isSocketConnected}
-            className="rounded-md bg-blue-600 px-4 py-2 font-medium text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-50">
+            disabled={!canSendMessages || !input.trim()}
+            className="rounded-md bg-blue-600 px-4 py-2 font-medium text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
+          >
             Send
           </button>
         </div>
