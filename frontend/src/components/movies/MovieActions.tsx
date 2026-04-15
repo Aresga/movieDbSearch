@@ -68,7 +68,7 @@ export function MovieActions({ movieId, variant = 'pill' }: MovieActionsProps) {
     }
 
     return (
-        <div className="flex gap-3">
+        <div className="flex gap-3 md:gap-4 py-8">
             <Button
                 variant="outline"
                 className={cn(

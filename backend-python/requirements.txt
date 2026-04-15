@@ -10,3 +10,4 @@ pydantic
 # kagglehub
 sqlmodel 
 pgvector
+hvac>=2.1.0

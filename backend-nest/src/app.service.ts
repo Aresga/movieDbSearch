@@ -14,6 +14,22 @@ interface PyResponse {
   }[];
 }
 
+const movieSelect = {
+  id: true,
+  tmdb_id: true,
+  title: true,
+  overview: true,
+  genres: true,
+  tagline: true,
+  release_year: true,
+  vote_average: true,
+  vote_count: true,
+  runtime: true,
+  popularity: true,
+  poster_path: true,
+  backdrop_path: true,
+} as const;
+
 @Injectable()
 export class AppService {
   constructor(
@@ -29,7 +45,7 @@ export class AppService {
     };
   }
 
-  async searchMovies(query: string, limit: number = 5) {
+  async searchMovies(query: string, page: number = 1, size: number = 5, userId?: string) {
     const baseUrl = this.configService.get<string>('AI_SERVICE_URL');
     
     if (!baseUrl) {
@@ -42,7 +58,7 @@ export class AppService {
     try {
       const response = await lastValueFrom(
         this.httpService.get<PyResponse>(fullUrl, {
-          params: { q: query, limit }
+          params: { q: query, page, size, userId }
         }).pipe(
           map((res) => res.data)
         )
@@ -50,7 +66,7 @@ export class AppService {
       return { movies: response.results };
 
     } catch (error) {
-      console.error("Error connecting to ai backend micro", error.message);
+      console.error("Error connecting to ai backend micro", error instanceof Error ? error.message : String(error));
       throw new HttpException("The Movie Ai is currently unavailable", 503);
     }
   }
@@ -58,21 +74,7 @@ export class AppService {
   async findMovie(tmdb: number) {
     const movie = await this.prisma.movies.findUnique({
       where: { tmdb_id: tmdb },
-      select: {
-              id: true,
-              tmdb_id: true,
-              title: true,
-              overview: true,
-              genres: true,
-              tagline: true,
-              release_year: true,
-              vote_average: true,
-              vote_count: true,
-              runtime: true,
-              popularity: true,
-              poster_path: true,
-              backdrop_path: true,
-            }
+      select: movieSelect,
     });
 
   if (!movie)
@@ -81,31 +83,23 @@ export class AppService {
   return movie
   }
 
-  async getTrending(limit: number = 20) {
+  async getTrending(page: number = 1, size: number = 20) {
+    const offset = (page - 1) * size;
     const movies = await this.prisma.movies.findMany({
       where: {
         popularity: { not: null },
+        vote_count: { gte: 500 },
         poster_path: { not: null },
       },
-      orderBy: { popularity: 'desc' },
-      take: limit,
-      select: {
-              id: true,
-              tmdb_id: true,
-              title: true,
-              overview: true,
-              genres: true,
-              tagline: true,
-              release_year: true,
-              vote_average: true,
-              vote_count: true,
-              runtime: true,
-              popularity: true,
-              poster_path: true,
-              backdrop_path: true,
-            },
+      orderBy: [
+        { popularity: 'desc' },
+        { vote_count: 'desc' }
+      ],
+      skip: offset,
+      take: size,
+      select: movieSelect,
     });
-    return { movies };
+    return { movies, page, size };
   }
 
   async analyzeSentiment(text: string) {
@@ -127,11 +121,30 @@ export class AppService {
       return response
     } catch (error) {
       // don't block review creation if sentiment fails
-      console.error('Sentiment analysis failed:', error.message)
+      console.error('Sentiment analysis failed:', error instanceof Error ? error.message : String(error));
       return null
     }
   }
 
+  async getRecommendations(userId: string, limit: number = 20) {
+    const baseUrl = this.configService.get<string>('AI_SERVICE_URL');
+
+    if (!baseUrl) throw new Error('AI_SERVICE_URL is not defined');
+
+    const cleanBase = baseUrl.replace(/\/$/, '');
+
+    try {
+      const response = await lastValueFrom(
+        this.httpService.get(`${cleanBase}/recommendations/${userId}`, {
+          params: { limit }
+        }).pipe(map((res) => res.data))
+      );
+      return response;
+    } catch (error) {
+      console.error('Recommendation service failed:', error instanceof Error ? error.message : String(error));
+      throw new HttpException('Recommendation service unavailable', 503);
+    }
+  }
 
 
 }

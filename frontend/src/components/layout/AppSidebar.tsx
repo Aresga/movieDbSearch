@@ -1,4 +1,4 @@
-import { Home, Users, User, Film, LogOut, LogIn, Settings } from 'lucide-react'
+import { Home, Users, User, Film, LogOut, LogIn, Settings, MessageCircle, Heart, Check } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 import {
   Sidebar,
@@ -27,13 +27,22 @@ const publicNavItems = [
 const authNavItems = [
   { title: 'My profile', url: '/user/me', icon: User },
   { title: 'Friends', url: '/friends', icon: Users },
+  { title: 'Chats', url: '/menu/rooms', icon: MessageCircle },
+  { title: 'Wish List', url: '/wishlist', icon: Heart },
+  { title: 'Watched List', url: '/watched', icon: Check },
   { title: 'Settings', url: '/settings', icon: Settings },
-  // { title: '2FA Security', url: '/2fa/setup', icon: Shield },
 ]
 
+/**
+ * AppSidebar Component
+ * Renders the global collapsible navigation sidebar for the application.
+ * Manages rendering of public navigation links versus authenticated navigation links
+ * based on the Zustand global auth state. Connects directly to the SidebarProvider.
+ */
 export function AppSidebar() {
   const location = useLocation()
   const user = useAuthStore((s) => s.user)
+  const hasUnreadMessages = useAuthStore((s) => s.hasUnreadMessages)
   const { logout } = useLogout()
   const { state } = useSidebar()
   const collapsed = state === 'collapsed'
@@ -54,6 +63,16 @@ export function AppSidebar() {
           )}
         </div>
       </SidebarHeader>
+
+                    {/* <Link to={item.url}>
+                      <div className="flex items-center gap-2">
+                        <item.icon />
+                        <span>{item.title}</span>
+                      </div>
+                      {item.title === 'Chats' && hasUnreadMessages && (
+                        <span className="size-1 rounded-full bg-red-500 ml-auto" />
+                      )} */}
+
 
 
       <SidebarContent>
@@ -76,10 +95,13 @@ export function AppSidebar() {
               {/* Auth-only nav — only visible when logged in */}
               {user && authNavItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild isActive={location.pathname === item.url}>
+                  <SidebarMenuButton asChild isActive={location.pathname.startsWith(item.url)}>
                     <Link to={item.url}>
                       <item.icon />
                       <span>{item.title}</span>
+                      {item.title === 'Chats' && hasUnreadMessages && (
+                        <span className="size-1 rounded-full bg-red-500 ml-auto" />
+                      )}
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -120,20 +142,30 @@ export function AppSidebar() {
           </div>
         ) : (
           /* Guest footer — sign in CTA */
-          <div className="px-2 py-3">
-            <Button asChild className="w-full" size="sm">
-              <Link to="/login">
-                <LogIn className="size-4 mr-2" />
-                Sign In
-              </Link>
-            </Button>
-            <p className="text-xs text-center text-muted-foreground mt-2">
-              or{' '}
-              <Link to="/register" className="underline underline-offset-2 hover:text-foreground">
-                create an account
-              </Link>
-            </p>
-          </div>
+          collapsed ? (
+            <div className="flex items-center justify-center p-0.5">
+              <Button asChild variant="ghost" size="icon" className="size-8 text-muted-foreground hover:text-foreground">
+                <Link to="/login" title="Sign in">
+                  <LogIn className="size-4" />
+                </Link>
+              </Button>
+            </div>
+          ) : (
+            <div className="px-2 py-2">
+              <Button asChild className="w-full" size="sm">
+                <Link to="/login">
+                  <LogIn className="size-4 mr-2" />
+                  Sign In
+                </Link>
+              </Button>
+              <p className="text-xs text-center text-muted-foreground mt-2">
+                or{' '}
+                <Link to="/register" className="underline underline-offset-2 hover:text-foreground">
+                  create an account
+                </Link>
+              </p>
+            </div>
+          )
         )}
       </SidebarFooter>
     </Sidebar>

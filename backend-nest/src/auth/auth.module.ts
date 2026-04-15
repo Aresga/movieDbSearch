@@ -10,6 +10,7 @@ import { PrismaModule } from '../prisma/prisma.module';
 import { GoogleStrategy } from './strategies/google.strategy';
 import { GithubStrategy } from './strategies/github.strategy';
 import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
+import { EmailModule } from 'src/email/email.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
       }),
       inject: [ConfigService],
     }),
+    EmailModule
   ],
   providers: [
     AuthService, 

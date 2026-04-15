@@ -1,19 +1,29 @@
 import { useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/store/authStore'
 import { getSocket, disconnectSocket } from '@/lib/socket'
 import type { Friend } from '@/types'
 import { useNotificationStore } from './useNotificationStore'
+import { MessageSquare } from 'lucide-react'
 
-interface FriendStatusEvent {
+export interface FriendStatusEvent {
   userId: string
   username: string
   isOnline: boolean
 }
 
+/**
+ * Custom hook to initialize and manage the global WebSocket connection.
+ * Connects automatically if a user is logged in, and sets up listeners for:
+ * - Realtime friend online/offline status updates
+ * - Incoming friend requests (Kinda)
+ */
 export function useSocket() {
   const user = useAuthStore((s) => s.user)
+  const setUnreadMessages = useAuthStore((s) => s.setUnreadMessages)
+  const location = useLocation()
   const queryClient = useQueryClient()
   const addNotification = useNotificationStore((s) => s.add)
 
@@ -49,14 +59,40 @@ export function useSocket() {
 
       // Toast 
       if (isOnline) {
-        addNotification({ message: `${username} is now online`, type: 'friend_online'})
+        addNotification({ message: `${username} is now online`, type: 'friend_online' })
         toast.info(`${username} is now online`, { duration: 3000 })
       }
     })
 
     socket.on('friendRequest', (data) => {
-      addNotification({ message: `${data.from} added you as friend!`, type: 'friend_request'})
+      addNotification({ message: `${data.from} added you as a friend!`, type: 'friend_request' })
       toast.info(`${data.from} added you as a friend!`)
+    })
+
+    socket.on('receiveMessageNotification', (data) => {
+      const senderId = data.senderId
+      if (!senderId || senderId === user.id) return
+
+      const isInChatPage = location.pathname.startsWith('/rooms/')
+      if (isInChatPage) return
+
+      const content = data.content.length > 15 ? data.content.slice(0, 15) + '...' : data.content
+      const senderLabel = data.senderUsername ?? senderId
+      addNotification({
+        message: `New message from ${senderLabel}: ${content}`,
+        type: 'chat_message',
+        href: '/rooms/' + data.roomId,
+      })
+      toast.info(`New message from ${senderLabel}`)
+      setUnreadMessages?.(true)
+    })
+
+    // socket.on('receiveMessage', () => {
+    //   setUnreadMessages?.(true)
+    // })
+
+    socket.on('markAsRead', () => {
+      setUnreadMessages?.(false)
     })
 
 
@@ -67,9 +103,12 @@ export function useSocket() {
       socket.off('connect_error')
       socket.off('friendStatus')
       socket.off('friendRequest')
+      socket.off('receiveMessageNotification')
+      socket.off('receiveMessage')
+      socket.off('markAsRead')
 
     }
-  }, [user, queryClient, addNotification])
+  }, [user, queryClient, addNotification, location.pathname])
 
   // Disconnect on logout 
   useEffect(() => {
