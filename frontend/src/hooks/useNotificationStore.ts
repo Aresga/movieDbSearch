@@ -6,6 +6,7 @@ export interface AppNotification {
   type: 'friend_request' | 'friend_online' | 'chat_message'
   read: boolean
   createdAt: Date
+  href?: string
 }
 
 export interface NotificationStore {
