@@ -23,6 +23,9 @@ import { TmdbModule } from './tmdb/tmdb.module';
 import { EmailModule } from './email/email.module';
 import { WishListModule } from './wishlist/wishlist.module';
 import { WatchedListModule } from './watchedlist/watchedlist.module';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
+
 
 @Module({
   imports: [
@@ -38,6 +41,13 @@ import { WatchedListModule } from './watchedlist/watchedlist.module';
       useFactory: async (config: ConfigService) => ({
         uri: config.get<string>('MONGO_URI'),
       }),
+    }),
+    ThrottlerModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => [{
+        ttl: Number(config.get<string>('THROTTLE_TTL_MS') ?? '60000'),
+        limit: Number(config.get<string>('THROTTLE_LIMIT') ?? '120'),
+      }],
     }),
     HttpModule,
     PrismaModule,
@@ -64,6 +74,7 @@ import { WatchedListModule } from './watchedlist/watchedlist.module';
       buckets: [0.05, 0.1, 0.25, 0.5, 1, 2, 5, 10],
     }),
     { provide: APP_INTERCEPTOR, useClass: HttpMetricsInterceptor },
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
   ],
   exports: [AppService],
 })

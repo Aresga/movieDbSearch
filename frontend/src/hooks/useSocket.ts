@@ -6,7 +6,6 @@ import { useAuthStore } from '@/store/authStore'
 import { getSocket, disconnectSocket } from '@/lib/socket'
 import type { Friend } from '@/types'
 import { useNotificationStore } from './useNotificationStore'
-import { MessageSquare } from 'lucide-react'
 
 export interface FriendStatusEvent {
   userId: string

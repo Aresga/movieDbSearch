@@ -42,6 +42,14 @@ export function useWishlistStatus(movieId: number | string | undefined) {
       return parseWishlistStatus(res.data)
     },
     enabled: !!movieId && !!user,
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    retry: (failureCount, error) => {
+      const status = (error as { response?: { status?: number } })?.response?.status
+      if (status === 429) return false
+      return failureCount < 1
+    },
   })
 }
 
@@ -78,6 +86,14 @@ export function useWatchedStatus(movieId: number | string | undefined) {
       return parseWatchedStatus(res.data)
     },
     enabled: !!movieId && !!user,
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    retry: (failureCount, error) => {
+      const status = (error as { response?: { status?: number } })?.response?.status
+      if (status === 429) return false
+      return failureCount < 1
+    },
   })
 }
 

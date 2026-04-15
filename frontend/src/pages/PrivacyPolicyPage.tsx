@@ -14,142 +14,123 @@ export function PrivacyPolicyPage() {
 
       <div className="space-y-8 text-muted-foreground leading-relaxed">
         <p>
-          This Privacy Policy describes the ways we collect personal data about
-          you and why we do so, how we use your personal data, and the choices
-          you have about your personal data.
+          This Privacy Policy describes what data MovieSearchDB collects, how we
+          use it, how long we keep it, and what controls you have. This version
+          is written to reflect the current product behavior and code paths.
         </p>
         <p>
-          This Privacy Policy applies to moviesearchdb users when using our
-          services. We may periodically update this Privacy Policy by posting a
-          new version online.
+          The policy applies when you use MovieSearchDB web features including
+          authentication, social features, reviews, watched/wishlist tracking,
+          search, recommendations, and messaging.
         </p>
 
         <section>
           <h2 className="text-2xl font-semibold text-foreground mb-4">
-            The data we collect
+            Data We Collect
           </h2>
           <h3 className="text-lg font-medium text-foreground mt-4 mb-2">
-            Data you provide us:
+            Data you provide directly
           </h3>
           <ul className="list-disc pl-6 space-y-1">
-            <li>Contact information (such as email address).</li>
-            <li>Password.</li>
-            <li>Profile information.</li>
-            <li>Your messages to the Service (such as support requests).</li>
-            <li>Other data you choose to give us.</li>
+            <li>Account data: email address, username, and password (if using local login).</li>
+            <li>OAuth account data from Google or GitHub login (provider identifier, email, profile name, avatar URL if provided).</li>
+            <li>Profile data: avatar image and biography.</li>
+            <li>Social and content data: friends, reviews, ratings, optional review text, watched/wishlist actions.</li>
+            <li>Messages you send in chats (message content and timestamps).</li>
           </ul>
           <h3 className="text-lg font-medium text-foreground mt-4 mb-2">
-            Data we collect automatically:
+            Data generated while using the service
           </h3>
           <ul className="list-disc pl-6 space-y-1">
-            <li>Data about your account and progress using the platform.</li>
-            <li>Data about your use of the Service.</li>
-            <li>
-              Data about your device, such as IP address; device name and ID;
-              operating system, browser type and language.
-            </li>
-            <li>
-              Data we collect with cookies and similar technologies (see more
-              below).
-            </li>
-            <li>General location data based on your IP address.</li>
+            <li>Authentication/session data: hashed refresh token and refresh token expiry.</li>
+            <li>User search actions used for recommendation/search features (search query text and vector embedding linked to your user id).</li>
+            <li>Operational metrics for API performance and stability (route, method, status code, duration).</li>
+            <li>Client-side preference data (for example sidebar state cookie and recent emoji local storage values).</li>
           </ul>
         </section>
 
         <section>
           <h2 className="text-2xl font-semibold text-foreground mb-4">
-            Why we collect and process your data
+            Why We Process Your Data
           </h2>
-          <p>We collect and process your data to:</p>
+          <p>We process personal data to provide core product functionality:</p>
           <ul className="list-disc pl-6 space-y-1 mt-2">
-            <li>create accounts and allow you to use our Service.</li>
-            <li>
-              communicate with you and send you Service-related communications.
-            </li>
-            <li>
-              develop and improve the Service through research and analysis
-              based on profile data.
-            </li>
-            <li>operate the Service.</li>
-            <li>perform marketing.</li>
-            <li>
-              keep the Service safe and fair and to fight fraud by analyzing and
-              monitoring the use of the Service and taking action against
-              non-wanted activity.
-            </li>
+            <li>Create and secure user accounts (including 2FA where enabled).</li>
+            <li>Maintain login sessions with secure authentication cookies.</li>
+            <li>Provide social features, chat, reviews, watched list, and wishlist actions.</li>
+            <li>Run semantic search, recommendations, and optional sentiment analysis for reviews.</li>
+            <li>Send account-related transactional emails (account creation, export confirmation, deletion confirmation).</li>
+            <li>Monitor reliability and protect the service (e.g., metrics and rate-limiting).</li>
+          </ul>
+          <p className="mt-3">
+            We do not currently run behavioral advertising or ad-tech profiling
+            based on third-party tracking cookies.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="text-2xl font-semibold text-foreground mb-4">
+            Who Can Access Data
+          </h2>
+          <p>
+            Some of your data is visible to other users as part of product
+            features (for example username, avatar, public profile fields,
+            reviews, and social interactions). Private account data is available
+            only to authorized service operators on a need-to-know basis.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="text-2xl font-semibold text-foreground mb-4">
+            Service Providers And Integrations
+          </h2>
+          <ul className="list-disc pl-6 space-y-1">
+            <li>Google and GitHub are used when you choose OAuth sign-in.</li>
+            <li>Cloudflare R2-compatible object storage is used for avatar uploads.</li>
+            <li>An internal AI service receives search/recommendation requests and may receive your user id and search query for those features.</li>
           </ul>
         </section>
 
         <section>
           <h2 className="text-2xl font-semibold text-foreground mb-4">
-            Who can see your data
+            Your Rights And Controls
           </h2>
           <p>
-            The Service is designed to be collaborative and team-focused.
-            Therefore your data may be disclosed to other users, but only to the
-            extent this is necessary to fulfil the purpose. Otherwise, only
-            those working for the Service have access to your personal data on a
-            need-to-know basis.
-          </p>
-        </section>
-
-        <section>
-          <h2 className="text-2xl font-semibold text-foreground mb-4">
-            International data transfers
-          </h2>
-          <p>
-            moviesearchdb has partners to perform services for us. These
-            partners process your data according to our instructions to provide
-            the Service, such as hosting, technical support, analytics and fraud
-            prevention. Because different countries may have different data
-            protection laws than your own country, we take steps to ensure
-            adequate safeguards are in place to protect your data as explained
-            in this Policy.
-          </p>
-        </section>
-
-        <section>
-          <h2 className="text-2xl font-semibold text-foreground mb-4">
-            Your rights and options
-          </h2>
-          <p>
-            <strong>Access the personal data we hold about you:</strong> If you
-            request, we will provide you a copy of your personal data in an
-            electronic format.
+            You can export your account data from your account endpoint, and you
+            can request account deletion. You can also update profile fields,
+            email, and password in account settings.
           </p>
           <p className="mt-2">
-            <strong>Your other rights:</strong> You also have the right to
-            correct your data, have your data deleted, object or restrict how we
-            use your data, or withdraw any consent you have given. We will
-            respond to all requests within a reasonable timeframe. If you have
-            an unresolved privacy or data use concern that we have not addressed
-            satisfactorily, you may contact your local data protection authority
-            within the European Economic Area for unresolved complaints.
+            Depending on your jurisdiction, you may have additional rights to
+            access, correct, delete, or restrict processing of personal data.
           </p>
         </section>
 
         <section>
           <h2 className="text-2xl font-semibold text-foreground mb-4">
-            How do we protect your data
+            Data Retention
+          </h2>
+          <ul className="list-disc pl-6 space-y-1">
+            <li>Access token cookie: short-lived session cookie (about 15 minutes).</li>
+            <li>Refresh token cookie: persisted for about 7 days unless revoked earlier.</li>
+            <li>Refresh token server record: stored as hash with expiry.</li>
+            <li>Product data (reviews, lists, social links, messages, profile fields): retained until account deletion or required operational/legal retention periods.</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2 className="text-2xl font-semibold text-foreground mb-4">
+            Security
           </h2>
           <p>
-            <strong>Security Safeguards:</strong> In order to help ensure a
-            secure and safe Service, we are continuously developing and
-            implementing administrative, technical and physical security
-            measures to protect your data from unauthorized access or against
-            loss, misuse or alteration.
-          </p>
-          <p className="mt-2">
-            <strong>Data retention:</strong> We retain your personal data for
-            the period necessary to fulfil the purposes outlined in this Privacy
-            Policy, unless a longer period is required by law. Note that if you
-            ask us to remove your personal data, we will retain your data as
-            necessary to comply with our legal obligations or defend our rights.
+            We use access controls, HTTPS deployment, authentication safeguards,
+            and operational monitoring. No method of transmission or storage is
+            perfectly secure, but we continuously improve our controls.
           </p>
         </section>
 
         <p className="text-sm mt-12 bg-muted p-4 rounded-lg border border-border">
-          Last updated: April 2, 2026
+          Last updated: April 15, 2026
         </p>
       </div>
     </div>

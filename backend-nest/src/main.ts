@@ -32,18 +32,10 @@ async function bootstrap() {
     // Middleware and Security
     app.use(cookieParser());
 
+    app.getHttpAdapter().getInstance().set('trust proxy', 1);
+
     app.enableCors({
-      origin: [
-        'http://localhost:5173',
-        'https://localhost:5173',
-        'http://localhost',
-        'https://localhost',
-        'http://backend-nest:3000',
-        'http://backend-nest:5173',
-        'https://backend-nest:5173',
-        'https://localhost:3000',
-        'http://localhost:9090'
-      ],
+      origin: process.env.ALLOWED_ORIGINS?.split(',') || ['https://moviedb.gagabuilds.com'],
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],

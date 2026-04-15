@@ -7,7 +7,10 @@ import { MessageService } from 'src/message/message.service';
 import { parse } from 'cookie';
 
 @WebSocketGateway({
-  cors: { origin: '*'},
+  cors: { 
+    origin: process.env.ALLOWED_ORIGINS?.split(',') || ['https://moviedb.gagabuilds.com'],
+    credentials: true,
+  },
   namespace: '/',
 })
 export class GatewayGateway implements OnGatewayConnection, OnGatewayDisconnect {

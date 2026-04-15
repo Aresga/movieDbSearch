@@ -18,13 +18,13 @@ export class AuthController {
     private setTokenCookies(res: Response, access_token: string, refresh_token: string) {
         res.cookie('access_token', access_token, {
             httpOnly: true,
-            secure: false, // for now 
+            secure: true,
             sameSite: 'lax',
             maxAge: 15 * 60 * 1000, // 15 min 
         });
         res.cookie('refresh_token', refresh_token, {
             httpOnly: true,
-            secure: false,
+            secure: true,
             sameSite: 'lax',
             maxAge: 7 * 24 * 60 * 60 * 1000, // a week
         });
@@ -33,12 +33,12 @@ export class AuthController {
     private clearTokenCookies(res: Response) {
         res.clearCookie('access_token', {
             httpOnly: true,
-            secure: false,
+            secure: true,
             sameSite: 'lax',
         });
         res.clearCookie('refresh_token', {
             httpOnly: true,
-            secure: false,
+            secure: true,
             sameSite: 'lax',
         });
     }
@@ -65,7 +65,7 @@ export class AuthController {
             // if 2FA is enables we return a short lived partial access token without a refresh token yet
             res.cookie('access_token', result.access_token, {
                 httpOnly: true,
-                secure: false,
+                secure: true,
                 sameSite: 'lax',
                 maxAge: 5 * 60 * 1000,
             });
@@ -112,15 +112,15 @@ export class AuthController {
         if (result.requiresTwoFactor) {
             res.cookie('access_token', result.access_token, {
                 httpOnly: true,
-                secure: false,
+                secure: true,
                 sameSite: 'lax',
                 maxAge: 5 * 60 * 1000,
             });
-            return res.redirect('https://localhost/auth/callback?error=2fa_required')
+            return res.redirect(`${process.env.FRONTEND_URL}/auth/callback?error=2fa_required`)
         }
 
         this.setTokenCookies(res, result.access_token, result.refresh_token);
-        res.redirect(`https://localhost/auth/callback?success=true`);
+        res.redirect(`${process.env.FRONTEND_URL}/auth/callback?success=true`);
     }
 
 
@@ -133,15 +133,15 @@ export class AuthController {
         if (result.requiresTwoFactor) {
             res.cookie('access_token', result.access_token, {
                 httpOnly: true,
-                secure: false,
+                secure: true,
                 sameSite: 'lax',
                 maxAge: 5 * 60 * 1000,
             });
-            return res.redirect('https://localhost/auth/callback?error=2fa_required')
+            return res.redirect(`${process.env.FRONTEND_URL}/auth/callback?error=2fa_required`)
         }
 
         this.setTokenCookies(res, result.access_token, result.refresh_token);
-        res.redirect(`https://localhost/auth/callback?success=true`);
+        res.redirect(`${process.env.FRONTEND_URL}/auth/callback?success=true`);
     }
 
 
