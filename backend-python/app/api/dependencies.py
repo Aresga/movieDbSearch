@@ -4,6 +4,7 @@ from sentence_transformers import SentenceTransformer
 # from app.services.ingestion_service import DataIngestionService
 from app.services.search_service import SearchService
 from app.services.sentiment_service import SentimentService
+from app.services.recommendation_service import RecommendationService
 
 class AppContainer:
     def __init__(self):
@@ -52,3 +53,6 @@ def get_sentiment_service() -> SentimentService:
 
 def get_search_service() -> SearchService:
     return container.search_service
+
+def get_recommendation_service() -> RecommendationService:
+    return RecommendationService(container.engine)

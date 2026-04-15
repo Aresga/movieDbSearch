@@ -31,7 +31,7 @@ type Friend = IdLike & {
 };
 
 export function ChatMenuPage() {
-  const { token, user } = useAuthStore();
+  const { token, user, setUnreadMessages } = useAuthStore(); // weird place to put this but it works for now
   const userId = user?.id ?? '';
   const [rooms, setRooms] = useState<Room[]>([]);
   const [showFriends, setShowFriends] = useState(false);
@@ -41,6 +41,12 @@ export function ChatMenuPage() {
   const { data: friends = [], isLoading: isFriendsLoading } = useFriends();
 
   const getId = (value: IdLike | undefined) => value?.id ?? value?._id ?? '';
+
+  // Sync unread status to auth store
+  useEffect(() => {
+    const hasUnread = rooms.some(r => r.isUnRead);
+    setUnreadMessages?.(hasUnread);
+  }, [rooms, setUnreadMessages]);
 
   useEffect(() => {
     const loadRooms = async () => {

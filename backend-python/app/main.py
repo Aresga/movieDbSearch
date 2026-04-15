@@ -24,16 +24,18 @@ async def lifespan(app: FastAPI):
         db_connection = DatabaseConnection()
         sentiment_service = SentimentService()
         engine = db_connection.create_engine()
-        
-        # Load the model using the name from Vault/Environment settings
-        model = SentenceTransformer(settings.model_name)
+        model = SentenceTransformer(
+            settings.model_name, 
+            cache_folder=settings.transformers_cache, 
+            local_files_only=True)
 
         # Inject dependencies into the shared container
         container.engine = engine
         container.model = model
         container.sentiment_service = sentiment_service
 
-        yield  # Application is now serving requests
+        # Keep the lifespan context open until application shutdown.
+        yield
 
     except Exception as e:
         logger.error(f"Failed to start application: {e}")
@@ -46,10 +48,6 @@ async def lifespan(app: FastAPI):
 
 # --- FastAPI App Initialization ---
 app = FastAPI(lifespan=lifespan)
-
-@app.get("/health", status_code=status.HTTP_200_OK)
-async def health_check():
-    return {"status": "ok"}
 
 # Include application routes
 app.include_router(router)

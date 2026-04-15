@@ -16,7 +16,8 @@ class SentimentService:
         # )
         self.analyzer = pipeline(
             "text-classification",
-            model="boltuix/NeuroFeel"
+            model="boltuix/NeuroFeel",
+            local_files_only=True
         )
         logger.info("Sentiment model loaded.")
 

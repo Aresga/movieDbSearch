@@ -22,6 +22,7 @@ export interface FriendStatusEvent {
  */
 export function useSocket() {
   const user = useAuthStore((s) => s.user)
+  const setUnreadMessages = useAuthStore((s) => s.setUnreadMessages)
   const location = useLocation()
   const queryClient = useQueryClient()
   const addNotification = useNotificationStore((s) => s.add)
@@ -83,6 +84,15 @@ export function useSocket() {
         href: '/rooms/' + data.roomId,
       })
       toast.info(`New message from ${senderLabel}`)
+      setUnreadMessages?.(true)
+    })
+
+    // socket.on('receiveMessage', () => {
+    //   setUnreadMessages?.(true)
+    // })
+
+    socket.on('markAsRead', () => {
+      setUnreadMessages?.(false)
     })
 
 
@@ -94,6 +104,8 @@ export function useSocket() {
       socket.off('friendStatus')
       socket.off('friendRequest')
       socket.off('receiveMessageNotification')
+      socket.off('receiveMessage')
+      socket.off('markAsRead')
 
     }
   }, [user, queryClient, addNotification, location.pathname])

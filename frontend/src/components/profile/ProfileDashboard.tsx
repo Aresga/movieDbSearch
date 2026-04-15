@@ -97,6 +97,7 @@ export function ProfileDashboard({
     reviews.length > 0
       ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
       : '—'
+  const hasMoreReviews = reviews.length > 5
 
   return (
     <div className="p-6 max-w-6xl mx-auto space-y-6">
@@ -207,7 +208,9 @@ export function ProfileDashboard({
             <div className="rounded-2xl border border-border/50 bg-card p-5 flex items-center gap-4">
               <Users className="size-5 text-muted-foreground shrink-0" />
               <div>
-                <p className="text-2xl font-bold">{friendsCount}</p>
+                <Link to="/friends" className="text-2xl font-bold hover:text-brand transition-colors">
+                  {friendsCount}
+                </Link>
                 <p className="text-xs text-muted-foreground">Friends</p>
               </div>
             </div>
@@ -223,14 +226,21 @@ export function ProfileDashboard({
 
           {/* Recent Activity */}
           <div className="rounded-2xl border border-border/50 bg-card p-6">
-            <h2 className="text-lg font-semibold mb-4">
-              Recent Activity
-              {reviews.length > 0 && (
-                <span className="ml-2 text-sm font-normal text-muted-foreground">
-                  ({reviews.length} reviews)
-                </span>
+            <div className="mb-4 flex items-center justify-between gap-2">
+              <h2 className="text-lg font-semibold">
+                Recent Activity
+                {reviews.length > 0 && (
+                  <span className="ml-2 text-sm font-normal text-muted-foreground">
+                    ({reviews.length} reviews)
+                  </span>
+                )}
+              </h2>
+              {hasMoreReviews && (
+                <Button variant="ghost" size="sm" asChild>
+                  <Link to={`/user/${user.id}/reviews`}>View all</Link>
+                </Button>
               )}
-            </h2>
+            </div>
 
             {reviews.length === 0 ? (
               <p className="text-sm text-muted-foreground">No activity yet.</p>
