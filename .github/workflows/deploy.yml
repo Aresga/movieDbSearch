@@ -1,0 +1,36 @@
+name: CD — Deploy to Production
+
+on:
+  push:
+    branches:
+      - production
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: production
+
+      - name: Pull latest changes
+        working-directory: /home/ubuntu/movieDbsearch
+        run: |
+          git fetch origin production
+          git reset --hard origin/production
+
+      - name: Deploy stack
+        working-directory: /home/ubuntu/movieDbsearch
+        run: |
+          docker compose -f docker-compose.prod.yml up -d --build --remove-orphans
+
+      - name: Health check
+        working-directory: /home/ubuntu/movieDbsearch
+        run: |
+          sleep 15
+          curl -f http://localhost:8080/healthz || exit 1
+
+      - name: Clean up old images
+        run: docker image prune -f
