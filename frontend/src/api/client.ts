@@ -11,6 +11,7 @@ const BASE_URL = '/api'
  */
 export const apiClient = axios.create({
   baseURL: BASE_URL,
+  // Required for the browser to include HttpOnly cookies (JWT) in requests.
   withCredentials: true,
 })
 
@@ -39,7 +40,7 @@ apiClient.interceptors.request.use((config) => {
  * Used to handle race conditions where multiple API calls fail at once
  * because the token expired.
  */
-let isRefreshing = false
+let isRefreshing = false // Prevents multiple concurrent calls to /auth/refresh
 let failedQueue: Array<{
   resolve: (value?: unknown) => void
   reject: (reason?: unknown) => void

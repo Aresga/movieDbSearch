@@ -1,6 +1,7 @@
 import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, status
+from prometheus_fastapi_instrumentator import Instrumentator
 from sentence_transformers import SentenceTransformer
 
 from .config.settings import settings
@@ -51,6 +52,8 @@ app = FastAPI(lifespan=lifespan)
 
 # Include application routes
 app.include_router(router)
+
+Instrumentator().instrument(app).expose(app, include_in_schema=False)
 
 if __name__ == "__main__":
     import uvicorn
