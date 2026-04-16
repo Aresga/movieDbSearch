@@ -34,6 +34,8 @@ export function ProfileTab({ user }: { user: User }) {
   const { mutateAsync: updateMeAsync, isPending: updating } = useUpdateMe()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
+  const [avatarUploadProgress, setAvatarUploadProgress] = useState(0)
+  const [avatarUploadSaving, setAvatarUploadSaving] = useState(false)
 
   const form = useForm<ProfileForm>({
     resolver: zodResolver(profileSchema),
@@ -87,8 +89,14 @@ export function ProfileTab({ user }: { user: User }) {
     }
 
     setUploadingAvatar(true)
+    setAvatarUploadSaving(false)
+    setAvatarUploadProgress(0)
     try {
-      const { publicUrl } = await userApi.uploadAvatar(file)
+      const { publicUrl } = await userApi.uploadAvatar(file, (pct) => {
+        setAvatarUploadProgress(pct)
+      })
+      setAvatarUploadSaving(true)
+      setAvatarUploadProgress(100)
       const saved = await updateMeAsync({ avatarUrl: publicUrl })
       form.reset({
         username: saved.username,
@@ -99,6 +107,8 @@ export function ProfileTab({ user }: { user: User }) {
       toast.error(getApiErrorMessage(err))
     } finally {
       setUploadingAvatar(false)
+      setAvatarUploadSaving(false)
+      setAvatarUploadProgress(0)
     }
   }
 
@@ -141,9 +151,28 @@ export function ProfileTab({ user }: { user: User }) {
                   disabled={uploadingAvatar || updating}
                   onClick={() => fileInputRef.current?.click()}
                 >
-                  {uploadingAvatar ? 'Uploading…' : 'Upload photo'}
+                  {uploadingAvatar
+                    ? avatarUploadSaving
+                      ? 'Saving profile…'
+                      : 'Uploading…'
+                    : 'Upload photo'}
                 </Button>
               </div>
+              {uploadingAvatar && (
+                <div className="mt-2 space-y-1">
+                  <div className="bg-muted h-1.5 w-full max-w-md overflow-hidden rounded-full">
+                    <div
+                      className="bg-primary h-full rounded-full transition-[width] duration-150 ease-out"
+                      style={{ width: `${avatarUploadProgress}%` }}
+                    />
+                  </div>
+                  <p className="text-muted-foreground text-xs">
+                    {avatarUploadSaving
+                      ? 'Applying your new photo to your account.'
+                      : 'Sending image to the server.'}
+                  </p>
+                </div>
+              )}
               <p className="text-muted-foreground text-sm">
                 Add a picture with a direct image URL, or upload a file (JPEG, PNG, WebP, or GIF,
                 up to 5 MB). New uploads replace your current photo.

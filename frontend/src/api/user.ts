@@ -47,10 +47,22 @@ export const userApi = {
     return res.data
   },
 
-  uploadAvatar: async (file: File): Promise<{ publicUrl: string }> => {
+  uploadAvatar: async (
+    file: File,
+    onUploadProgress?: (percent: number) => void,
+  ): Promise<{ publicUrl: string }> => {
     const formData = new FormData()
     formData.append('file', file)
-    const res = await apiClient.post<{ publicUrl: string }>('/user/me/avatar', formData)
+    const res = await apiClient.post<{ publicUrl: string }>('/user/me/avatar', formData, {
+      onUploadProgress: onUploadProgress
+        ? (evt) => {
+            const total = evt.total || file.size
+            if (!total) return
+            const pct = Math.min(100, Math.round((evt.loaded * 100) / total))
+            onUploadProgress(pct)
+          }
+        : undefined,
+    })
     return res.data
   },
 
