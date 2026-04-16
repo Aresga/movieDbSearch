@@ -30,7 +30,7 @@ jobs:
         working-directory: /home/ubuntu/movieDbsearch
         run: |
           sleep 15
-          curl -f http://localhost:8080/healthz || exit 1
+          curl -f https://moviedb.gagabuilds.com/healthz || exit 1
 
       - name: Clean up old images
         run: docker image prune -f
