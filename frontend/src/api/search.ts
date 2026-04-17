@@ -53,14 +53,14 @@ export const searchApi = {
     }
 
     if (Array.isArray(payload.results)) {
-      const results = payload.results as RawMovie[]
+      const rows = payload.results as RawMovie[]
       return {
-        ...payload,
-        results: results.map(mapMovie),
-        page: (payload as { page?: number }).page ?? page,
+        results: rows.map(mapMovie),
         total_results:
-          (payload as { total_results?: number }).total_results ?? results.length,
-      } as SearchResponse
+          typeof payload.total_results === 'number' ? payload.total_results : rows.length,
+        page: typeof payload.page === 'number' ? payload.page : page,
+        total_pages: typeof payload.total_pages === 'number' ? payload.total_pages : undefined,
+      }
     }
 
     if (Array.isArray(payload.data)) {
@@ -70,13 +70,14 @@ export const searchApi = {
 
     const data = payload.data
     if (isRecord(data) && Array.isArray(data.results)) {
-      const dr = data as { results: RawMovie[]; page?: number; total_results?: number }
+      const nested = data.results as RawMovie[]
       return {
-        ...data,
-        results: dr.results.map(mapMovie),
-        page: dr.page ?? page,
-        total_results: dr.total_results ?? dr.results.length,
-      } as SearchResponse
+        ...(data as unknown as SearchResponse),
+        results: nested.map(mapMovie),
+        page: typeof data.page === 'number' ? data.page : page,
+        total_results:
+          typeof data.total_results === 'number' ? data.total_results : nested.length,
+      }
     }
 
     if (Array.isArray(payload.items)) {
@@ -100,7 +101,7 @@ export const searchApi = {
   },
 
   trending: async (page = 1, size = 20): Promise<SearchResponse> => {
-    const res = await apiClient.get<{ movies?: RawMovie[]; page?: number; size?: number }>('/trending', {
+    const res = await apiClient.get<{ movies?: RawMovie[]; page?: number }>('/trending', {
       params: { page, size },
     })
     const movies: Movie[] = (res.data.movies ?? []).map((m) => ({

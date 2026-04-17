@@ -133,7 +133,6 @@ export function SecurityTab({ user }: { user: User }) {
   return (
     <div className="flex flex-col gap-4">
 
-      {/* 2FA — OTP confirmation aligns with POST /2fa/disable { token } */}
       <div className="rounded-xl border border-border/50 bg-card p-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           {user.isTwoFactorEnabled ? (

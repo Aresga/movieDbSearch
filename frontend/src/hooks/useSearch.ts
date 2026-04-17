@@ -11,6 +11,8 @@ export function useSearch(query: string, size = 10) {
     },
     enabled: !!query,
     initialPageParam: 1,
+    // queryFn: ({ pageParam }) => searchApi.search(query, pageParam, size),
+    // enabled: !!query,
     staleTime: 1000 * 60 * 5,
     getNextPageParam: (lastPage: SearchResponse) => {
       const nextPage = (lastPage.page ?? 1) + 1
@@ -27,6 +29,7 @@ export function useTrending(size = 20) {
       return searchApi.trending(page, size)
     },
     initialPageParam: 1,
+    // queryFn: ({ pageParam }) => searchApi.trending(pageParam, size),
     staleTime: 1000 * 60 * 10,
     getNextPageParam: (lastPage: SearchResponse) => {
       const nextPage = (lastPage.page ?? 1) + 1

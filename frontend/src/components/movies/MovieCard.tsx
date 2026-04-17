@@ -50,7 +50,6 @@ export function MovieCard({ movie }: MovieCardProps) {
         to={`/movie/${movie.id}`}
         className="block cursor-pointer"
       >
-        {/* Poster */}
         <div className="aspect-2/3 overflow-hidden bg-muted">
           {posterUrl ? (
             <img
@@ -66,14 +65,12 @@ export function MovieCard({ movie }: MovieCardProps) {
           )}
         </div>
 
-        {/* Overlay on hover */}
-        <div className="absolute inset-0 bg-linear-to-t from-black via-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3">
+        <div className="absolute inset-0 bg-linear-to-t from-black via-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3 pointer-events-none">
           {movie.overview && (
             <p className="text-white/80 text-xs line-clamp-4 mb-2">{movie.overview}</p>
           )}
         </div>
 
-        {/* Bottom info — always visible */}
         <div className="absolute bottom-0 left-0 right-0 bg-linear-to-t from-black/90 to-transparent p-3 pt-8 pointer-events-none">
           <p className="text-white text-sm font-semibold line-clamp-2 leading-tight">{title}</p>
           <div className="flex items-center justify-between mt-1.5">
@@ -88,10 +85,8 @@ export function MovieCard({ movie }: MovieCardProps) {
         </div>
       </Link>
 
-      {/* Quick Action Buttons */}
       <MovieActions movieId={movie.id} variant="icon" />
 
-      {/* Media type badge */}
       {movie.media_type && movie.media_type !== 'movie' && (
         <div className="absolute top-2 right-2">
           <Badge variant="secondary" className="text-[10px] px-1.5 py-0.5 uppercase tracking-wide">
