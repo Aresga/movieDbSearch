@@ -36,15 +36,10 @@ class AppContainer:
     def sentiment_service(self, value):
         self._sentiment_service = value
 
-    # @property
-    # def ingestion_service(self):
-    #     return DataIngestionService(self._engine, self._model)
-
     @property
     def search_service(self):
         return SearchService(self._engine, self._model)
 
-# sentiment_service = SentimentService()
 # Global container
 container = AppContainer()
 

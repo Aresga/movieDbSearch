@@ -25,8 +25,8 @@ class Settings:
 
 
         # Dataset Configuration
-        self.csv_path: str = 'dbCSV/movies_metadata.csv'
-        self.tmdb_key: str = os.getenv("TMDB_API_KEY")
+        # self.csv_path: str = 'dbCSV/movies_metadata.csv'
+        # self.tmdb_key: str = os.getenv("TMDB_API_KEY")
 
     def _get_from_vault(self) -> dict:
         v_url = os.getenv("VAULT_ADDR", "http://vault:8200")

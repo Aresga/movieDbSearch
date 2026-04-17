@@ -8,7 +8,6 @@ import { GoogleAuthGuard } from './guards/google-auth.guard';
 import type { Response } from 'express';
 import { GithubAuthGuard } from './guards/github-auth.guard';
 import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
-// import { access } from 'fs';
 
 @Controller('auth')
 export class AuthController {
@@ -20,12 +19,14 @@ export class AuthController {
             httpOnly: true,
             secure: true,
             sameSite: 'lax',
+            path: '/',
             maxAge: 15 * 60 * 1000, // 15 min 
         });
         res.cookie('refresh_token', refresh_token, {
             httpOnly: true,
             secure: true,
             sameSite: 'lax',
+            path: '/api/auth/refresh',
             maxAge: 7 * 24 * 60 * 60 * 1000, // a week
         });
     }
@@ -35,11 +36,13 @@ export class AuthController {
             httpOnly: true,
             secure: true,
             sameSite: 'lax',
+            path: '/'
         });
         res.clearCookie('refresh_token', {
             httpOnly: true,
             secure: true,
             sameSite: 'lax',
+            path: '/api/auth/refresh'
         });
     }
 
@@ -68,6 +71,7 @@ export class AuthController {
                 secure: true,
                 sameSite: 'lax',
                 maxAge: 5 * 60 * 1000,
+                path: '/'
             });
             return { requiresTwoFactor: true };
         }
@@ -115,6 +119,7 @@ export class AuthController {
                 secure: true,
                 sameSite: 'lax',
                 maxAge: 5 * 60 * 1000,
+                path: '/'
             });
             return res.redirect(`${process.env.FRONTEND_URL}/auth/callback?error=2fa_required`)
         }
@@ -136,6 +141,7 @@ export class AuthController {
                 secure: true,
                 sameSite: 'lax',
                 maxAge: 5 * 60 * 1000,
+                path: '/'
             });
             return res.redirect(`${process.env.FRONTEND_URL}/auth/callback?error=2fa_required`)
         }

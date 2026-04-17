@@ -26,16 +26,15 @@ async def lifespan(app: FastAPI):
         sentiment_service = SentimentService()
         engine = db_connection.create_engine()
         model = SentenceTransformer(
-            settings.model_name, 
-            cache_folder=settings.transformers_cache, 
-            local_files_only=True)
+            settings.model_name,
+        )
 
         # Inject dependencies into the shared container
         container.engine = engine
         container.model = model
         container.sentiment_service = sentiment_service
 
-        # Keep the lifespan context open until application shutdown.
+        # Keeps the lifespan context open until application shutdown.
         yield
 
     except Exception as e:

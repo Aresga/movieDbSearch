@@ -63,7 +63,7 @@ export default defineConfig(() => {
     server: {
       hmr: {
         host: 'localhost',
-        protocol: 'wss',          // Browser connects over HTTPS via :443, so HMR must use secure websocket.
+        protocol: 'wss',
         clientPort: 443,
       },
       host: '0.0.0.0',

@@ -6,18 +6,9 @@ logger = logging.getLogger(__name__)
 class SentimentService:
     def __init__(self):
         logger.info("Loading sentiment model...")
-        # self.analyzer = pipeline(
-        #     "sentiment-analysis",
-        #     model="distilbert-base-uncased-finetuned-sst-2-english"
-        # )
-        # self.analyzer = pipeline(
-        #     "sentiment-analysis",
-        #     model="lxyuan/distilbert-base-multilingual-cased-sentiments-student"
-        # )
         self.analyzer = pipeline(
             "text-classification",
             model="boltuix/NeuroFeel",
-            local_files_only=True
         )
         logger.info("Sentiment model loaded.")
 
