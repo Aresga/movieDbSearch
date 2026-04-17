@@ -34,12 +34,10 @@ const ChatPage = lazy(() => import('@/pages/ChatPage').then(m => ({ default: m.C
  * UTILITY COMPONENTS
  */
 
-// Simple redirect to home
 function RootRedirect() {
   return <Navigate to={'/home'} replace />
 }
 
-// Fallback shown while the specific page code is downloading
 function PageFallback() {
   return (
     <div className="flex h-screen w-full items-center justify-center bg-background" role="status" aria-label="Loading page">
@@ -49,36 +47,27 @@ function PageFallback() {
   )
 }
 
-export function App() {
+function App() {
   return (
     <BrowserRouter>
-      {/* ErrorBoundary catches chunk loading failures from React.lazy */}
       <ErrorBoundary>
-        {/* Suspense handles the "waiting" state while lazy components load */}
         <Suspense fallback={<PageFallback />}>
           <Routes>
-            {/* Index Redirect */}
             <Route path="/" element={<RootRedirect />} />
 
-            {/* AUTHENTICATION FLOW (Public/Guest Only) */}
             <Route element={<AuthLayout />}>
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
+              <Route path="/auth/callback" element={<OAuthCallbackPage />} />
+              <Route path="/2fa/verify" element={<TwoFactorVerifyPage />} />
             </Route>
 
-            {/* OAuth callback & 2FA verification (outside main shell) */}
-            <Route path="/auth/callback" element={<OAuthCallbackPage />} />
-            <Route path="/2fa/verify" element={<TwoFactorVerifyPage />} />
-
-            {/* MAIN APPLICATION AREA (Shared Navigation/Footer) */}
             <Route element={<AppLayout />}>
-              {/* PUBLIC CONTENT: Accessible to everyone */}
               <Route path="/home" element={<HomePage />} />
               <Route path="/movie/:id" element={<MoviePage />} />
               <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
               <Route path="/cookie-policy" element={<CookiePolicyPage />} />
 
-              {/* PRIVATE CONTENT: Require authentication via ProtectedRoute wrapper */}
               <Route element={<ProtectedRoute />}>
                 <Route path="/user/me" element={<MyProfilePage />} />
                 <Route path="/user/:id" element={<UserPage />} />
@@ -93,7 +82,6 @@ export function App() {
               </Route>
             </Route>
 
-            {/* 404 / CATCH-ALL */}
             <Route path="*" element={<RootRedirect />} />
           </Routes>
         </Suspense>

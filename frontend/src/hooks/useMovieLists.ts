@@ -1,23 +1,35 @@
+import { useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '@/api/client'
 import { useAuthStore } from '@/store/authStore'
 import { useMovieListsMirrorStore } from '@/store/movieListsMirrorStore'
 
-/** Backend returns a bare boolean; normalize for consumers. */
-function parseWishlistStatus(data: unknown): { isInWishList: boolean } {
-  if (typeof data === 'boolean') return { isInWishList: data }
-  if (data && typeof data === 'object' && 'isInWishList' in data) {
-    return { isInWishList: Boolean((data as { isInWishList: unknown }).isInWishList) }
+/** TMDB id from a `/wish` or `/watched` list row (`{ movie }` or flat movie fields). */
+function extractTmdbIdFromListEntry(item: unknown): number | null {
+  if (item == null || typeof item !== 'object' || Array.isArray(item)) return null
+  const rec = item as Record<string, unknown>
+  const movie = rec.movie
+  const source =
+    movie != null && typeof movie === 'object' && !Array.isArray(movie)
+      ? (movie as Record<string, unknown>)
+      : rec
+  const id = source.tmdb_id ?? source.tmdbId ?? source.id
+  if (typeof id === 'number' && Number.isFinite(id)) return id
+  if (typeof id === 'string') {
+    const n = Number(id)
+    return Number.isFinite(n) ? n : null
   }
-  return { isInWishList: false }
+  return null
 }
 
-function parseWatchedStatus(data: unknown): { isInWatchedList: boolean } {
-  if (typeof data === 'boolean') return { isInWatchedList: data }
-  if (data && typeof data === 'object' && 'isInWatchedList' in data) {
-    return { isInWatchedList: Boolean((data as { isInWatchedList: unknown }).isInWatchedList) }
+function tmdbIdSetFromList(data: unknown[] | undefined): Set<number> {
+  const set = new Set<number>()
+  if (!data) return set
+  for (const item of data) {
+    const id = extractTmdbIdFromListEntry(item)
+    if (id != null) set.add(id)
   }
-  return { isInWatchedList: false }
+  return set
 }
 
 /** GET /wish and GET /watched return a JSON array; normalize if ever wrapped. */
@@ -33,16 +45,22 @@ function normalizeMovieListResponse(data: unknown): unknown[] {
   return []
 }
 
-export function useWishlistStatus(movieId: number | string | undefined) {
-  const user = useAuthStore((s) => s.user)
-  return useQuery<{ isInWishList: boolean }>({
-    queryKey: ['wishlistStatus', movieId, user?.id],
-    queryFn: async () => {
-      const res = await apiClient.get(`/wish/status/${movieId}`)
-      return parseWishlistStatus(res.data)
-    },
-    enabled: !!movieId && !!user,
-  })
+/**
+ * Wishlist + watched flags for one TMDB id, derived from the cached full lists.
+ * Reuses `useWishlist` / `useWatchedList` (one network request each for the whole app, not per card).
+ */
+export function useMovieListMembership(movieId: number | string | undefined) {
+  const { data: wishData } = useWishlist()
+  const { data: watchedData } = useWatchedList()
+  const wishIds = useMemo(() => tmdbIdSetFromList(wishData as unknown[] | undefined), [wishData])
+  const watchedIds = useMemo(() => tmdbIdSetFromList(watchedData as unknown[] | undefined), [watchedData])
+
+  const tid = movieId != null ? Number(movieId) : NaN
+  const valid = Number.isFinite(tid)
+  return {
+    isInWishList: valid && wishIds.has(tid),
+    isInWatchedList: valid && watchedIds.has(tid),
+  }
 }
 
 export function useToggleWishlist(movieId: number | string | undefined) {
@@ -63,21 +81,8 @@ export function useToggleWishlist(movieId: number | string | undefined) {
         if (wasInWishlist) m.removeWishlist(uid, tid)
         else m.addWishlist(uid, tid)
       }
-      queryClient.invalidateQueries({ queryKey: ['wishlistStatus', movieId] })
       queryClient.invalidateQueries({ queryKey: ['wishlist'] })
     },
-  })
-}
-
-export function useWatchedStatus(movieId: number | string | undefined) {
-  const user = useAuthStore((s) => s.user)
-  return useQuery<{ isInWatchedList: boolean }>({
-    queryKey: ['watchedStatus', movieId, user?.id],
-    queryFn: async () => {
-      const res = await apiClient.get(`/watched/status/${movieId}`)
-      return parseWatchedStatus(res.data)
-    },
-    enabled: !!movieId && !!user,
   })
 }
 
@@ -99,7 +104,6 @@ export function useToggleWatched(movieId: number | string | undefined) {
         if (wasInWatchedList) m.removeWatched(uid, tid)
         else m.addWatched(uid, tid)
       }
-      queryClient.invalidateQueries({ queryKey: ['watchedStatus', movieId] })
       queryClient.invalidateQueries({ queryKey: ['watchedList'] })
     },
   })

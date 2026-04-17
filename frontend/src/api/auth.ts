@@ -37,7 +37,6 @@ export interface LoginPayload {
 export const authApi = {
   /**
    * Registers a new user.
-   * @param data - The registration payload (username, email, password).
    */
   register: async (data: RegisterPayload): Promise<RegisterSuccessResponse> => {
     const res = await apiClient.post<RegisterSuccessResponse>('/auth/register', data)

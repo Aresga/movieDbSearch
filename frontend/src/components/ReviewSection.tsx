@@ -10,9 +10,6 @@ import { Link } from 'react-router-dom'
 import { EmotionBadge } from '@/components/ui/EmotionBadge'
 import type { Review } from '@/types'
 
-/**
- * StarRating Props
- */
 interface StarRatingProps {
   value: number
   onChange?: (v: number) => void
