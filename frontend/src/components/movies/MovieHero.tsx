@@ -44,6 +44,8 @@ export function MovieHero({ data }: MovieHeroProps) {
   const backdrop = data.backdrop_path
     ? `https://image.tmdb.org/t/p/original${data.backdrop_path}`
     : null
+  const overlayTextClass = backdrop ? 'text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.7)]' : 'text-foreground'
+  const overlayMutedTextClass = backdrop ? 'text-white/85 drop-shadow-[0_2px_8px_rgba(0,0,0,0.65)]' : 'text-muted-foreground'
 
   return (
     <>
@@ -69,10 +71,10 @@ export function MovieHero({ data }: MovieHeroProps) {
 
           <div className="flex-1 pt-15">
             <div className="flex justify-between items-start mb-2">
-              <h1 className="text-3xl font-bold">{data.title}</h1>
+              <h1 className={`text-3xl font-bold ${overlayTextClass}`}>{data.title}</h1>
             </div>
 
-            {data.tagline && <p className="text-sm italic mb-3">{data.tagline}</p>}
+            {data.tagline && <p className={`text-sm italic mb-3 ${overlayMutedTextClass}`}>{data.tagline}</p>}
 
             <div className="flex flex-wrap gap-2 mb-4">
               {(data.genres || []).map((g: string, i: number) => (
@@ -80,7 +82,7 @@ export function MovieHero({ data }: MovieHeroProps) {
               ))}
             </div>
 
-            <div className="flex items-center gap-4 text-sm mb-4">
+            <div className={`flex items-center gap-4 text-sm mb-4 ${overlayMutedTextClass}`}>
               {data.release_year && <span>{data.release_year}</span>}
               {data.runtime && <span>{formatRuntime(data.runtime)}</span>}
               {data.popularity !== undefined && <span>Popularity: {Math.round(data.popularity)}</span>}

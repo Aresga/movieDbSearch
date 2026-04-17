@@ -53,7 +53,7 @@ export function MovieActions({ movieId, variant = 'pill' }: MovieActionsProps) {
                         'bg-black/50 text-white shadow-sm backdrop-blur-sm ring-1 ring-white/15',
                         'transition-colors hover:bg-black/65 hover:ring-white/25',
                         'disabled:pointer-events-none disabled:opacity-50',
-                        isInWatchedList && 'text-violet-300 ring-violet-400/35',
+                        isInWatchedList && 'text-emerald-300 ring-emerald-400/35',
                     )}
                     aria-label={isInWatchedList ? 'Mark as not watched' : 'Mark as watched'}
                 >
@@ -68,11 +68,10 @@ export function MovieActions({ movieId, variant = 'pill' }: MovieActionsProps) {
             <Button
                 variant="outline"
                 className={cn(
-                    "h-9 px-4 rounded-full transition-all duration-300 gap-2 border",
-                    // Use Tailwind classes instead of inline style
+                    "h-9 px-4 rounded-full transition-all duration-300 gap-2 border backdrop-blur-sm !shadow-none",
                     isInWishList 
-                        ? "bg-[#ff4d4d] border-[#ff4d4d] text-white hover:bg-[#ff3333]" 
-                        : "bg-transparent border-white/20 text-muted-foreground hover:bg-accent"
+                        ? "!bg-rose-500/90 !border-rose-400 !text-white hover:!bg-rose-500 hover:!text-white"
+                        : "!bg-black/45 !border-white/20 !text-white hover:!bg-black/60 hover:!text-white"
                 )}
                 onClick={() => toggleWishlist.mutate(isInWishList)}
                 disabled={toggleWishlist.isPending}
@@ -86,13 +85,11 @@ export function MovieActions({ movieId, variant = 'pill' }: MovieActionsProps) {
 
             <Button
                 variant="outline"
-                style={{
-                    backgroundColor: isInWatchedList ? '#a855f7' : 'transparent',
-                    borderColor: isInWatchedList ? '#a855f7' : 'rgba(255,255,255,0.2)',
-                }}
                 className={cn(
-                    "h-9 px-4 rounded-full transition-all duration-300 gap-2 border",
-                    isInWatchedList ? "text-white" : "text-muted-foreground hover:bg-accent"
+                    "h-9 px-4 rounded-full transition-all duration-300 gap-2 border backdrop-blur-sm !shadow-none",
+                    isInWatchedList
+                        ? "!bg-emerald-500/90 !border-emerald-400 !text-white hover:!bg-emerald-500 hover:!text-white"
+                        : "!bg-black/45 !border-white/20 !text-white hover:!bg-black/60 hover:!text-white"
                 )}
                 onClick={() => toggleWatched.mutate(isInWatchedList)}
                 disabled={toggleWatched.isPending}
