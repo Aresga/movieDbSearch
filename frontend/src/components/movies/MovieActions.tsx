@@ -1,6 +1,6 @@
 import { Heart, Eye, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { useWishlistStatus, useToggleWishlist, useWatchedStatus, useToggleWatched } from '@/hooks/useMovieLists'
+import { useMovieListMembership, useToggleWishlist, useToggleWatched } from '@/hooks/useMovieLists'
 import { cn } from '@/lib/utils'
 
 interface MovieActionsProps {
@@ -9,13 +9,9 @@ interface MovieActionsProps {
 }
 
 export function MovieActions({ movieId, variant = 'pill' }: MovieActionsProps) {
-    const { data: wishlistData } = useWishlistStatus(movieId)
-    const { data: watchedData } = useWatchedStatus(movieId)
+    const { isInWishList, isInWatchedList } = useMovieListMembership(movieId)
     const toggleWishlist = useToggleWishlist(movieId)
     const toggleWatched = useToggleWatched(movieId)
-
-    const isInWishlist = wishlistData?.isInWishList || false
-    const isInWatchedList = watchedData?.isInWatchedList || false
 
     if (variant === 'icon') {
         return (
@@ -30,7 +26,7 @@ export function MovieActions({ movieId, variant = 'pill' }: MovieActionsProps) {
                     onClick={(e) => {
                         e.preventDefault()
                         e.stopPropagation()
-                        toggleWishlist.mutate(isInWishlist)
+                        toggleWishlist.mutate(isInWishList)
                     }}
                     disabled={toggleWishlist.isPending}
                     className={cn(
@@ -38,11 +34,11 @@ export function MovieActions({ movieId, variant = 'pill' }: MovieActionsProps) {
                         'bg-black/50 text-white shadow-sm backdrop-blur-sm ring-1 ring-white/15',
                         'transition-colors hover:bg-black/65 hover:ring-white/25',
                         'disabled:pointer-events-none disabled:opacity-50',
-                        isInWishlist && 'text-red-400 ring-red-400/40',
+                        isInWishList && 'text-red-400 ring-red-400/40',
                     )}
-                    aria-label={isInWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
+                    aria-label={isInWishList ? 'Remove from wishlist' : 'Add to wishlist'}
                 >
-                    <Heart className={cn('size-3.5', isInWishlist && 'fill-current')} />
+                    <Heart className={cn('size-3.5', isInWishList && 'fill-current')} />
                 </button>
                 <button
                     type="button"
@@ -74,17 +70,17 @@ export function MovieActions({ movieId, variant = 'pill' }: MovieActionsProps) {
                 className={cn(
                     "h-9 px-4 rounded-full transition-all duration-300 gap-2 border",
                     // Use Tailwind classes instead of inline style
-                    isInWishlist 
+                    isInWishList 
                         ? "bg-[#ff4d4d] border-[#ff4d4d] text-white hover:bg-[#ff3333]" 
                         : "bg-transparent border-white/20 text-muted-foreground hover:bg-accent"
                 )}
-                onClick={() => toggleWishlist.mutate(isInWishlist)}
+                onClick={() => toggleWishlist.mutate(isInWishList)}
                 disabled={toggleWishlist.isPending}
             >
                 {/* fill-white ensures the heart is filled when the button is red */}
-                <Heart className={cn("h-4 w-4", isInWishlist && "fill-white")} />
+                <Heart className={cn("h-4 w-4", isInWishList && "fill-white")} />
                 <span className="text-sm font-medium">
-                    {isInWishlist ? 'In Wishlist' : 'Add to Wishlist'}
+                    {isInWishList ? 'In Wishlist' : 'Add to Wishlist'}
                 </span>
             </Button>
 
