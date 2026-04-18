@@ -30,7 +30,7 @@ export function NotificationBell() {
         <Button variant="ghost" size="icon" className="relative size-8 text-muted-foreground hover:text-foreground">
           <Bell className="size-4" />
           {unread > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 size-4 rounded-full bg-brand text-white text-[10px] font-bold flex items-center justify-center">
+            <span className="absolute -top-0.5 -right-0.5 size-4 rounded-full bg-brand text-white text-[9px] font-bold flex items-center justify-center">
               {unread}
             </span>
           )}

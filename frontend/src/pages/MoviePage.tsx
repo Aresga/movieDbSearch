@@ -128,7 +128,7 @@ export function MoviePage() {
 
     const backdrop = data.backdrop_path
       ? `https://image.tmdb.org/t/p/original${data.backdrop_path}`
-      : null
+      : `https://picsum.photos/seed/movie-${data.id}/500/750`
 
     const sources = [poster, backdrop].filter(Boolean) as string[]
 

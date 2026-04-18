@@ -62,15 +62,17 @@ export class TwofactorauthController {
 
     res.cookie('access_token', result.access_token, {
         httpOnly: true,
-        secure: false,
+        secure: true,
         sameSite: 'lax',
         maxAge: 15 * 60 * 1000,
+        path: '/'
     })
     res.cookie('refresh_token', result.refresh_token, {
         httpOnly: true,
-        secure: false,
+        secure: true,
         sameSite: 'lax',
         maxAge: 7 * 24 * 60 * 60 * 1000,
+        path: '/api/auth/refresh'
     })
 
     return { user: result.user } 

@@ -62,4 +62,27 @@ export class EmailService {
     await this.sendMail({ to, subject, text, html });
   }
 
+
+  async sendPasswordHasBeenUpdatedNotification(to: string): Promise<void> {
+    const subject = 'Your MovieDB password has been updated';
+    const text = 'Your MovieDB password has been updated.';
+    const html = `
+      <p>Your MovieDB password has been updated.</p>
+      <p>If you did not make this change, please contact our support team immediately.</p>
+    `;
+
+    await this.sendMail({ to, subject, text, html });
+  }
+
+  async sendEmailUpdateConfirmation(to: string): Promise<void> {
+    const subject = 'Your MovieDB email has been updated';
+    const text = 'Your MovieDB email has been updated.';
+    const html = `
+      <p>Your MovieDB email has been updated.</p>
+      <p>If you did not make this change, please contact our support team immediately.</p>
+    `;
+
+    await this.sendMail({ to, subject, text, html });
+  }
+
 }

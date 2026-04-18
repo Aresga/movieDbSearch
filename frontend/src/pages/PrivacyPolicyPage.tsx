@@ -45,7 +45,7 @@ export function PrivacyPolicyPage() {
             <li>Authentication/session data: hashed refresh token and refresh token expiry.</li>
             <li>User search actions used for recommendation/search features (search query text and vector embedding linked to your user id).</li>
             <li>Operational metrics for API performance and stability (route, method, status code, duration).</li>
-            <li>Client-side preference data (for example sidebar state cookie and recent emoji local storage values).</li>
+            <li>Client-side preference data (for example sidebar state cookie).</li>
           </ul>
         </section>
 
@@ -58,7 +58,7 @@ export function PrivacyPolicyPage() {
             <li>Create and secure user accounts (including 2FA where enabled).</li>
             <li>Maintain login sessions with secure authentication cookies.</li>
             <li>Provide social features, chat, reviews, watched list, and wishlist actions.</li>
-            <li>Run semantic search, recommendations, and optional sentiment analysis for reviews.</li>
+            <li>Run semantic search, recommendations, and sentiment analysis for reviews.</li>
             <li>Send account-related transactional emails (account creation, export confirmation, deletion confirmation).</li>
             <li>Monitor reliability and protect the service (e.g., metrics and rate-limiting).</li>
           </ul>
@@ -86,6 +86,7 @@ export function PrivacyPolicyPage() {
           </h2>
           <ul className="list-disc pl-6 space-y-1">
             <li>Google and GitHub are used when you choose OAuth sign-in.</li>
+            <li>TMDB (The Movie Database) API is used to fetch fresh movie metadata (for example cast, trailers, and other media details).</li>
             <li>Cloudflare R2-compatible object storage is used for avatar uploads.</li>
             <li>An internal AI service receives search/recommendation requests and may receive your user id and search query for those features.</li>
           </ul>
@@ -124,13 +125,14 @@ export function PrivacyPolicyPage() {
           </h2>
           <p>
             We use access controls, HTTPS deployment, authentication safeguards,
+            a reverse-proxy Web Application Firewall (WAF) layer, rate limiting,
             and operational monitoring. No method of transmission or storage is
             perfectly secure, but we continuously improve our controls.
           </p>
         </section>
 
         <p className="text-sm mt-12 bg-muted p-4 rounded-lg border border-border">
-          Last updated: April 15, 2026
+          Last updated: April 18, 2026
         </p>
       </div>
     </div>

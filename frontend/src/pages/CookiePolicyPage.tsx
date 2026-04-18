@@ -68,8 +68,9 @@ export function CookiePolicyPage() {
           </h2>
           <ul className="list-disc pl-6 space-y-1">
             <li>Authentication cookies are set by the backend as HttpOnly and SameSite=Lax.</li>
-            <li>In main login and OAuth flows, auth cookies are set with Secure=true.</li>
-            <li>UI preference cookie is written in client-side JavaScript and is not HttpOnly.</li>
+            <li>Authentication cookies are set with Secure=true in login, OAuth, and 2FA verify flows.</li>
+            <li>refresh_token is scoped to path /api/auth/refresh in login, OAuth, and 2FA verify flows.</li>
+            <li>UI preference cookie (sidebar_state) is written in client-side JavaScript with SameSite=Lax, path=/, max-age=7 days, and Secure when served over HTTPS; it is not HttpOnly.</li>
           </ul>
         </section>
 
@@ -78,7 +79,7 @@ export function CookiePolicyPage() {
             Similar Technologies (Non-Cookie Storage)
           </h2>
           <ul className="list-disc pl-6 space-y-1">
-            <li>localStorage: stores recent emoji selections for chat UX.</li>
+            <li>localStorage: stores selected UI theme (light/dark/system).</li>
             <li>Progressive Web App caching may store static assets for performance/offline behavior.</li>
           </ul>
         </section>
@@ -106,7 +107,7 @@ export function CookiePolicyPage() {
         </section>
 
         <p className="text-sm mt-12 bg-muted p-4 rounded-lg border border-border">
-          Last updated: April 15, 2026
+          Last updated: April 18, 2026
         </p>
       </div>
     </div>

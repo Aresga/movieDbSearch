@@ -145,6 +145,12 @@ export class UserService {
 
     if (existing) throw new ConflictException('Email already in use')
 
+    try {
+      await this.emailService.sendEmailUpdateConfirmation(newEmail);
+    } catch (error) {
+      console.error('Failed to send email update confirmation:', error);
+    }
+
     return this.prisma.user.update({
       where: { id },
       data: { email: newEmail },
@@ -169,6 +175,12 @@ export class UserService {
       where: { id },
       data: { password: hashed },
     })
+
+    try {
+      await this.emailService.sendPasswordHasBeenUpdatedNotification(user.email);
+    } catch (error) {
+      console.error('Failed to send password update notification email:', error);
+    }
 
     return { message: 'Password updated successfully'}
   }

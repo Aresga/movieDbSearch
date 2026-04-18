@@ -23,7 +23,7 @@ export function LoginPage() {
           <AlertDescription>
             {state?.username ? (
               <>
-                Welcome, <span className="font-semibold">{state.username}</span>. Your account is ready—sign in
+                <span className="whitespace-nowrap">Welcome, <span className="font-semibold">{state.username}.</span></span>{' '}Your account is ready—sign in
                 below with your email and password.
               </>
             ) : (

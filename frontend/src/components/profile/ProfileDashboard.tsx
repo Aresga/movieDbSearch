@@ -208,9 +208,13 @@ export function ProfileDashboard({
             <div className="rounded-2xl border border-border/50 bg-card p-5 flex items-center gap-4">
               <Users className="size-5 text-muted-foreground shrink-0" />
               <div>
-                <Link to="/friends" className="text-2xl font-bold hover:text-brand transition-colors">
-                  {friendsCount}
-                </Link>
+                {isPrivate ? (
+                  <Link to="/friends" className="text-2xl font-bold hover:text-brand transition-colors">
+                    {friendsCount}
+                  </Link>
+                ) : (
+                  <p className="text-2xl font-bold">{friendsCount}</p>
+                )}
                 <p className="text-xs text-muted-foreground">Friends</p>
               </div>
             </div>
