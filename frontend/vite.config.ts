@@ -3,7 +3,6 @@ import tailwindcss from "@tailwindcss/vite"
 import { defineConfig } from "vite"
 import react from "@vitejs/plugin-react"
 import svgr from "vite-plugin-svgr"
-import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig(() => {
   return {
@@ -11,31 +10,6 @@ export default defineConfig(() => {
       react(),
       tailwindcss(),
       svgr(),
-      VitePWA({
-        registerType: 'autoUpdate',
-        devOptions: {
-          enabled: false,
-        },
-        workbox: {
-          // Keep browser navigations to backend routes out of SPA fallback.
-          navigateFallbackDenylist: [/^\/api\//, /^\/socket\.io\//],
-        },
-        includeAssets: ['favicon.ico', 'icon-192-dark.png', 'icon-512-dark.png'],
-        manifest: {
-          name: 'MoviesearchDb',
-          short_name: 'MovieDb',
-          description: 'Semantic movie search and discovery',
-          theme_color: '#0a0a0a',
-          background_color: '#0a0a0a',
-          display: 'standalone',
-          start_url: '/',
-          icons: [
-            { src: '/icon-192-dark.png', sizes: '192x192', type: 'image/png' },
-            { src: '/icon-512-dark.png', sizes: '512x512', type: 'image/png' },
-            { src: '/icon-512-light.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
-          ],
-        },
-      }),
     ],
 
     resolve: {
