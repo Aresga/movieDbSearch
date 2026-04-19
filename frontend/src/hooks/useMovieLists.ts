@@ -108,6 +108,7 @@ export function useToggleWatched(movieId: number | string | undefined) {
     },
   })
 }
+
 export function useWishlist() {
   const user = useAuthStore((s) => s.user)
   return useQuery<unknown[]>({
