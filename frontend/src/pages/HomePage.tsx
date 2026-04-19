@@ -132,11 +132,7 @@ export function HomePage() {
 
       {!user && <GuestBanner />}
 
-      {/* <div className="px-6">
-        <div className="mx-auto w-full max-w-full md:w-[calc(100vw-var(--sidebar-width)-4rem)] md:max-w-[1400px]"> */}
           <RecommendedSection pageSize={pageSize} isSearching={isSearching} />
-        {/* </div>
-      </div> */}
 
       {/* Results */}
       <div className="p-6 flex-1">
@@ -154,7 +150,7 @@ export function HomePage() {
           <p className="text-sm text-muted-foreground">
             {isSearching
               ? <><strong className="text-foreground">"{query}"</strong> — {movies.length} results</>
-              : 'Trending right now'
+              : <strong className='text-foreground'>Trending right now</strong>
             }
           </p>
         </div>

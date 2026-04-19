@@ -430,3 +430,5 @@ FodyWeavers.xsd
 *.msm
 *.msp
 backend-nest/src/message/tmp
+
+backend-python/models/* 
