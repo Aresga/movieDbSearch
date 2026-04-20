@@ -1,4 +1,4 @@
-*This project has been created as part of the 42 curriculum by agaga, tsomacha, erantala, and ji-hong.*
+*This project has been created as part of Hive Helsinki curriculum (42 Network) by agaga, tsomacha, erantala, and ji-hong.*
 
 # 🎬 moviesearchdb (ft_transcendence)
 
@@ -25,7 +25,7 @@ cp .env.example .env
 ```
 3. **Configure Secrets(Critical)**: Create a `secrets/` directory in the project root and provide the following files (these are git-ignored for security).
     - `initial_secrets.json`: Fill in your API keys and passwords in this JSON format.
-    ```bash
+    ```json
     {
         "POSTGRES_PASSWORD": "your_db_password",
         "MONGO_ROOT_PASSWORD": "your_mongo_password",
@@ -36,7 +36,12 @@ cp .env.example .env
         "HF_TOKEN": "your_huggingface_token",
         "TMDB_KEY": "your_tmdb_api_key",
         "TMDB_API_KEY": "your_tmdb_api_key",
-        "SMTP_PASS": "your_email_app_password"
+        "SMTP_PASS": "your_email_account_password",
+        "R2_ACCOUNT_ID": "your_bucket_account_id",
+        "R2_ACCESS_KEY": "you_access_key",
+        "R2_SECRET_KEY": "you_secret_key",
+        "R2_BUCKET_NAME": "you_backet_name",
+        "R2_PUBLIC_DOMAIN": "https://you_r2_bucket_pubic_domain"
     }
     ```
     - `Password files (.txt)`: Create these without a trailing newline to avoid login errors. Use the `printf` command for accuracy.
