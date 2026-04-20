@@ -23,6 +23,7 @@ vault/data/
 *.userosscache
 *.sln.docstates
 *.env
+Issues/
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs

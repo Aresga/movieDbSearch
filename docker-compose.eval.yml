@@ -7,6 +7,11 @@ services:
     ports:
       - "80:80"
       - "443:443"
+    environment:
+      - NDN_VALIDATE_CERT=0
+      - PARANOIA=3
+      - DETECTION_ONLY=0
+      - MODSEC_RULE_ENGINE=On
     depends_on:
       frontend:
         condition: service_started

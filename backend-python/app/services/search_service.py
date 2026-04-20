@@ -1,7 +1,7 @@
 import logging
 from fastapi import HTTPException
 from sqlmodel import Session, select
-from sqlalchemy import case
+from sqlalchemy import case, func
 from sqlalchemy.engine import Engine
 from sentence_transformers import SentenceTransformer
 from app.database.models import Movie, UserSearchAction 
@@ -18,7 +18,10 @@ class SearchService:
             raise HTTPException(status_code=400, detail="Query string 'q' is required")
 
         try:
-            query_vec = self.model.encode(q).tolist()
+            normalized_q = " ".join(q.split())
+            normalized_q_lower = normalized_q.lower()
+
+            query_vec = self.model.encode(normalized_q).tolist()
             offset = (page - 1) * size
 
             with Session(self.engine) as session:
@@ -27,7 +30,7 @@ class SearchService:
                     try:
                         session.add(UserSearchAction(
                             user_id=userId,
-                            query=q,
+                            query=normalized_q,
                             embedding=query_vec
                         ))
                         session.commit()
@@ -37,11 +40,19 @@ class SearchService:
 
                 raw_distance = Movie.embedding.cosine_distance(query_vec)
                 
-                # Logic: IF (Movie.title ILIKE q) THEN subtract 0.2 ELSE subtract 0.0
-                # ilike makes it case-insensitive (exmaple "matrix" matches "The Matrix"
+                # Normalize title text to handle casing and duplicated spaces consistently.
+                normalized_title = func.regexp_replace(
+                    func.lower(func.trim(Movie.title)),
+                    r"\s+",
+                    " ",
+                    "g"
+                )
+
                 title_boost = case(
-                    (Movie.title.ilike(q), 0.2), # Exact match boost
-                    (Movie.title.ilike(f"%{q}%"), 0.1), # Partial match boost
+                    (normalized_title == normalized_q_lower, 0.5),  # Exact normalized phrase
+                    (normalized_title.like(f"{normalized_q_lower} %"), 0.35),  # Title starts with phrase
+                    (normalized_title.like(f"% {normalized_q_lower} %"), 0.3),  # Phrase inside title
+                    (normalized_title.like(f"%{normalized_q_lower}%"), 0.2),  # Partial substring fallback
                     else_=0.0
                 )
 
