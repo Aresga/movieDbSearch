@@ -27,6 +27,7 @@ const WatchedListPage = lazy(() => import('@/pages/WatchedListPage').then(m => (
 const MyProfilePage = lazy(() => import('@/pages/MyProfilePage').then(m => ({ default: m.MyProfilePage })))
 const PrivacyPolicyPage = lazy(() => import('@/pages/PrivacyPolicyPage').then(m => ({ default: m.PrivacyPolicyPage })))
 const CookiePolicyPage = lazy(() => import('@/pages/CookiePolicyPage').then(m => ({ default: m.CookiePolicyPage })))
+const TermsOfServicePage = lazy(() => import('@/pages/TermsOfServicePage').then(m => ({ default: m.TermsOfServicePage })))
 const ChatMenuPage = lazy(() => import('@/pages/ChatMenuPage').then(m => ({ default: m.ChatMenuPage })))
 const ChatPage = lazy(() => import('@/pages/ChatPage').then(m => ({ default: m.ChatPage })))
 
@@ -67,6 +68,7 @@ function App() {
               <Route path="/movie/:id" element={<MoviePage />} />
               <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
               <Route path="/cookie-policy" element={<CookiePolicyPage />} />
+              <Route path="/terms-of-service" element={<TermsOfServicePage />} />
 
               <Route element={<ProtectedRoute />}>
                 <Route path="/user/me" element={<MyProfilePage />} />

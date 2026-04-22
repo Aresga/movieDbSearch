@@ -12,6 +12,9 @@ export function Footer() {
                     <p className="text-center text-sm leading-loose text-muted-foreground md:text-left flex-1 md:ml-8">
                         © {new Date().getFullYear()} moviesearchdb
                     </p>
+                    <Link to="/terms-of-service" className="whitespace-nowrap text-sm font-medium hover:underline underline-offset-4 text-muted-foreground hover:text-foreground transition-colors">
+                        Terms of Service
+                    </Link>
                     <Link to="/privacy-policy" className="whitespace-nowrap text-sm font-medium hover:underline underline-offset-4 text-muted-foreground hover:text-foreground transition-colors">
                         Privacy Policy
                     </Link>
