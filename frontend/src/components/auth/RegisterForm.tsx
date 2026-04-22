@@ -195,6 +195,15 @@ export function RegisterForm() {
                 <FormLabel className="text-sm font-normal cursor-pointer">
                   I agree to the{' '}
                   <Link
+                    to="/terms-of-service"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="font-medium text-primary hover:underline"
+                  >
+                    Terms of Service
+                  </Link>
+                  {' '}and{' '}
+                  <Link
                     to="/privacy-policy"
                     target="_blank"
                     rel="noreferrer"
