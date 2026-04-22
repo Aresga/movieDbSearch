@@ -35,7 +35,7 @@ async function bootstrap() {
     app.getHttpAdapter().getInstance().set('trust proxy', 1);
 
     app.enableCors({
-      origin: process.env.ALLOWED_ORIGINS?.split(',') || ['https://moviedb.gagabuilds.com'],
+      origin: process.env.ALLOWED_ORIGINS?.split(',') || ['https://localhost'],
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],

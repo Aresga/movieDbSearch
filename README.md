@@ -1,4 +1,4 @@
-*This project has been created as part of the 42 curriculum by agaga, tsomacha, erantala, and ji-hong.*
+*This project has been created as part of Hive Helsinki curriculum (42 Network) by agaga, tsomacha, erantala, and ji-hong.*
 
 # 🎬 moviesearchdb (ft_transcendence)
 
@@ -8,6 +8,12 @@
 **moviesearchdb** is a next-generation movie discovery platform designed to bridge the gap between human intuition and database queries. Unlike traditional platforms that rely on rigid keyword matching, we solve the **"vague description" problem using AI-powered Semantic Search**.
 
 Whether you're looking for "a dark thriller with a mind-bending twist" or want to see what your friends are rating in real-time, **moviesearchdb** provides a secure, integrated, and intuitive ecosystem for movie enthusiasts.
+
+## Service Documentation
+
+- Core API gateway and business backend (NestJS): [backend-nest/README.md](backend-nest/README.md)
+- AI and semantic processing backend (FastAPI): [backend-python/README.md](backend-python/README.md)
+- Frontend application (React): [frontend/README.md](frontend/README.md)
 
 
 ## Instructions
@@ -25,7 +31,7 @@ cp .env.example .env
 ```
 3. **Configure Secrets(Critical)**: Create a `secrets/` directory in the project root and provide the following files (these are git-ignored for security).
     - `initial_secrets.json`: Fill in your API keys and passwords in this JSON format.
-    ```bash
+    ```json
     {
         "POSTGRES_PASSWORD": "your_db_password",
         "MONGO_ROOT_PASSWORD": "your_mongo_password",
@@ -35,8 +41,12 @@ cp .env.example .env
         "GITHUB_CLIENT_SECRET": "your_oauth_secret",
         "HF_TOKEN": "your_huggingface_token",
         "TMDB_KEY": "your_tmdb_api_key",
-        "TMDB_API_KEY": "your_tmdb_api_key",
-        "SMTP_PASS": "your_email_app_password"
+        "SMTP_PASS": "your_email_account_password",
+        "R2_ACCOUNT_ID": "your_bucket_account_id",
+        "R2_ACCESS_KEY": "you_access_key",
+        "R2_SECRET_KEY": "you_secret_key",
+        "R2_BUCKET_NAME": "you_backet_name",
+        "R2_PUBLIC_DOMAIN": "https://you_r2_bucket_pubic_domain"
     }
     ```
     - `Password files (.txt)`: Create these without a trailing newline to avoid login errors. Use the `printf` command for accuracy.
@@ -84,8 +94,10 @@ We selected our stack to balance **high-performance AI processing, secure authen
 
 ### Backend (Microservices)
 - **NestJS (Node.js)**: Acts as the core API Gateway, managing user logic, **secure authentication**, and **real-time chat** services.
-- **FastAPI (Python)**: A dedicated service for **high-performance AI processing**, specifically semantic search and data seeding.
-- **Prisma ORM**: Provides type-safe database access and streamlined schema management for PostgreSQL.
+- **FastAPI (Python)**: A dedicated service for **high-performance AI processing**, specifically semantic search, recommendation system ML and sentiment analysis.
+- **Prisma ORM**: Provides type-safe database access and streamlined schema management for PostgreSQL on NestJs.
+- **Mongoose**: ODM for MongoDB, optimized for handling unstructured chat data.
+- **SQLalchemy**: Used in the FastAPI service for database interactions, providing flexibility and performance for AI workloads.
 
 ### Database System
 - **PostgreSQL (+ pgvector)**: Consolidates relational data and 384-dimensional AI embeddings into a single system to ensure a **scalable microservices structure**.
