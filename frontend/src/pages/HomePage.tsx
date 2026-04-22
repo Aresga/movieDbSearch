@@ -117,6 +117,8 @@ export function HomePage() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
             <Input
+              id="movie-search-query"
+              name="movieSearchQuery"
               className="pl-9"
               placeholder="Describe a movie idea, mood, or story..."
               value={inputValue}

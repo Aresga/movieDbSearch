@@ -24,10 +24,6 @@ class Settings:
         self.transformers_offline: bool = os.getenv("TRANSFORMERS_OFFLINE") == "1"
 
 
-        # Dataset Configuration
-        # self.csv_path: str = 'dbCSV/movies_metadata.csv'
-        # self.tmdb_key: str = os.getenv("TMDB_API_KEY")
-
     def _get_from_vault(self) -> dict:
         v_url = os.getenv("VAULT_ADDR", "http://vault:8200")
         token_path = os.getenv("VAULT_TOKEN_FILE")

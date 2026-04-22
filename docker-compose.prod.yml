@@ -88,7 +88,6 @@ services:
       - VAULT_ADDR=${VAULT_ADDR}
       - VAULT_TOKEN_FILE=/vault/file/vault_root_token
     volumes:
-      #- ./backend-python/models:/home/appuser/.cache/huggingface             # model cache persisted
       - vault_data:/vault/file:ro
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
